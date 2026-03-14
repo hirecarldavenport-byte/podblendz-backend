@@ -1,55 +1,49 @@
 # podpal/api.py
 from __future__ import annotations
 
+# --- Imports ----------------------------------------------------------
 from pathlib import Path
 from datetime import datetime
-from io import BytesIO
 from typing import List, Optional, Literal, Tuple
+from io import BytesIO
+import logging
 
 from fastapi import FastAPI, HTTPException, UploadFile, File, Query, Body
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from pydub import AudioSegment, effects
 from pydub.generators import Sine
 from pydub.silence import detect_nonsilent
 
-
-# ---------------------------------------------------------------------
-# App & Paths
-# ---------------------------------------------------------------------
-
+# --- App --------------------------------------------------------------
 app = FastAPI(title="Podcast Pal - Pod Blendz API")
 
-# Project root = parent of the 'podpal' folder
+# Project root (parent of 'podpal' folder)
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-# Output directory for rendered MP3s
+# Output/media dirs
 OUTPUT_DIR = PROJECT_ROOT / "output"
 OUTPUT_DIR.mkdir(exist_ok=True)
-
-# Media directory for server-side clips (used by mix-from-paths)
 MEDIA_DIR = PROJECT_ROOT / "media" / "clips"
 MEDIA_DIR.mkdir(parents=True, exist_ok=True)
 
-# Mount the UI (single-page app) at /ui
+# UI mount (serves /ui from <project_root>/ui)
 UI_DIR = PROJECT_ROOT / "ui"
 UI_DIR.mkdir(exist_ok=True)
 app.mount("/ui", StaticFiles(directory=str(UI_DIR), html=True), name="ui")
 
-
-# ---------------------------------------------------------------------
-# Health & Version (Render health checks rely on /health)
-# ---------------------------------------------------------------------
-
+# --- Health & Root ----------------------------------------------------
 @app.get("/health", include_in_schema=False)
 def health():
     return {"status": "ok", "time": datetime.utcnow().isoformat(), "service": "pod-blendz"}
 
-@app.get("/version", include_in_schema=False)
-def version():
-    return {"version": "0.1.0", "build": "render"}
+@app.get("/", include_in_schema=False)
+def root_redirect():
+    # Redirect the root to /ui for a nicer first-run experience
+    return RedirectResponse(url="/ui")
 
+# (…keep the rest of your routes and helpers below…)
 
 # ---------------------------------------------------------------------
 # Utilities
