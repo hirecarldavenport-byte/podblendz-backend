@@ -4,37 +4,186 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Pod Blendz</title>
+  <style>
+    :root {
+      --bg:#0f172a; --text:#e5e7eb; --muted:#94a3b8;
+      --card:#111827; --brand1:#8b5cf6; --brand2:#06b6d4; --ok:#22c55e; --err:#ef4444;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    header{padding:32px 16px;background:linear-gradient(135deg,rgba(139,92,246,.2),rgba(6,182,212,.2));border-bottom:1px solid rgba(255,255,255,.08)}
+    .wrap{max-width:980px;margin:0 auto;padding:16px}
+    h1{margin:0 0 6px}
+    .tag{color:var(--muted)}
+    .panel{background:rgba(17,24,39,.7);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;margin:16px 0}
+    .grid{display:grid;gap:12px}
+    .g2{grid-template-columns:1fr 1fr}
+    .row{display:grid;grid-template-columns:160px 1fr;gap:10px;align-items:center}
+    label{display:block;margin-bottom:6px;color:var(--muted)}
+    input[type="number"],select{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:var(--text)}
+    input[type="file"]{color:var(--text)}
+    .btn{background:linear-gradient(135deg,var(--brand1),var(--brand2));border:none;color:#fff;padding:12px 16px;border-radius:10px;cursor:pointer;font-weight:600}
+    .inline{display:inline-flex;gap:12px;align-items:center;flex-wrap:wrap}
+    .muted{color:var(--muted)}
+    .ok{color:var(--ok)} .err{color:var(--err)}
+    audio{width:100%;margin-top:10px}
+    .pill{display:inline-block;padding:2px 8px;border-radius:999px;background:rgba(255,255,255,.08);color:var(--muted);font-size:12px;margin-left:8px}
+    @media(max-width:900px){.g2{grid-template-columns:1fr}.row{grid-template-columns:1fr}}
+    a { color:#93c5fd; }
+  </style>
 </head>
 <body>
-  <h1>Pod Blendz UI</h1>
-  <p>Try <a href="/docs">API Docs</a> or click the button to generate a tone.</p>
+  <header>
+    <div class="wrap">
+      <h1>Pod Blendz <span class="pill">LIVE</span></h1>
+      <p class="tag">Blend <strong>Voice</strong> over <strong>Music</strong> with auto‑ducking. Try it below, or open the API: /docsAPI Docs</a></p>
+    </div>
+  </header>
 
-  <div>
-    <label>Frequency (Hz) <input id="freq" type="number" value="440"></label>
-    <label>Duration (ms) <input id="dur" type="number" value="1500"></label>
-    <button id="btnTone">Generate</button>
-  </div>
+  <main class="wrap">
+    <!-- Uploads -->
+    <section class="panel">
+      <h2>Upload</h2>
+      <div class="grid g2">
+        <div>
+          <label>Voice (dialogue)</label>
+          <input id="fileVoice" type="file" accept="audio/*"/>
+          <div class="row" style="margin-top:8px">
+            <span>Voice start (ms)</span><input id="voiceStart" type="number" value="0" min="0"/>
+          </div>
+          <div class="row">
+            <span>Voice gain (dB)</span><input id="voiceGain" type="number" value="0" step="0.5"/>
+          </div>
+        </div>
+        <div>
+          <label>Music (bed)</label>
+          <input id="fileMusic" type="file" accept="audio/*"/>
+          <div class="row" style="margin-top:8px">
+            <span>Music start (ms)</span><input id="musicStart" type="number" value="0" min="0"/>
+          </div>
+          <div class="row">
+            <span>Music gain (dB)</span><input id="musicGain" type="number" value="-1.5" step="0.5"/>
+          </div>
+        </div>
+      </div>
+    </section>
 
-  <div id="status"></div>
-  <audio id="player" controls style="width:100%;"></audio>
+    <!-- Ducking -->
+    <section class="panel">
+      <h2>Ducking</h2>
+      <div class="grid g2">
+        <div class="row"><span>Duck amount (dB)</span><input id="duckDb" type="number" value="12" step="1" min="0" max="48"/></div>
+        <div class="row"><span>Attack (ms)</span><input id="duckAttack" type="number" value="120" min="0" max="2000"/></div>
+        <div class="row"><span>Release (ms)</span><input id="duckRelease" type="number" value="250" min="0" max="3000"/></div>
+        <div class="row"><span>Min speech (ms)</span><input id="duckMinSpeech" type="number" value="160" min="50" max="5000"/></div>
+      </div>
+      <label class="muted" style="margin-top:8px;display:block">
+        <input id="normalize" type="checkbox" checked/> Normalize final mix
+      </label>
+      <label class="muted" style="display:block">
+        <input id="stereo" type="checkbox" checked/> Stereo output
+      </label>
+    </section>
+
+    <!-- Actions -->
+    <section class="panel">
+      <div class="inline">
+        <button id="btnBlend" class="btn">Generate Blend</button>
+        <span id="status" class="muted"></span>
+      </div>
+      <audio id="player" controls></audio>
+      <div id="download" style="margin-top:8px"></div>
+    </section>
+
+    <!-- Tone (keep your quick sanity test) -->
+    <section class="panel">
+      <h2>Quick Tone Test</h2>
+      <div class="inline">
+        <label>Freq (Hz) <input id="freq" type="number" value="440" min="20" max="20000"></label>
+        <label>Duration (ms) <input id="dur" type="number" value="1500" min="100" max="600000"></label>
+        <button id="btnTone" class="btn">Generate Tone</button>
+      </div>
+    </section>
+  </main>
 
   <script>
-    const qs = id => document.getElementById(id);
+    const $ = id => document.getElementById(id);
     const base = location.origin;
-    qs('btnTone').addEventListener('click', async () => {
-      const f = qs('freq').value || 440;
-      const d = qs('dur').value  || 1500;
+
+    function setStatus(msg, ok=null){
+      $('status').textContent = msg;
+      $('status').className = ok===true ? 'ok' : ok===false ? 'err' : 'muted';
+    }
+    function needFiles(){
+      const v = $('fileVoice').files?.[0], m = $('fileMusic').files?.[0];
+      if(!v || !m){ setStatus('Please select both Voice and Music files.', false); return null; }
+      return { v, m };
+    }
+
+    // Mix-two flow
+    $('btnBlend').addEventListener('click', async () => {
+      const files = needFiles(); if(!files) return;
+
+      const url = new URL(base + '/blend/mix-two');
+      const q = url.searchParams;
+
+      // per-track
+      q.set('voice_start_ms', $('voiceStart').value || '0');
+      q.set('music_start_ms', $('musicStart').value || '0');
+      q.set('voice_gain_db', $('voiceGain').value || '0');
+      q.set('music_gain_db', $('musicGain').value || '-1.5');
+      // ducking
+      q.set('duck_enable', 'true');
+      q.set('duck_db', $('duckDb').value || '12');
+      q.set('duck_attack_ms', $('duckAttack').value || '120');
+      q.set('duck_release_ms', $('duckRelease').value || '250');
+      q.set('duck_min_speech_ms', $('duckMinSpeech').value || '160');
+      // mix/export
+      q.set('normalize', $('normalize').checked ? 'true' : 'false');
+      q.set('sample_rate', '44100');
+      q.set('stereo', $('stereo').checked ? 'true' : 'false');
+      q.set('bitrate', '192k');
+
+      const fd = new FormData();
+      fd.append('voice', files.v);
+      fd.append('music', files.m);
+
+      try {
+        $('btnBlend').disabled = true;
+        setStatus('Blending… (encoding MP3)');
+        const res = await fetch(url.toString(), { method: 'POST', body: fd });
+        if(!res.ok) throw new Error(`HTTP ${res.status}`);
+        const blob = await res.blob();
+        const obj = URL.createObjectURL(blob);
+        $('player').src = obj;
+
+        // filename from header
+        const cd = res.headers.get('Content-Disposition') || '';
+        const m = cd.match(/filename="([^"]+)"/);
+        const fname = m ? m[1] : `podblendz_${Date.now()}.mp3`;
+        $('download').innerHTML = `${obj}Download ${fname}</a>`;
+        setStatus('Success', true);
+      } catch(e){
+        console.error(e);
+        setStatus(`Failed: ${e.message}`, false);
+      } finally {
+        $('btnBlend').disabled = false;
+      }
+    });
+
+    // Tone sanity
+    $('btnTone').addEventListener('click', async () => {
+      const f = $('freq').value || 440;
+      const d = $('dur').value || 1500;
       const url = `${base}/blend/tone?freq=${encodeURIComponent(f)}&duration_ms=${encodeURIComponent(d)}&bitrate=192k`;
-      qs('status').textContent = 'Requesting tone…';
+      setStatus('Requesting tone…');
       try {
         const res = await fetch(url, { method: 'POST' });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if(!res.ok) throw new Error(`HTTP ${res.status}`);
         const blob = await res.blob();
-        qs('player').src = URL.createObjectURL(blob);
-        qs('status').textContent = 'Success';
-      } catch (e) {
-        qs('status').textContent = `Failed: ${e.message}`;
-      }
+        $('player').src = URL.createObjectURL(blob);
+        setStatus('Success', true);
+      } catch (e) { setStatus(`Failed: ${e.message}`, false); }
     });
   </script>
 </body>
