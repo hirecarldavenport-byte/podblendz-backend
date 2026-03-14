@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Pod Blendz</title>
+</head>
+<body>
+  <h1>Pod Blendz UI</h1>
+  <p>Try <a href="/docs">API Docs</a> or click the button to generate a tone.</p>
+
+  <div>
+    <label>Frequency (Hz) <input id="freq" type="number" value="440"></label>
+    <label>Duration (ms) <input id="dur" type="number" value="1500"></label>
+    <button id="btnTone">Generate</button>
+  </div>
+
+  <div id="status"></div>
+  <audio id="player" controls style="width:100%;"></audio>
+
+  <script>
+    const qs = id => document.getElementById(id);
+    const base = location.origin;
+    qs('btnTone').addEventListener('click', async () => {
+      const f = qs('freq').value || 440;
+      const d = qs('dur').value  || 1500;
+      const url = `${base}/blend/tone?freq=${encodeURIComponent(f)}&duration_ms=${encodeURIComponent(d)}&bitrate=192k`;
+      qs('status').textContent = 'Requesting tone…';
+      try {
+        const res = await fetch(url, { method: 'POST' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const blob = await res.blob();
+        qs('player').src = URL.createObjectURL(blob);
+        qs('status').textContent = 'Success';
+      } catch (e) {
+        qs('status').textContent = `Failed: ${e.message}`;
+      }
+    });
+  </script>
+</body>
+</html>
