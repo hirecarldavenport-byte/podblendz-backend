@@ -1,0 +1,12 @@
+venv/
+.venv/
+.venv312/
+__pycache__/
+output/
+var/cache/
+*.pyc
+*.pyo
+*.pyd
+*.log
+*.sqlite
+*.db
