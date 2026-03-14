@@ -19,4 +19,4 @@ ENV PORT=8080
 EXPOSE 8080
 
 # run via python -m so we don't depend on a shell shim
-CMD ["python", "-m", "uvicorn", "podpal.api:app", "--host", "0.0.0.0", "--port", "${PORT}"]
+CMD ["python", "-c", "import os, uvicorn; uvicorn.run('podpal.api:app', host='0.0.0.0', port=int(os.environ.get('PORT','8080')))"]
