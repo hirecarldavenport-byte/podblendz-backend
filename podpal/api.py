@@ -18,7 +18,23 @@ from pydub.silence import detect_nonsilent
 
 # --- App --------------------------------------------------------------
 app = FastAPI(title="Podcast Pal - Pod Blendz API")
+# CORS (future-friendly; tighten origins when you add a custom domain)
+from fastapi.middleware.cors import CORSMiddleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
+# Handy listings (drop near your other routes)
+@app.get("/output/files")
+def list_outputs():
+    return sorted([f.name for f in OUTPUT_DIR.iterdir() if f.is_file()]) if OUTPUT_DIR.exists() else []
+
+@app.get("/media/clips")
+def list_clips():
+    return sorted([f.name for f in MEDIA_DIR.iterdir() if f.is_file()]) if MEDIA_DIR.exists() else []
 # Project root (parent of 'podpal' folder)
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
