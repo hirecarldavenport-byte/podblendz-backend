@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Pod Blendz</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; background: #0f172a; color: #e5e7eb; }
+    header { padding: 32px 16px; background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(6,182,212,0.2)); border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .wrap { max-width: 900px; margin: 0 auto; padding: 16px; }
+    h1 { margin: 0 0 8px; }
+    .card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px; margin-top: 16px; }
+    a { color: #93c5fd; }
+    button { background: linear-gradient(135deg, #8b5cf6, #06b6d4); border: none; color: white; padding: 10px 14px; border-radius: 8px; cursor: pointer; }
+    .row { display: grid; grid-template-columns: 160px 1fr; gap: 8px; align-items: center; margin: 8px 0; }
+    input[type="number"] { width: 100%; padding: 6px 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.04); color: #e5e7eb; }
+    #status { color: #94a3b8; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Pod Blendz</h1>
+      <p>Backend is live. Try generating a tone, or open the API docs.</p>
+      <p>/docsAPI Docs</a></p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="card">
+      <h2>Quick Test: Generate Tone</h2>
+      <div class="row">
+        <label for="freq">Frequency (Hz)</label>
+        <input id="freq" type="number" value="440" min="20" max="20000">
+      </div>
+      <div class="row">
+        <label for="dur">Duration (ms)</label>
+        <input id="dur" type="number" value="1500" min="100" max="600000">
+      </div>
+      <button id="btnTone">Generate</button>
+      <div id="status"></div>
+      <audio id="player" controls style="width:100%; margin-top:10px;"></audio>
+    </div>
+  </main>
+
+  <script>
+    const qs = id => document.getElementById(id);
+    const base = location.origin;
+
+    qs('btnTone').addEventListener('click', async () => {
+      const freq = qs('freq').value || 440;
+      const dur  = qs('dur').value  || 1500;
+      const url  = `${base}/blend/tone?freq=${encodeURIComponent(freq)}&duration_ms=${encodeURIComponent(dur)}&bitrate=192k`;
+
+      qs('status').textContent = 'Requesting tone…';
+
+      try {
+        const res = await fetch(url, { method: 'POST' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const blob = await res.blob();
+        qs('player').src = URL.createObjectURL(blob);
+        qs('status').textContent = 'Success';
+      } catch (e) {
+        qs('status').textContent = `Failed: ${e.message}`;
+      }
+    });
+  </script>
+</body>
+</html>
