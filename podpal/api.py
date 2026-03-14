@@ -1,25 +1,43 @@
 # podpal/api.py
 from __future__ import annotations
 
-# --- Imports ----------------------------------------------------------
+# ------------------------ Imports ------------------------
 from pathlib import Path
 from datetime import datetime
-from typing import List, Optional, Literal, Tuple
 from io import BytesIO
+from typing import List, Optional, Literal, Tuple
 import logging
 
 from fastapi import FastAPI, HTTPException, UploadFile, File, Query, Body
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 
 from pydub import AudioSegment, effects
 from pydub.generators import Sine
 from pydub.silence import detect_nonsilent
 
-# --- App --------------------------------------------------------------
+
+# ------------------------ App & Paths ------------------------
 app = FastAPI(title="Podcast Pal - Pod Blendz API")
-# CORS (future-friendly; tighten origins when you add a custom domain)
-from fastapi.middleware.cors import CORSMiddleware
+
+# Project root (parent of 'podpal' package)
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+# Output (rendered MP3s)
+OUTPUT_DIR = PROJECT_ROOT / "output"
+OUTPUT_DIR.mkdir(exist_ok=True)
+
+# Media (server-side clips for mix-from-paths)
+MEDIA_DIR = PROJECT_ROOT / "media" / "clips"
+MEDIA_DIR.mkdir(parents=True, exist_ok=True)
+
+# UI mount
+UI_DIR = PROJECT_ROOT / "ui"
+UI_DIR.mkdir(exist_ok=True)
+app.mount("/ui", StaticFiles(directory=str(UI_DIR), html=True), name="ui")
+
+# CORS (open for now; tighten to your domain when you set a custom domain)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -27,44 +45,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Handy listings (drop near your other routes)
-@app.get("/output/files")
-def list_outputs():
-    return sorted([f.name for f in OUTPUT_DIR.iterdir() if f.is_file()]) if OUTPUT_DIR.exists() else []
 
-@app.get("/media/clips")
-def list_clips():
-    return sorted([f.name for f in MEDIA_DIR.iterdir() if f.is_file()]) if MEDIA_DIR.exists() else []
-# Project root (parent of 'podpal' folder)
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-
-# Output/media dirs
-OUTPUT_DIR = PROJECT_ROOT / "output"
-OUTPUT_DIR.mkdir(exist_ok=True)
-MEDIA_DIR = PROJECT_ROOT / "media" / "clips"
-MEDIA_DIR.mkdir(parents=True, exist_ok=True)
-
-# UI mount (serves /ui from <project_root>/ui)
-UI_DIR = PROJECT_ROOT / "ui"
-UI_DIR.mkdir(exist_ok=True)
-app.mount("/ui", StaticFiles(directory=str(UI_DIR), html=True), name="ui")
-
-# --- Health & Root ----------------------------------------------------
+# ------------------------ Health, Version, Root ------------------------
 @app.get("/health", include_in_schema=False)
 def health():
     return {"status": "ok", "time": datetime.utcnow().isoformat(), "service": "pod-blendz"}
 
+@app.get("/version", include_in_schema=False)
+def version():
+    return {"version": "0.1.0", "build": "render"}
+
 @app.get("/", include_in_schema=False)
 def root_redirect():
-    # Redirect the root to /ui for a nicer first-run experience
+    # nicer first-run experience
     return RedirectResponse(url="/ui")
 
-# (…keep the rest of your routes and helpers below…)
 
-# ---------------------------------------------------------------------
-# Utilities
-# ---------------------------------------------------------------------
-
+# ------------------------ Helpers ------------------------
 def _timestamp() -> str:
     return datetime.utcnow().strftime("%Y%m%d_%H%M%S")
 
@@ -75,7 +72,6 @@ def _ext_from_name(name: str | None) -> str | None:
     return ext if ext else None
 
 def _load_upload_audio(upload: UploadFile) -> AudioSegment:
-    """Load an uploaded file into a pydub AudioSegment using ffmpeg."""
     data = upload.file.read()
     if not data:
         raise ValueError(f"Uploaded file '{upload.filename}' is empty.")
@@ -84,7 +80,6 @@ def _load_upload_audio(upload: UploadFile) -> AudioSegment:
     return AudioSegment.from_file(buf, format=fmt)
 
 def _load_path_audio(path: Path) -> AudioSegment:
-    """Load a file from disk into a pydub AudioSegment."""
     if not path.exists():
         raise FileNotFoundError(f"File not found: {path}")
     if path.stat().st_size == 0:
@@ -117,24 +112,12 @@ def _export_final(seg: AudioSegment, out_path: Path, bitrate: str) -> Path:
     seg.export(out_path, format="mp3", bitrate=bitrate)
     return out_path
 
-def _broadcast(values: Optional[List], n: int, default):
-    """Vectorize per-track params (e.g., gains, starts) to length n."""
-    if values is None or len(values) == 0:
-        return [default] * n
-    if len(values) < n:
-        return values + [values[-1] if values else default] * (n - len(values))
-    if len(values) > n:
-        return values[:n]
-    return values
-
-# --- Ducking helpers --------------------------------------------------
-
+# --- Ducking utilities ----
 def _detect_speech_windows(
     seg: AudioSegment,
     min_speech_ms: int,
     silence_thresh_dbfs: Optional[float] = None,
 ) -> List[Tuple[int, int]]:
-    """Detect nonsilent (likely speech) windows."""
     if silence_thresh_dbfs is None:
         base = seg.dBFS if seg.dBFS != float("-inf") else -50.0
         silence_thresh_dbfs = max(base - 16.0, -60.0)
@@ -145,26 +128,26 @@ def _merge_intervals(intervals: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
     if not intervals:
         return []
     intervals = sorted(intervals, key=lambda x: x[0])
-    merged = []
-    cur_s, cur_e = intervals[0]
-    for s, e in intervals[1:]:
-        if s <= cur_e:
-            cur_e = max(cur_e, e)
+    merged: List[Tuple[int, int]] = []
+    s, e = intervals[0]
+    for a, b in intervals[1:]:
+        if a <= e:
+            e = max(e, b)
         else:
-            merged.append((cur_s, cur_e))
-            cur_s, cur_e = s, e
-    merged.append((cur_s, cur_e))
+            merged.append((s, e))
+            s, e = a, b
+    merged.append((s, e))
     return merged
 
 def _pad_intervals(intervals: List[Tuple[int, int]], pad_left: int, pad_right: int, total_len: Optional[int]) -> List[Tuple[int, int]]:
-    padded = []
+    out = []
     for a, b in intervals:
         s = max(0, a - pad_left)
         e = b + pad_right
         if total_len is not None:
             e = min(e, total_len)
-        padded.append((s, e))
-    return _merge_intervals(padded)
+        out.append((s, e))
+    return _merge_intervals(out)
 
 def _intersect_with_range(intervals: List[Tuple[int, int]], start: int, end: int) -> List[Tuple[int, int]]:
     out = []
@@ -181,7 +164,6 @@ def _apply_ducking_to_track(
     attack_ms: int,
     release_ms: int,
 ) -> AudioSegment:
-    """Apply gain reduction in provided local windows with crossfades."""
     if not duck_windows_local:
         return seg
     result = AudioSegment.silent(duration=0, frame_rate=seg.frame_rate).set_channels(seg.channels)
@@ -219,23 +201,25 @@ def _build_duck_windows_on_timeline(
     return _pad_intervals(merged, pad_left_ms, pad_right_ms, total_len=timeline_len)
 
 
-# ---------------------------------------------------------------------
-# Routes
-# ---------------------------------------------------------------------
+# ------------------------ Routes ------------------------
+@app.on_event("startup")
+async def _log_routes():
+    rts = [getattr(r, "path", str(r)) for r in app.router.routes]
+    logging.getLogger("uvicorn").info("Registered routes: %s", rts)
 
-@app.get("/", include_in_schema=False)
-def root():
+# Root sanity (JSON) if you navigate to / (it redirects to /ui above)
+@app.get("/info", include_in_schema=False)
+def info():
     return {"service": "Pod Blendz", "status": "ok", "output_dir": str(OUTPUT_DIR)}
 
-# --- Tone -------------------------------------------------------------
-
+# --- Tone -------------------------------------------------
 @app.post("/blend/tone")
 def blend_tone(
     freq: int = Query(440, ge=20, le=20000, description="Frequency Hz"),
     duration_ms: int = Query(2000, ge=100, le=600000, description="Duration ms"),
-    sample_rate: int = Query(44100, ge=8000, le=96000, description="Sample rate"),
-    bitrate: str = Query("192k", pattern=r"^[0-9]{2,3}k$", description="MP3 bitrate"),
-    stereo: bool = Query(True, description="2 channels if true")
+    sample_rate: int = Query(44100, ge=8000, le=96000),
+    bitrate: str = Query("192k", pattern=r"^[0-9]{2,3}k$"),
+    stereo: bool = Query(True),
 ):
     try:
         seg: AudioSegment = (
@@ -251,8 +235,7 @@ def blend_tone(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Tone generation failed: {e}")
 
-# --- Mix: two-file upload with auto-ducking ---------------------------
-
+# --- Mix: two-file upload with auto-ducking ---------------
 @app.post("/blend/mix-two")
 async def blend_mix_two(
     voice: UploadFile = File(..., description="Voice/dialogue track"),
@@ -307,7 +290,7 @@ async def blend_mix_two(
             if local:
                 m_seg = _apply_ducking_to_track(m_seg, local, duck_db, duck_attack_ms, duck_release_ms)
 
-        # Build overlay mix
+        # Build overlay
         total = max(voice_start_ms + len(v_seg), music_start_ms + len(m_seg))
         mix = AudioSegment.silent(duration=total, frame_rate=sample_rate).set_channels(2 if stereo else 1)
         mix = mix.overlay(v_seg, position=max(0, voice_start_ms))
@@ -327,8 +310,7 @@ async def blend_mix_two(
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"mix-two failed: {e}")
 
-# --- Mix: path-based (no upload UI) ----------------------------------
-
+# --- Mix: path-based (no upload UI) -----------------------
 from pydantic import BaseModel, Field
 
 class TrackSpec(BaseModel):
@@ -364,7 +346,7 @@ def blend_mix_from_paths(req: MixRequest = Body(...)):
         if not req.tracks:
             raise ValueError("No tracks provided.")
 
-        # Load & transform
+        # Load / transform
         segments: List[AudioSegment] = []
         for t in req.tracks:
             p = Path(t.path)
@@ -373,13 +355,8 @@ def blend_mix_from_paths(req: MixRequest = Body(...)):
                 p = cand if cand.exists() else p
             seg = _load_path_audio(p)
             seg = _apply_track_fx(
-                seg=seg,
-                sample_rate=req.sample_rate,
-                stereo=req.stereo,
-                gain_db=t.gain_db,
-                pan=t.pan,
-                fade_in_ms=t.fade_in_ms,
-                fade_out_ms=t.fade_out_ms,
+                seg=seg, sample_rate=req.sample_rate, stereo=req.stereo,
+                gain_db=t.gain_db, pan=t.pan, fade_in_ms=t.fade_in_ms, fade_out_ms=t.fade_out_ms
             )
             segments.append(seg)
 
@@ -414,7 +391,7 @@ def blend_mix_from_paths(req: MixRequest = Body(...)):
                 if local:
                     segments[m_idx] = _apply_ducking_to_track(m_seg, local, req.duck_db, req.duck_attack_ms, req.duck_release_ms)
 
-        # Build
+        # Build mix
         if req.mode == "sequence":
             mix = AudioSegment.silent(duration=0, frame_rate=req.sample_rate).set_channels(2 if req.stereo else 1)
             for i, seg in enumerate(segments):
@@ -437,7 +414,6 @@ def blend_mix_from_paths(req: MixRequest = Body(...)):
             mix = effects.normalize(mix)
         mix = mix.set_frame_rate(req.sample_rate).set_channels(2 if req.stereo else 1)
 
-        # Export
         filename = (req.out_name or f"mix_{_timestamp()}.mp3").strip()
         if not filename.lower().endswith(".mp3"):
             filename += ".mp3"
@@ -445,12 +421,10 @@ def blend_mix_from_paths(req: MixRequest = Body(...)):
         _export_final(mix, out_path, req.bitrate)
 
         return FileResponse(out_path, media_type="audio/mpeg", filename=filename)
-
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"mix-from-paths failed: {e}")
 
-# --- Serve previously generated files --------------------------------
-
+# --- Serve generated files --------------------------------
 @app.get("/blend/file")
 def get_blend_file(name: str):
     path = OUTPUT_DIR / name
@@ -458,11 +432,26 @@ def get_blend_file(name: str):
         return JSONResponse(status_code=404, content={"error": f"File not found: {name}"})
     return FileResponse(path, media_type="audio/mpeg", filename=name)
 
+# --- Handy listings ---------------------------------------
+@app.get("/output/files")
+def list_outputs():
+    return sorted([f.name for f in OUTPUT_DIR.iterdir() if f.is_file()]) if OUTPUT_DIR.exists() else []
 
-# ---------------------------------------------------------------------
-# Dev runner (optional, for local dev)
-# ---------------------------------------------------------------------
+@app.get("/media/clips")
+def list_clips():
+    return sorted([f.name for f in MEDIA_DIR.iterdir() if f.is_file()]) if MEDIA_DIR.exists() else []
+
+
+# ------------------------ Optional: RSS router ------------------------
+# If podpal/rss_search.py exists, include it (provides /rss/search, /rss/lookup, /rss/parse).
+try:
+    from podpal.rss_search import router as rss_router
+    app.include_router(rss_router)
+except Exception as _e:
+    logging.getLogger("uvicorn").info("RSS router not loaded: %s", _e)
+
+
+# ------------------------ Dev runner ------------------------
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("podpal.api:app", host="127.0.0.1", port=8000, reload=True)
-
