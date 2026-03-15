@@ -3,3 +3,6 @@ uvicorn[standard]
 pydub
 python-multipart
 audioop-lts
+requests
+feedparser
+# force rebuild
