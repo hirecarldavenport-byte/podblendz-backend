@@ -3,7 +3,13 @@ FROM python:3.13-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
+# syntax=docker/dockerfile:1.6
+FROM python:3.13-slim
 
+ARG APP_BUILD_ID=manual-1   # ← bump this to manual-2, -3, etc. to force a rebuild
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 # ffmpeg required by pydub
 RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg && \
     rm -rf /var/lib/apt/lists/*
