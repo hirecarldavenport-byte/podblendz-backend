@@ -37,6 +37,10 @@ UI_DIR = PROJECT_ROOT / "ui"
 UI_DIR.mkdir(exist_ok=True)
 app.mount("/ui", StaticFiles(directory=str(UI_DIR), html=True), name="ui")
 
+
+from podpal.rss_search import router as rss_router
+app.include_router(rss_router)
+
 # CORS (open for now; tighten to your domain when you set a custom domain)
 app.add_middleware(
     CORSMiddleware,
