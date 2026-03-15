@@ -16,6 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydub import AudioSegment, effects
 from pydub.generators import Sine
 from pydub.silence import detect_nonsilent
+from podpal.rss_search import router as rss_router
 
 
 # ------------------------ App & Paths ------------------------
@@ -37,9 +38,9 @@ UI_DIR = PROJECT_ROOT / "ui"
 UI_DIR.mkdir(exist_ok=True)
 app.mount("/ui", StaticFiles(directory=str(UI_DIR), html=True), name="ui")
 
-
 from podpal.rss_search import router as rss_router
 app.include_router(rss_router)
+
 
 # CORS (open for now; tighten to your domain when you set a custom domain)
 app.add_middleware(
@@ -459,3 +460,149 @@ except Exception as _e:
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("podpal.api:app", host="127.0.0.1", port=8000, reload=True)
+    # --- RSS helpers: fetch episode audio and one-click blend ----------------------
+from pydantic import BaseModel, Field
+import requests, re, secrets
+
+SAFE_NAME_RE = re.compile(r"[^a-zA-Z0-9._-]+")
+
+def _safe_filename(name: str, default_prefix: str = "clip") -> str:
+    name = name.strip() or f"{default_prefix}_{_timestamp()}.mp3"
+    name = SAFE_NAME_RE.sub("-", name)
+    if not name.lower().endswith(".mp3"):
+        name += ".mp3"
+    return name
+
+def _download_audio(url: str, out_path: Path, max_mb: int = 80, timeout: int = 30) -> dict:
+    """
+    Stream-download an audio file safely to out_path. Returns basic metadata.
+    """
+    headers = {"User-Agent": "PodBlendz/1.0"}
+    with requests.get(url, headers=headers, stream=True, timeout=timeout) as r:
+        r.raise_for_status()
+        ctype = r.headers.get("Content-Type", "")
+        clen = r.headers.get("Content-Length")
+        # size guard
+        if clen is not None and int(clen) > max_mb * 1024 * 1024:
+            raise HTTPException(status_code=413, detail=f"File too large (> {max_mb} MB).")
+        bytes_written = 0
+        with out_path.open("wb") as f:
+            for chunk in r.iter_content(chunk_size=1024 * 512):
+                if not chunk:
+                    continue
+                f.write(chunk)
+                bytes_written += len(chunk)
+                if bytes_written > max_mb * 1024 * 1024:
+                    raise HTTPException(status_code=413, detail=f"File exceeded {max_mb} MB while downloading.")
+    return {"content_type": ctype, "bytes": bytes_written}
+
+class FetchBody(BaseModel):
+    url: str = Field(..., description="Direct audio URL (e.g., RSS enclosure href)")
+    out_name: str | None = Field(None, description="Optional final filename, defaults to clip_<ts>.mp3")
+    max_mb: int = Field(80, ge=5, le=500, description="Max download size guard")
+
+@app.post("/rss/fetch")
+def rss_fetch(body: FetchBody):
+    """
+    Download an audio URL to <project>/media/clips/ and return a relative path
+    you can pass to /blend/mix-from-paths.
+    """
+    fname = _safe_filename(body.out_name or f"clip_{_timestamp()}.mp3", default_prefix="clip")
+    out_path = MEDIA_DIR / fname
+    meta = _download_audio(body.url, out_path, max_mb=body.max_mb)
+    rel = f"media/clips/{fname}"
+    return {"path": rel, "filename": fname, "saved_bytes": meta["bytes"], "content_type": meta["content_type"]}
+
+# --- One-click: fetch episode and blend over music ----------------------------
+class FetchMixBody(BaseModel):
+    episode_url: str = Field(..., description="Podcast episode audio URL (RSS enclosure)")
+    music_url: str | None = Field(None, description="Optional music bed audio URL")
+    music_path: str | None = Field(None, description="Optional existing server path under media/clips")
+    # per-track
+    voice_gain_db: float = 0.0
+    music_gain_db: float = -1.5
+    voice_start_ms: int = Field(0, ge=0)
+    music_start_ms: int = Field(0, ge=0)
+    # ducking
+    duck_enable: bool = True
+    duck_db: float = Field(12.0, ge=0.0, le=48.0)
+    duck_attack_ms: int = Field(120, ge=0, le=2000)
+    duck_release_ms: int = Field(250, ge=0, le=3000)
+    duck_min_speech_ms: int = Field(160, ge=50, le=5000)
+    duck_silence_thresh_dbfs: float | None = None
+    # mix/export
+    normalize: bool = True
+    sample_rate: int = Field(44100, ge=8000, le=96000)
+    stereo: bool = True
+    bitrate: str = Field("192k", pattern=r"^[0-9]{2,3}k$")
+    out_name: str | None = Field(None, description="Optional output filename (mp3)")
+
+@app.post("/rss/mix-episode-over-music")
+def rss_mix_episode_over_music(req: FetchMixBody):
+    """
+    One-click: download episode (and optional music), then blend with ducking.
+    Returns the final MP3.
+    """
+    # --- 1) Download voice (episode) ---
+    voice_fname = _safe_filename(f"episode_{_timestamp()}_{secrets.token_hex(3)}.mp3", default_prefix="episode")
+    voice_path = MEDIA_DIR / voice_fname
+    _download_audio(req.episode_url, voice_path, max_mb=80)
+
+    # --- 2) Resolve music (download if URL provided, else use existing server path) ---
+    if req.music_url:
+        music_fname = _safe_filename(f"music_{_timestamp()}_{secrets.token_hex(3)}.mp3", default_prefix="music")
+        music_path = MEDIA_DIR / music_fname
+        _download_audio(req.music_url, music_path, max_mb=40)
+        music_abs = music_path
+    elif req.music_path:
+        p = Path(req.music_path)
+        music_abs = (PROJECT_ROOT / p) if not p.is_absolute() else p
+        if not music_abs.exists():
+            raise HTTPException(status_code=404, detail=f"music_path not found: {req.music_path}")
+    else:
+        raise HTTPException(status_code=400, detail="Provide either music_url or music_path.")
+
+    # --- 3) Build the mix using your existing helpers (same as /blend/mix-two logic) ---
+    try:
+        v_seg = _load_path_audio(voice_path)
+        m_seg = _load_path_audio(music_abs)
+
+        v_seg = _apply_track_fx(v_seg, req.sample_rate, req.stereo, req.voice_gain_db, None, 0, 0)
+        m_seg = _apply_track_fx(m_seg, req.sample_rate, req.stereo, req.music_gain_db, None, 0, 0)
+
+        # Ducking windows driven by voice
+        if req.duck_enable:
+            total = max(req.voice_start_ms + len(v_seg), req.music_start_ms + len(m_seg))
+            duck_windows = _build_duck_windows_on_timeline(
+                sidechain_segments=[v_seg],
+                sidechain_starts_ms=[req.voice_start_ms],
+                min_speech_ms=req.duck_min_speech_ms,
+                silence_thresh_dbfs=req.duck_silence_thresh_dbfs,
+                pad_left_ms=req.duck_attack_ms,
+                pad_right_ms=req.duck_release_ms,
+                timeline_len=total,
+            )
+            m_start = req.music_start_ms
+            local = _intersect_with_range(duck_windows, m_start, m_start + len(m_seg))
+            local = [(a - m_start, b - m_start) for a, b in local]
+            if local:
+                m_seg = _apply_ducking_to_track(m_seg, local, req.duck_db, req.duck_attack_ms, req.duck_release_ms)
+
+        # Overlay
+        total = max(req.voice_start_ms + len(v_seg), req.music_start_ms + len(m_seg))
+        mix = AudioSegment.silent(duration=total, frame_rate=req.sample_rate).set_channels(2 if req.stereo else 1)
+        mix = mix.overlay(v_seg, position=max(0, req.voice_start_ms))
+        mix = mix.overlay(m_seg, position=max(0, req.music_start_ms))
+
+        if req.normalize:
+            mix = effects.normalize(mix)
+        mix = mix.set_frame_rate(req.sample_rate).set_channels(2 if req.stereo else 1)
+
+        filename = (req.out_name or f"mix_{_timestamp()}.mp3").strip()
+        if not filename.lower().endswith(".mp3"):
+            filename += ".mp3"
+        out_path = OUTPUT_DIR / filename
+        _export_final(mix, out_path, req.bitrate)
+        return FileResponse(out_path, media_type="audio/mpeg", filename=filename)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"rss mix failed: {e}")
