@@ -606,3 +606,151 @@ def rss_mix_episode_over_music(req: FetchMixBody):
         return FileResponse(out_path, media_type="audio/mpeg", filename=filename)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"rss mix failed: {e}")
+    # --- MULTI-EPISODE BLENDZ: fetch many & stitch to target minutes over music ----
+from pydantic import BaseModel, Field
+import requests, secrets, re
+
+SAFE_NAME_RE = re.compile(r"[^a-zA-Z0-9._-]+")
+
+def _safe_filename(name: str, default_prefix: str = "clip") -> str:
+    name = (name or "").strip() or f"{default_prefix}_{_timestamp()}.mp3"
+    name = SAFE_NAME_RE.sub("-", name)
+    if not name.lower().endswith(".mp3"):
+        name += ".mp3"
+    return name
+
+def _download_to(path: Path, url: str, max_mb: int = 150, timeout: int = 45) -> dict:
+    headers = {"User-Agent": "PodBlendz/1.0"}
+    with requests.get(url, headers=headers, stream=True, timeout=timeout) as r:
+        r.raise_for_status()
+        ctype = r.headers.get("Content-Type", "")
+        clen = r.headers.get("Content-Length")
+        if clen and int(clen) > max_mb * 1024 * 1024:
+            raise HTTPException(status_code=413, detail=f"Episode too large (> {max_mb} MB).")
+        size = 0
+        with path.open("wb") as f:
+            for chunk in r.iter_content(1024 * 512):
+                if not chunk:
+                    continue
+                f.write(chunk)
+                size += len(chunk)
+                if size > max_mb * 1024 * 1024:
+                    raise HTTPException(status_code=413, detail=f"Episode exceeded {max_mb} MB during download.")
+    return {"bytes": size, "content_type": ctype}
+
+class EpisodesBlendBody(BaseModel):
+    episode_urls: List[str] = Field(..., description="Array of RSS enclosure URLs to stitch")
+    target_minutes: int = Field(10, ge=1, le=120, description="Final program length in minutes")
+    crossfade_ms: int = Field(800, ge=0, le=8000)
+    normalize: bool = True
+    # bed
+    music_url: Optional[str] = Field(None, description="Optional music bed URL to overlay")
+    music_path: Optional[str] = Field(None, description="Or an existing server path under media/clips")
+    music_gain_db: float = -3.0
+    # ducking (applied to the bed, driven by speech in the compiled track)
+    duck_enable: bool = True
+    duck_db: float = Field(12.0, ge=0.0, le=48.0)
+    duck_attack_ms: int = Field(120, ge=0, le=2000)
+    duck_release_ms: int = Field(250, ge=0, le=3000)
+    duck_min_speech_ms: int = Field(160, ge=50, le=5000)
+    duck_silence_thresh_dbfs: Optional[float] = None
+    # export
+    sample_rate: int = Field(44100, ge=8000, le=96000)
+    stereo: bool = True
+    bitrate: str = Field("192k", pattern=r"^[0-9]{2,3}k$")
+    out_name: Optional[str] = None
+
+@app.post("/rss/mix-episodes-over-music")
+def rss_mix_episodes_over_music(req: EpisodesBlendBody):
+    if not req.episode_urls:
+        raise HTTPException(status_code=400, detail="episode_urls is empty.")
+
+    # 1) Download all episodes (head‑trim later)
+    voice_segments: List[AudioSegment] = []
+    for url in req.episode_urls:
+        fname = _safe_filename(f"ep_{_timestamp()}_{secrets.token_hex(3)}.mp3", "ep")
+        ep_path = MEDIA_DIR / fname
+        _download_to(ep_path, url, max_mb=150)
+        seg = _load_path_audio(ep_path)
+        seg = _apply_track_fx(seg, req.sample_rate, req.stereo, 0.0, None, 60, 60)
+        voice_segments.append(seg)
+
+    # 2) Allocate equal shares toward target duration (leave room for crossfades)
+    target_ms = req.target_minutes * 60_000
+    n = len(voice_segments)
+    if n == 1:
+        shares = [target_ms]
+    else:
+        # total crossfade loss ~ (n-1)*(xf/2) perceived; keep it simple & generous
+        xf = req.crossfade_ms
+        usable = max(5_000, target_ms - (n - 1) * xf)
+        share = max(3_000, usable // n)
+        shares = [share] * n
+
+    # 3) Trim heads to their shares, then sequence with crossfades
+    trimmed: List[AudioSegment] = []
+    for seg, share in zip(voice_segments, shares):
+        trimmed.append(seg[: int(share)].fade_out(min(300, int(share/6))))
+
+    # Build the compilation mix
+    compiled = AudioSegment.silent(duration=0, frame_rate=req.sample_rate).set_channels(2 if req.stereo else 1)
+    for i, seg in enumerate(trimmed):
+        if i == 0:
+            compiled += seg
+        else:
+            compiled = compiled.append(seg, crossfade=req.crossfade_ms)
+
+    # Normalize and channelize
+    if req.normalize:
+        compiled = effects.normalize(compiled)
+    compiled = compiled.set_frame_rate(req.sample_rate).set_channels(2 if req.stereo else 1)
+
+    # 4) Optional music bed overlay with ducking driven by speech in 'compiled'
+    if req.music_url or req.music_path:
+        if req.music_url:
+            mname = _safe_filename(f"bed_{_timestamp()}_{secrets.token_hex(3)}.mp3", "bed")
+            m_path = MEDIA_DIR / mname
+            _download_to(m_path, req.music_url, max_mb=60)
+            bed = _load_path_audio(m_path)
+        else:
+            p = Path(req.music_path)
+            m_path = (PROJECT_ROOT / p) if not p.is_absolute() else p
+            if not m_path.exists():
+                raise HTTPException(status_code=404, detail=f"music_path not found: {req.music_path}")
+            bed = _load_path_audio(m_path)
+
+        bed = _apply_track_fx(bed, req.sample_rate, req.stereo, req.music_gain_db, None, 0, 0)
+        # loop/extend bed to full program length
+        if len(bed) < len(compiled):
+            loops = (len(compiled) // len(bed)) + 1
+            bed_loop = bed * loops
+            bed = bed_loop[: len(compiled)]
+
+        # duck windows taken from compiled speech
+        if req.duck_enable:
+            duck_windows = _build_duck_windows_on_timeline(
+                sidechain_segments=[compiled],
+                sidechain_starts_ms=[0],
+                min_speech_ms=req.duck_min_speech_ms,
+                silence_thresh_dbfs=req.duck_silence_thresh_dbfs,
+                pad_left_ms=req.duck_attack_ms,
+                pad_right_ms=req.duck_release_ms,
+                timeline_len=len(compiled),
+            )
+            local = _intersect_with_range(duck_windows, 0, len(bed))
+            if local:
+                bed = _apply_ducking_to_track(bed, local, req.duck_db, req.duck_attack_ms, req.duck_release_ms)
+
+        final = AudioSegment.silent(duration=len(compiled), frame_rate=req.sample_rate).set_channels(2 if req.stereo else 1)
+        final = final.overlay(bed, position=0)
+        final = final.overlay(compiled, position=0)
+    else:
+        final = compiled
+
+    # 5) Export
+    fn = (req.out_name or f"blendz_{_timestamp()}.mp3").strip()
+    if not fn.lower().endswith(".mp3"):
+        fn += ".mp3"
+    out_path = OUTPUT_DIR / fn
+    _export_final(final, out_path, req.bitrate)
+    return FileResponse(out_path, media_type="audio/mpeg", filename=fn)
