@@ -5,185 +5,394 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Pod Blendz</title>
   <style>
-    :root {
-      --bg:#0f172a; --text:#e5e7eb; --muted:#94a3b8;
-      --card:#111827; --brand1:#8b5cf6; --brand2:#06b6d4; --ok:#22c55e; --err:#ef4444;
+    :root{
+      --bg:#0f172a; --panel:#0b1220; --muted:#94a3b8; --text:#e5e7eb;
+      --line:rgba(255,255,255,.08); --brand1:#8b5cf6; --brand2:#06b6d4; --ok:#22c55e; --err:#ef4444;
     }
     *{box-sizing:border-box}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
-    header{padding:32px 16px;background:linear-gradient(135deg,rgba(139,92,246,.2),rgba(6,182,212,.2));border-bottom:1px solid rgba(255,255,255,.08)}
-    .wrap{max-width:980px;margin:0 auto;padding:16px}
+    html,body{margin:0; background:var(--bg); color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+    header{padding:28px 16px; background:linear-gradient(135deg,rgba(139,92,246,.2),rgba(6,182,212,.2)); border-bottom:1px solid var(--line)}
+    .wrap{max-width:1100px; margin:0 auto; padding:16px}
     h1{margin:0 0 6px}
     .tag{color:var(--muted)}
-    .panel{background:rgba(17,24,39,.7);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;margin:16px 0}
-    .grid{display:grid;gap:12px}
+    section.panel{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px; margin:16px 0}
+    .grid{display:grid; gap:12px}
     .g2{grid-template-columns:1fr 1fr}
-    .row{display:grid;grid-template-columns:160px 1fr;gap:10px;align-items:center}
-    label{display:block;margin-bottom:6px;color:var(--muted)}
-    input[type="number"],select{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:var(--text)}
+    .g3{grid-template-columns:1fr 1fr 1fr}
+    .row{display:grid; grid-template-columns:160px 1fr; gap:10px; align-items:center}
+    label{color:var(--muted)}
+    input[type="text"], input[type="number"], select{
+      width:100%; padding:10px; border-radius:10px; border:1px solid var(--line);
+      background:rgba(255,255,255,.04); color:var(--text)
+    }
     input[type="file"]{color:var(--text)}
-    .btn{background:linear-gradient(135deg,var(--brand1),var(--brand2));border:none;color:#fff;padding:12px 16px;border-radius:10px;cursor:pointer;font-weight:600}
-    .inline{display:inline-flex;gap:12px;align-items:center;flex-wrap:wrap}
+    .btn{background:linear-gradient(135deg,var(--brand1),var(--brand2)); border:none; color:#fff; padding:10px 14px; border-radius:10px; cursor:pointer; font-weight:600}
+    .btn:disabled{opacity:.6; cursor:not-allowed}
     .muted{color:var(--muted)}
     .ok{color:var(--ok)} .err{color:var(--err)}
-    audio{width:100%;margin-top:10px}
-    .pill{display:inline-block;padding:2px 8px;border-radius:999px;background:rgba(255,255,255,.08);color:var(--muted);font-size:12px;margin-left:8px}
-    @media(max-width:900px){.g2{grid-template-columns:1fr}.row{grid-template-columns:1fr}}
-    a { color:#93c5fd; }
+    audio{width:100%; margin-top:8px}
+    .list{display:grid; gap:10px}
+    .result, .episode{
+      display:grid; gap:10px; grid-template-columns:72px 1fr auto;
+      border:1px solid var(--line); border-radius:12px; padding:10px; background:rgba(255,255,255,.02)
+    }
+    .thumb{width:72px; height:72px; border-radius:8px; object-fit:cover; background:rgba(255,255,255,.05)}
+    .title{font-weight:600}
+    .small{font-size:12px; color:var(--muted)}
+    .pill{display:inline-block; padding:2px 8px; border-radius:999px; background:rgba(255,255,255,.08); color:var(--muted); font-size:12px; margin-left:8px}
+    .flex{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+    .spacer{height:6px}
+    @media(max-width:980px){
+      .g2{grid-template-columns:1fr}
+      .g3{grid-template-columns:1fr}
+      .row{grid-template-columns:1fr}
+      .result,.episode{grid-template-columns:72px 1fr}
+    }
+    a.link{color:#93c5fd; text-decoration:none}
+    .right{justify-self:end}
+    .divider{height:1px; background:var(--line); margin:12px 0}
+    .code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; font-size:12px; color:#cbd5e1}
   </style>
 </head>
 <body>
   <header>
     <div class="wrap">
       <h1>Pod Blendz <span class="pill">LIVE</span></h1>
-      <p class="tag">Blend <strong>Voice</strong> over <strong>Music</strong> with auto‑ducking. Try it below, or open the API: /docsAPI Docs</a></p>
+      <p class="tag">Search podcasts → pick an episode → <strong>one‑click blend</strong> over music. Or use the upload mixer below.</p>
     </div>
   </header>
 
   <main class="wrap">
-    <!-- Uploads -->
+
+    <!-- ========== RSS SEARCH ========== -->
     <section class="panel">
-      <h2>Upload</h2>
+      <h2 style="margin-top:0">1) Search Podcasts</h2>
+      <div class="grid g3">
+        <div class="row"><span>Query</span><input id="q" type="text" placeholder="history, economics, health..." /></div>
+        <div class="row">
+          <span>Provider</span>
+          <select id="provider">
+            <option value="itunes" selected>iTunes (no key)</option>
+            <option value="podcastindex">Podcast Index (needs keys)</option>
+          </select>
+        </div>
+        <div class="row"><span>Limit</span><input id="limit" type="number" value="20" min="1" max="50"/></div>
+      </div>
+      <div class="flex" style="margin-top:8px">
+        <button id="btnSearch" class="btn">Search</button>
+        <span id="sStatus" class="muted"></span>
+      </div>
+      <div class="spacer"></div>
+      <div id="results" class="list"></div>
+    </section>
+
+    <!-- ========== FEED + EPISODES ========== -->
+    <section class="panel">
+      <h2>2) Feed & Episodes</h2>
+      <div class="row">
+        <span>Feed URL</span><input id="feedUrl" type="text" placeholder="https://example.com/feed.xml"/>
+      </div>
+      <div class="flex" style="margin-top:8px">
+        <button id="btnOpenFeed" class="btn">Open Feed</button>
+        <span id="fStatus" class="muted"></span>
+      </div>
+
+      <div id="channel" class="muted" style="margin-top:12px"></div>
+      <div class="spacer"></div>
+      <div id="episodes" class="list"></div>
+    </section>
+
+    <!-- ========== ONE-CLICK BLEND ========== -->
+    <section class="panel">
+      <h2>3) One‑Click Blend (Episode → Music)</h2>
+      <div class="row"><span>Music URL</span><input id="musicUrl" type="text" placeholder="https://example.com/bed.mp3 (or leave empty to use upload mixer below)"/></div>
+      <div class="grid g3" style="margin-top:8px">
+        <div class="row"><span>Duck (dB)</span><input id="duckDb" type="number" value="12" min="0" max="48"/></div>
+        <div class="row"><span>Attack (ms)</span><input id="duckAttack" type="number" value="120" min="0" max="2000"/></div>
+        <div class="row"><span>Release (ms)</span><input id="duckRelease" type="number" value="250" min="0" max="3000"/></div>
+      </div>
+      <label class="muted" style="display:block; margin-top:8px">
+        <input id="normalize" type="checkbox" checked/> Normalize final mix
+      </label>
+      <div class="divider"></div>
+      <div class="flex">
+        <button id="btnBlendSelected" class="btn">Blend Selected Episode</button>
+        <span id="bStatus" class="muted"></span>
+      </div>
+      <audio id="mixPlayer" controls></audio>
+      <div id="mixDownload" class="small" style="margin-top:6px"></div>
+      <div class="small muted" style="margin-top:8px">
+        Note: one‑click uses <span class="code">POST /rss/mix-episode-over-music</span>.  
+        Episode downloads are size‑guarded (default ~80 MB).
+      </div>
+    </section>
+
+    <!-- ========== UPLOAD MIXER (fallback / manual) ========== -->
+    <section class="panel">
+      <h2>Upload Mixer (Voice + Music)</h2>
       <div class="grid g2">
         <div>
           <label>Voice (dialogue)</label>
           <input id="fileVoice" type="file" accept="audio/*"/>
-          <div class="row" style="margin-top:8px">
-            <span>Voice start (ms)</span><input id="voiceStart" type="number" value="0" min="0"/>
-          </div>
-          <div class="row">
-            <span>Voice gain (dB)</span><input id="voiceGain" type="number" value="0" step="0.5"/>
-          </div>
+          <div class="row" style="margin-top:8px"><span>Voice start (ms)</span><input id="voiceStart" type="number" value="0" min="0"/></div>
+          <div class="row"><span>Voice gain (dB)</span><input id="voiceGain" type="number" value="0" step="0.5"/></div>
         </div>
         <div>
           <label>Music (bed)</label>
           <input id="fileMusic" type="file" accept="audio/*"/>
-          <div class="row" style="margin-top:8px">
-            <span>Music start (ms)</span><input id="musicStart" type="number" value="0" min="0"/>
-          </div>
-          <div class="row">
-            <span>Music gain (dB)</span><input id="musicGain" type="number" value="-1.5" step="0.5"/>
-          </div>
+          <div class="row" style="margin-top:8px"><span>Music start (ms)</span><input id="musicStart" type="number" value="0" min="0"/></div>
+          <div class="row"><span>Music gain (dB)</span><input id="musicGain" type="number" value="-1.5" step="0.5"/></div>
         </div>
       </div>
-    </section>
-
-    <!-- Ducking -->
-    <section class="panel">
-      <h2>Ducking</h2>
-      <div class="grid g2">
-        <div class="row"><span>Duck amount (dB)</span><input id="duckDb" type="number" value="12" step="1" min="0" max="48"/></div>
-        <div class="row"><span>Attack (ms)</span><input id="duckAttack" type="number" value="120" min="0" max="2000"/></div>
-        <div class="row"><span>Release (ms)</span><input id="duckRelease" type="number" value="250" min="0" max="3000"/></div>
-        <div class="row"><span>Min speech (ms)</span><input id="duckMinSpeech" type="number" value="160" min="50" max="5000"/></div>
+      <div class="grid g3" style="margin-top:8px">
+        <div class="row"><span>Duck (dB)</span><input id="uDuckDb" type="number" value="12" min="0" max="48"/></div>
+        <div class="row"><span>Attack (ms)</span><input id="uDuckAttack" type="number" value="120" min="0" max="2000"/></div>
+        <div class="row"><span>Release (ms)</span><input id="uDuckRelease" type="number" value="250" min="0" max="3000"/></div>
       </div>
-      <label class="muted" style="margin-top:8px;display:block">
-        <input id="normalize" type="checkbox" checked/> Normalize final mix
-      </label>
-      <label class="muted" style="display:block">
-        <input id="stereo" type="checkbox" checked/> Stereo output
-      </label>
-    </section>
-
-    <!-- Actions -->
-    <section class="panel">
-      <div class="inline">
-        <button id="btnBlend" class="btn">Generate Blend</button>
-        <span id="status" class="muted"></span>
+      <label class="muted" style="display:block; margin-top:8px"><input id="uNormalize" type="checkbox" checked/> Normalize final mix</label>
+      <div class="flex" style="margin-top:8px">
+        <button id="btnUploadBlend" class="btn">Generate Blend</button>
+        <span id="uStatus" class="muted"></span>
       </div>
-      <audio id="player" controls></audio>
-      <div id="download" style="margin-top:8px"></div>
+      <audio id="uPlayer" controls></audio>
+      <div id="uDownload" class="small" style="margin-top:6px"></div>
     </section>
 
-    <!-- Tone (keep your quick sanity test) -->
+    <!-- ========== TONE (sanity) ========== -->
     <section class="panel">
-      <h2>Quick Tone Test</h2>
-      <div class="inline">
-        <label>Freq (Hz) <input id="freq" type="number" value="440" min="20" max="20000"></label>
-        <label>Duration (ms) <input id="dur" type="number" value="1500" min="100" max="600000"></label>
+      <h2>Tone Test</h2>
+      <div class="flex">
+        <label>Freq <input id="freq" type="number" value="440" min="20" max="20000" style="width:120px"></label>
+        <label>Duration (ms) <input id="dur" type="number" value="1500" min="100" max="600000" style="width:160px"></label>
         <button id="btnTone" class="btn">Generate Tone</button>
+        <span id="tStatus" class="muted"></span>
       </div>
+      <audio id="tonePlayer" controls></audio>
     </section>
+
   </main>
 
   <script>
-    const $ = id => document.getElementById(id);
+    // ---------- helpers ----------
+    const $ = (id) => document.getElementById(id);
     const base = location.origin;
+    const fmtBytes = n => n>=1e6 ? (n/1e6).toFixed(1)+' MB' : n>=1e3 ? (n/1e3).toFixed(1)+' KB' : n+' B';
+    const h = (html) => { const d=document.createElement('div'); d.innerHTML=html; return d.firstElementChild; };
 
-    function setStatus(msg, ok=null){
-      $('status').textContent = msg;
-      $('status').className = ok===true ? 'ok' : ok===false ? 'err' : 'muted';
-    }
-    function needFiles(){
-      const v = $('fileVoice').files?.[0], m = $('fileMusic').files?.[0];
-      if(!v || !m){ setStatus('Please select both Voice and Music files.', false); return null; }
-      return { v, m };
-    }
+    // state
+    let selectedFeed = null;
+    let selectedEpisode = null; // { title,url, ...}
+    let lastBlendName = null;
 
-    // Mix-two flow
-    $('btnBlend').addEventListener('click', async () => {
-      const files = needFiles(); if(!files) return;
-
-      const url = new URL(base + '/blend/mix-two');
-      const q = url.searchParams;
-
-      // per-track
-      q.set('voice_start_ms', $('voiceStart').value || '0');
-      q.set('music_start_ms', $('musicStart').value || '0');
-      q.set('voice_gain_db', $('voiceGain').value || '0');
-      q.set('music_gain_db', $('musicGain').value || '-1.5');
-      // ducking
-      q.set('duck_enable', 'true');
-      q.set('duck_db', $('duckDb').value || '12');
-      q.set('duck_attack_ms', $('duckAttack').value || '120');
-      q.set('duck_release_ms', $('duckRelease').value || '250');
-      q.set('duck_min_speech_ms', $('duckMinSpeech').value || '160');
-      // mix/export
-      q.set('normalize', $('normalize').checked ? 'true' : 'false');
-      q.set('sample_rate', '44100');
-      q.set('stereo', $('stereo').checked ? 'true' : 'false');
-      q.set('bitrate', '192k');
-
-      const fd = new FormData();
-      fd.append('voice', files.v);
-      fd.append('music', files.m);
-
-      try {
-        $('btnBlend').disabled = true;
-        setStatus('Blending… (encoding MP3)');
-        const res = await fetch(url.toString(), { method: 'POST', body: fd });
-        if(!res.ok) throw new Error(`HTTP ${res.status}`);
-        const blob = await res.blob();
-        const obj = URL.createObjectURL(blob);
-        $('player').src = obj;
-
-        // filename from header
-        const cd = res.headers.get('Content-Disposition') || '';
-        const m = cd.match(/filename="([^"]+)"/);
-        const fname = m ? m[1] : `podblendz_${Date.now()}.mp3`;
-        $('download').innerHTML = `${obj}Download ${fname}</a>`;
-        setStatus('Success', true);
-      } catch(e){
-        console.error(e);
-        setStatus(`Failed: ${e.message}`, false);
-      } finally {
-        $('btnBlend').disabled = false;
+    // ---------- Search ----------
+    $('btnSearch').addEventListener('click', async () => {
+      const q = $('q').value.trim();
+      const provider = $('provider').value;
+      const limit = $('limit').value || 20;
+      if(!q){ $('sStatus').textContent = 'Enter a search term.'; return; }
+      $('sStatus').textContent = 'Searching…';
+      $('results').innerHTML = '';
+      try{
+        const url = new URL(`${base}/rss/search`);
+        url.searchParams.set('q', q);
+        url.searchParams.set('source', provider);
+        url.searchParams.set('limit', limit);
+        const res = await fetch(url); if(!res.ok) throw new Error('HTTP '+res.status);
+        const data = await res.json();
+        $('sStatus').textContent = `Found ${data.results?.length ?? 0} shows (${data.provider}).`;
+        renderResults(data.results || []);
+      }catch(e){
+        $('sStatus').textContent = 'Failed: '+e.message;
       }
     });
 
-    // Tone sanity
+    function renderResults(list){
+      const box = $('results');
+      box.innerHTML = '';
+      list.forEach(item => {
+        const el = h(`
+          <div class="result">
+            <img class="thumb" src="${item.artwork || ''}" alt="">
+            <div>
+              <div class="title">${item.title || '(no title)'}</div>
+              <div class="small">${item.author || ''}</div>
+              <div class="small muted">${item.feed_url ? 'Feed URL ready' : 'No feed URL (will lookup by iTunes id)'} · Provider: ${item.source}</div>
+            </div>
+            <div class="right">
+              <button class="btn">Open</button>
+            </div>
+          </div>
+        `);
+        el.querySelector('button').addEventListener('click', async () => {
+          try{
+            $('fStatus').textContent = 'Resolving feed…';
+            let feedUrl = item.feed_url;
+            if(!feedUrl && item.itunes_collection_id){
+              const u = new URL(`${base}/rss/lookup`);
+              u.searchParams.set('collection_id', item.itunes_collection_id);
+              const r = await fetch(u); if(!r.ok) throw new Error('Lookup failed '+r.status);
+              const j = await r.json();
+              feedUrl = j.feed_url || j.feedUrl;
+            }
+            if(!feedUrl){ $('fStatus').textContent = 'No feed URL found for this show.'; return; }
+            $('feedUrl').value = feedUrl;
+            await openFeed();
+          }catch(e){
+            $('fStatus').textContent = 'Open failed: '+e.message;
+          }
+        });
+        box.appendChild(el);
+      });
+    }
+
+    // ---------- Feed / Episodes ----------
+    $('btnOpenFeed').addEventListener('click', openFeed);
+
+    async function openFeed(){
+      const feedUrl = $('feedUrl').value.trim();
+      if(!feedUrl){ $('fStatus').textContent = 'Enter a feed URL.'; return; }
+      $('fStatus').textContent = 'Loading feed…';
+      $('episodes').innerHTML = '';
+      try{
+        const u = new URL(`${base}/rss/parse`);
+        u.searchParams.set('feed_url', feedUrl);
+        const res = await fetch(u); if(!res.ok) throw new Error('HTTP '+res.status);
+        const data = await res.json();
+        selectedFeed = { url: feedUrl, channel: data.channel };
+        $('fStatus').textContent = '';
+        $('channel').innerHTML = `
+          <div><strong>${data.channel?.title ?? ''}</strong></div>
+          <div class="small">${data.channel?.link ?? ''}</div>
+          <div class="small muted">${data.items?.length ?? 0} episodes</div>
+        `;
+        renderEpisodes(data.items || []);
+      }catch(e){
+        $('fStatus').textContent = 'Failed: '+e.message;
+      }
+    }
+
+    function renderEpisodes(items){
+      const box = $('episodes'); box.innerHTML='';
+      items.forEach((ep, idx) => {
+        const audioUrl = ep.enclosure?.url || '';
+        const el = h(`
+          <div class="episode" data-idx="${idx}">
+            <img class="thumb" src="${ep.image || ''}" alt="">
+            <div>
+              <div class="title">${ep.title || '(no title)'}</div>
+              <div class="small muted">${ep.published || ''}</div>
+              <audio controls ${audioUrl ? `src="${audioUrl}"` : ''}></audio>
+            </div>
+            <div class="right">
+              <button class="btn">Select</button>
+            </div>
+          </div>
+        `);
+        el.querySelector('button').addEventListener('click', () => {
+          if(!audioUrl){ $('bStatus').textContent = 'This episode has no playable enclosure URL.'; return; }
+          selectedEpisode = { title: ep.title, url: audioUrl };
+          $('bStatus').textContent = `Selected: “${(ep.title||'').slice(0,60)}${(ep.title||'').length>60?'…':''}”`;
+        });
+        box.appendChild(el);
+      });
+    }
+
+    // ---------- One‑click blend (episode → music) ----------
+    $('btnBlendSelected').addEventListener('click', async () => {
+      if(!selectedEpisode){ $('bStatus').textContent = 'Select an episode above first.'; return; }
+      const musicUrl = $('musicUrl').value.trim();
+      if(!musicUrl){ $('bStatus').textContent = 'Enter a music URL for the one‑click blend (or use the upload mixer).'; return; }
+      $('bStatus').textContent = 'Blending… (download + duck + encode)';
+      try{
+        const body = {
+          episode_url: selectedEpisode.url,
+          music_url: musicUrl,
+          voice_gain_db: 0.0,
+          music_gain_db: parseFloat($('musicGain').value || '-1.5') || -1.5,
+          duck_enable: true,
+          duck_db: parseFloat($('duckDb').value || '12') || 12,
+          duck_attack_ms: parseInt($('duckAttack').value || '120', 10),
+          duck_release_ms: parseInt($('duckRelease').value || '250', 10),
+          duck_min_speech_ms: 160,
+          normalize: $('normalize').checked,
+          sample_rate: 44100,
+          stereo: true,
+          bitrate: "192k",
+          out_name: `episode_ducked_${Date.now()}.mp3`
+        };
+        const res = await fetch(`${base}/rss/mix-episode-over-music`, {
+          method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
+        });
+        if(!res.ok) throw new Error('HTTP '+res.status);
+        const blob = await res.blob();
+        const obj = URL.createObjectURL(blob);
+        $('mixPlayer').src = obj;
+
+        // try to capture filename
+        const cd = res.headers.get('Content-Disposition') || '';
+        const m = cd.match(/filename="([^"]+)"/);
+        lastBlendName = m ? m[1] : `podblendz_${Date.now()}.mp3`;
+        $('mixDownload').innerHTML = `${obj}Download ${lastBlendName}</a>`;
+        $('bStatus').textContent = 'Success';
+      }catch(e){
+        $('bStatus').textContent = 'Failed: '+e.message;
+      }
+    });
+
+    // ---------- Upload mixer ----------
+    $('btnUploadBlend').addEventListener('click', async () => {
+      const v = $('fileVoice').files?.[0], m = $('fileMusic').files?.[0];
+      if(!v || !m){ $('uStatus').textContent = 'Choose both Voice and Music files.'; return; }
+      $('uStatus').textContent = 'Blending…';
+      try{
+        const url = new URL(`${base}/blend/mix-two`);
+        url.searchParams.set('voice_start_ms', $('voiceStart').value || '0');
+        url.searchParams.set('music_start_ms', $('musicStart').value || '0');
+        url.searchParams.set('voice_gain_db', $('voiceGain').value || '0');
+        url.searchParams.set('music_gain_db', $('musicGain').value || '-1.5');
+        url.searchParams.set('duck_enable', 'true');
+        url.searchParams.set('duck_db', $('uDuckDb').value || '12');
+        url.searchParams.set('duck_attack_ms', $('uDuckAttack').value || '120');
+        url.searchParams.set('duck_release_ms', $('uDuckRelease').value || '250');
+        url.searchParams.set('duck_min_speech_ms', '160');
+        url.searchParams.set('normalize', $('uNormalize').checked ? 'true' : 'false');
+        url.searchParams.set('sample_rate', '44100');
+        url.searchParams.set('stereo', 'true');
+        url.searchParams.set('bitrate','192k');
+
+        const fd = new FormData();
+        fd.append('voice', v);
+        fd.append('music', m);
+
+        const res = await fetch(url, { method:'POST', body: fd });
+        if(!res.ok) throw new Error('HTTP '+res.status);
+        const blob = await res.blob();
+        const obj = URL.createObjectURL(blob);
+        $('uPlayer').src = obj;
+
+        const cd = res.headers.get('Content-Disposition') || '';
+        const mfn = cd.match(/filename="([^"]+)"/);
+        $('uDownload').innerHTML = `${obj}Download ${(mfn?mfn[1]:`blend_${Date.now()}.mp3`)}</a>`;
+        $('uStatus').textContent = 'Success';
+      }catch(e){
+        $('uStatus').textContent = 'Failed: '+e.message;
+      }
+    });
+
+    // ---------- Tone ----------
     $('btnTone').addEventListener('click', async () => {
       const f = $('freq').value || 440;
       const d = $('dur').value || 1500;
-      const url = `${base}/blend/tone?freq=${encodeURIComponent(f)}&duration_ms=${encodeURIComponent(d)}&bitrate=192k`;
-      setStatus('Requesting tone…');
-      try {
-        const res = await fetch(url, { method: 'POST' });
-        if(!res.ok) throw new Error(`HTTP ${res.status}`);
+      $('tStatus').textContent = 'Requesting tone…';
+      try{
+        const res = await fetch(`${base}/blend/tone?freq=${encodeURIComponent(f)}&duration_ms=${encodeURIComponent(d)}&bitrate=192k`, { method:'POST' });
+        if(!res.ok) throw new Error('HTTP '+res.status);
         const blob = await res.blob();
-        $('player').src = URL.createObjectURL(blob);
-        setStatus('Success', true);
-      } catch (e) { setStatus(`Failed: ${e.message}`, false); }
+        $('tonePlayer').src = URL.createObjectURL(blob);
+        $('tStatus').textContent = 'Success';
+      }catch(e){
+        $('tStatus').textContent = 'Failed: '+e.message;
+      }
     });
   </script>
 </body>
