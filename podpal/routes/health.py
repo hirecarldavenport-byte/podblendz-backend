@@ -1,8 +1,11 @@
 from fastapi import APIRouter
 
-router = APIRouter()   # ✅ THIS is the missing line
+router = APIRouter()
 
 @router.get("/")
-def health_check():
+def root():
     return {"status": "ok", "service": "PodBlendz Backend"}
-    
+
+@router.get("/health")
+def health():
+    return {"status": "healthy"}
