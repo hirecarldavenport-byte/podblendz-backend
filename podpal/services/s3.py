@@ -1,4 +1,15 @@
-from fastapi import APIRouter, UploadFile, File
-from podpal.services.s3 import S3Service
-router = APIRouter(prefix="/s3", tags=["S3"])
-s3 = S3Service()
+import os
+import boto3
+from fastapi import UploadFile
+
+class S3Service:
+    def __init__(self,
+                 region: str | None = None,
+                 narrator_bucket: str = "a-narrator-audio",
+                 blendz_bucket: str = "b-blendz-audio"):
+
+        self.region = region or os.getenv("AWS_DEFAULT_REGION", "us-east-1")
+        self.narrator_bucket = narrator_bucket
+        self.blendz_bucket = blendz_bucket
+        self.client = boto3.client("s3", region_name=self.region)
+
