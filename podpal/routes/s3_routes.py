@@ -1,7 +1,5 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, UploadFile, File
+from podpal.services.s3_service import S3Service
 
-router = APIRouter()
-
-@router.get("/")
-def health_check():
-    return {"status": "ok", "service": "PodBlendz Backend"}
+router = APIRouter(prefix="/s3", tags=["S3"])
+s3 = S3Service()
