@@ -34,3 +34,7 @@ def search(q: str = Query(..., description="Search query")):
 @app.get("/_debug/routes")
 def debug_routes():
     return [getattr(r, "path", str(r)) for r in app.routes]
+
+@app.get("/api/health")
+def render_health_prefixed():
+    return {"status": "ok"}
