@@ -6,17 +6,31 @@ app = FastAPI(
     version="1.0.0",
 )
 
+# --------------------------------------------------
+# Health endpoints (Render requires /health)
+# --------------------------------------------------
+
 @app.get("/")
-def health():
+def root_health():
     return {"status": "ok", "service": "PodBlendz Backend"}
 
-# --- Search (dual decorators so both work) ---
+@app.get("/health")
+def render_health():
+    return {"status": "ok"}
+
+# --------------------------------------------------
+# Search endpoint
+# --------------------------------------------------
+
 @app.get("/search")
-@app.get("/api/search")   # <— add this line
+@app.get("/api/search")
 def search(q: str = Query(..., description="Search query")):
     return {"status": "ok", "query": q}
 
-# Optional: route introspection
+# --------------------------------------------------
+# Debug routes (TEMP)
+# --------------------------------------------------
+
 @app.get("/_debug/routes")
 def debug_routes():
     return [getattr(r, "path", str(r)) for r in app.routes]
