@@ -27,30 +27,30 @@
     /* ===== HERO ===== */
     .hero {
       position: relative;
-      min-height: 72vh;
+      min-height: 75vh;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
     }
 
+    /* Background image + overlay */
     .hero-bg {
       position: absolute;
       inset: 0;
-      background: 
+      background:
         linear-gradient(
           180deg,
-          rgba(7,11,16,0.55),
-          rgba(7,11,16,0.88)
+          rgba(7, 11, 16, 0.55),
+          rgba(7, 11, 16, 0.88)
         ),
-        url("https://podblendz-ui-346871994277-us-east-1-an.s3.us-east-1.amazonaws.com/assets/copilot_image_1773703984768.jpeg")
+        url("/assets/copilot_image_1773703984768.jpeg")
         center / cover no-repeat;
-      filter: saturate(110%);
     }
 
     .hero-content {
       position: relative;
-      max-width: 980px;
+      max-width: 1000px;
       padding: 64px 20px;
       text-align: center;
       z-index: 1;
@@ -78,7 +78,7 @@
     }
 
     input[type="search"] {
-      width: min(520px, 92vw);
+      width: min(540px, 92vw);
       padding: 14px 16px;
       border-radius: 10px;
       border: 1px solid #1f2933;
@@ -114,7 +114,7 @@
     /* ===== MOBILE ===== */
     @media (max-width: 640px) {
       .hero {
-        min-height: 78vh;
+        min-height: 82vh;
       }
 
       .search {
@@ -144,7 +144,7 @@
         <input
           id="q"
           type="search"
-          placeholder="Search topics (e.g. climate tech)"
+          placeholder="Search topics (e.g., climate tech)"
           aria-label="Search topics"
         />
         <button id="go">Search</button>
