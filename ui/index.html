@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>PodBlendz</title>
 
@@ -27,14 +27,13 @@
     /* ===== HERO ===== */
     .hero {
       position: relative;
-      min-height: 75vh;
+      min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
     }
 
-    /* Background image + overlay */
     .hero-bg {
       position: absolute;
       inset: 0;
@@ -42,7 +41,7 @@
         linear-gradient(
           180deg,
           rgba(7, 11, 16, 0.55),
-          rgba(7, 11, 16, 0.88)
+          rgba(7, 11, 16, 0.85)
         ),
         url("/assets/copilot_image_1773703984768.jpeg")
         center / cover no-repeat;
@@ -50,10 +49,10 @@
 
     .hero-content {
       position: relative;
-      max-width: 1000px;
-      padding: 64px 20px;
-      text-align: center;
       z-index: 1;
+      max-width: 900px;
+      padding: 64px 24px;
+      text-align: center;
     }
 
     h1 {
@@ -66,10 +65,9 @@
     .sub {
       font-size: clamp(15px, 2.2vw, 20px);
       color: var(--muted);
-      margin: 0 0 36px;
+      margin: 0 0 40px;
     }
 
-    /* ===== SEARCH CTA ===== */
     .search {
       display: flex;
       gap: 12px;
@@ -78,7 +76,7 @@
     }
 
     input[type="search"] {
-      width: min(540px, 92vw);
+      width: min(520px, 92vw);
       padding: 14px 16px;
       border-radius: 10px;
       border: 1px solid #1f2933;
@@ -111,12 +109,7 @@
       transform: scale(0.97);
     }
 
-    /* ===== MOBILE ===== */
     @media (max-width: 640px) {
-      .hero {
-        min-height: 82vh;
-      }
-
       .search {
         flex-direction: column;
         align-items: stretch;
@@ -157,13 +150,13 @@
     const q  = document.getElementById("q");
 
     function run() {
-      const v = q.value.trim();
-      if (!v) return;
-      window.location.href = "/search.html?q=" + encodeURIComponent(v);
+      const value = q.value.trim();
+      if (!value) return;
+      window.location.href = "/search.html?q=" + encodeURIComponent(value);
     }
 
     go.addEventListener("click", run);
-    q.addEventListener("keydown", e => {
+    q.addEventListener("keydown", (e) => {
       if (e.key === "Enter") run();
     });
   </script>
