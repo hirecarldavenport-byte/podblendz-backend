@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PodBlendz</title>
+
+  <style>
+    :root {
+      --bg: #070b10;
+      --fg: #e8edf3;
+      --muted: #9aa5b1;
+      --brand: #60e7b7;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    }
+
+    /* ===== HERO ===== */
+    .hero {
+      position: relative;
+      min-height: 72vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background: 
+        linear-gradient(
+          180deg,
+          rgba(7,11,16,0.55),
+          rgba(7,11,16,0.88)
+        ),
+        url("https://podblendz-ui-346871994277-us-east-1-an.s3.us-east-1.amazonaws.com/assets/copilot_image_1773703984768.jpeg")
+        center / cover no-repeat;
+      filter: saturate(110%);
+    }
+
+    .hero-content {
+      position: relative;
+      max-width: 980px;
+      padding: 64px 20px;
+      text-align: center;
+      z-index: 1;
+    }
+
+    h1 {
+      font-size: clamp(32px, 6vw, 64px);
+      line-height: 1.1;
+      margin: 0 0 16px;
+      font-weight: 700;
+    }
+
+    .sub {
+      font-size: clamp(15px, 2.2vw, 20px);
+      color: var(--muted);
+      margin: 0 0 36px;
+    }
+
+    /* ===== SEARCH CTA ===== */
+    .search {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    input[type="search"] {
+      width: min(520px, 92vw);
+      padding: 14px 16px;
+      border-radius: 10px;
+      border: 1px solid #1f2933;
+      background: #0d1117;
+      color: var(--fg);
+      font-size: 16px;
+    }
+
+    input::placeholder {
+      color: #667085;
+    }
+
+    button {
+      padding: 14px 20px;
+      border-radius: 10px;
+      border: none;
+      background: var(--brand);
+      color: #07110d;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      transition: transform 0.06s ease, filter 0.18s ease;
+    }
+
+    button:hover {
+      filter: brightness(1.05);
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    /* ===== MOBILE ===== */
+    @media (max-width: 640px) {
+      .hero {
+        min-height: 78vh;
+      }
+
+      .search {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <section class="hero">
+    <div class="hero-bg"></div>
+
+    <div class="hero-content">
+      <h1>Create audio stories in seconds</h1>
+      <p class="sub">
+        Search a topic. We fetch, blend, and preview a seamless audio narrative.
+      </p>
+
+      <div class="search">
+        <input
+          id="q"
+          type="search"
+          placeholder="Search topics (e.g. climate tech)"
+          aria-label="Search topics"
+        />
+        <button id="go">Search</button>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const go = document.getElementById("go");
+    const q  = document.getElementById("q");
+
+    function run() {
+      const v = q.value.trim();
+      if (!v) return;
+      window.location.href = "/search.html?q=" + encodeURIComponent(v);
+    }
+
+    go.addEventListener("click", run);
+    q.addEventListener("keydown", e => {
+      if (e.key === "Enter") run();
+    });
+  </script>
+
+</body>
+</html>
