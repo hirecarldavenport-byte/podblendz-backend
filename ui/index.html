@@ -26,7 +26,7 @@
 
     .hero {
       position: relative;
-      min-height: 100vh;
+      min-height: 88vh;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -44,18 +44,28 @@
         ),
         url("/assets/copilot_image_1773703984768.jpeg")
         center / cover no-repeat;
+      background-position: center top;
     }
 
-    .content {
+    @media (min-width: 1024px) {
+      .hero-bg {
+        background-position: center 35%;
+      }
+      .hero {
+        min-height: 90vh;
+      }
+    }
+
+    .hero-content {
       position: relative;
       z-index: 1;
       max-width: 900px;
-      padding: 3rem 1.5rem;
+      padding: 3.5rem 1.5rem;
       text-align: center;
     }
 
     h1 {
-      font-size: clamp(2rem, 5vw, 4rem);
+      font-size: clamp(2.25rem, 5vw, 4rem);
       margin-bottom: 1rem;
       line-height: 1.1;
     }
@@ -63,7 +73,7 @@
     p {
       color: var(--muted);
       font-size: 1.1rem;
-      margin-bottom: 2.5rem;
+      margin-bottom: 2.75rem;
     }
 
     .search {
@@ -88,7 +98,7 @@
     }
 
     button {
-      padding: 0.9rem 1.3rem;
+      padding: 0.9rem 1.35rem;
       border-radius: 0.6rem;
       border: none;
       background: var(--brand);
@@ -114,10 +124,11 @@
 </head>
 
 <body>
+
   <section class="hero">
     <div class="hero-bg"></div>
 
-    <div class="content">
+    <div class="hero-content">
       <h1>Create audio stories in seconds</h1>
       <p>
         Search a topic. We fetch, blend, and preview a seamless audio narrative.
@@ -149,5 +160,6 @@
       if (e.key === "Enter") run();
     };
   </script>
+
 </body>
 </html>
