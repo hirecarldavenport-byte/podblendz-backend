@@ -10,7 +10,7 @@
       --bg: #070b10;
       --fg: #e8edf3;
       --muted: #9aa5b1;
-      --brand: #60e7b7;
+      --brand: #53f6c8;
     }
 
     * {
@@ -24,7 +24,6 @@
       font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
     }
 
-    /* ===== HERO ===== */
     .hero {
       position: relative;
       min-height: 100vh;
@@ -41,48 +40,47 @@
         linear-gradient(
           180deg,
           rgba(7, 11, 16, 0.55),
-          rgba(7, 11, 16, 0.85)
+          rgba(7, 11, 16, 0.9)
         ),
         url("/assets/copilot_image_1773703984768.jpeg")
         center / cover no-repeat;
     }
 
-    .hero-content {
+    .content {
       position: relative;
       z-index: 1;
       max-width: 900px;
-      padding: 64px 24px;
+      padding: 3rem 1.5rem;
       text-align: center;
     }
 
     h1 {
-      font-size: clamp(32px, 6vw, 64px);
+      font-size: clamp(2rem, 5vw, 4rem);
+      margin-bottom: 1rem;
       line-height: 1.1;
-      margin: 0 0 16px;
-      font-weight: 700;
     }
 
-    .sub {
-      font-size: clamp(15px, 2.2vw, 20px);
+    p {
       color: var(--muted);
-      margin: 0 0 40px;
+      font-size: 1.1rem;
+      margin-bottom: 2.5rem;
     }
 
     .search {
       display: flex;
-      gap: 12px;
+      gap: 0.75rem;
       justify-content: center;
       flex-wrap: wrap;
     }
 
-    input[type="search"] {
-      width: min(520px, 92vw);
-      padding: 14px 16px;
-      border-radius: 10px;
+    input {
+      width: min(520px, 90vw);
+      padding: 0.9rem 1rem;
+      border-radius: 0.6rem;
       border: 1px solid #1f2933;
       background: #0d1117;
       color: var(--fg);
-      font-size: 16px;
+      font-size: 1rem;
     }
 
     input::placeholder {
@@ -90,29 +88,22 @@
     }
 
     button {
-      padding: 14px 20px;
-      border-radius: 10px;
+      padding: 0.9rem 1.3rem;
+      border-radius: 0.6rem;
       border: none;
       background: var(--brand);
-      color: #07110d;
+      color: #042018;
       font-weight: 600;
-      font-size: 16px;
       cursor: pointer;
-      transition: transform 0.06s ease, filter 0.18s ease;
-    }
-
-    button:hover {
-      filter: brightness(1.05);
     }
 
     button:active {
       transform: scale(0.97);
     }
 
-    @media (max-width: 640px) {
+    @media (max-width: 600px) {
       .search {
         flex-direction: column;
-        align-items: stretch;
       }
 
       button {
@@ -123,13 +114,12 @@
 </head>
 
 <body>
-
   <section class="hero">
     <div class="hero-bg"></div>
 
-    <div class="hero-content">
+    <div class="content">
       <h1>Create audio stories in seconds</h1>
-      <p class="sub">
+      <p>
         Search a topic. We fetch, blend, and preview a seamless audio narrative.
       </p>
 
@@ -137,8 +127,7 @@
         <input
           id="q"
           type="search"
-          placeholder="Search topics (e.g., climate tech)"
-          aria-label="Search topics"
+          placeholder="Search topics (e.g. climate tech)"
         />
         <button id="go">Search</button>
       </div>
@@ -146,20 +135,19 @@
   </section>
 
   <script>
+    const q = document.getElementById("q");
     const go = document.getElementById("go");
-    const q  = document.getElementById("q");
 
     function run() {
-      const value = q.value.trim();
-      if (!value) return;
-      window.location.href = "/search.html?q=" + encodeURIComponent(value);
+      const v = q.value.trim();
+      if (!v) return;
+      window.location.href = "/search.html?q=" + encodeURIComponent(v);
     }
 
-    go.addEventListener("click", run);
-    q.addEventListener("keydown", (e) => {
+    go.onclick = run;
+    q.onkeydown = (e) => {
       if (e.key === "Enter") run();
-    });
+    };
   </script>
-
 </body>
 </html>
