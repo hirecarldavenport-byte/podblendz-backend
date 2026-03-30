@@ -152,7 +152,7 @@
     function run() {
       const v = q.value.trim();
       if (!v) return;
-      window.location.href = "/search.html?q=" + encodeURIComponent(v);
+      window.location.href = `/search/?q=${encodeURIComponent(query)}`
     }
 
     go.onclick = run;
