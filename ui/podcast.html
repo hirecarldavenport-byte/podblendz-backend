@@ -128,44 +128,46 @@
 <body>
 
 <header>
-  <h1 id="podcast-title">Podcast</h1>
-  <p id="podcast-desc">Select episodes to create your audio blend</p>
+  <h1>Podcast Episodes</h1>
+  <p>Select episodes to create your audio blend</p>
 
-  <!-- ✅ Quick‑select buttons -->
+  <!-- ✅ Quick-select buttons -->
   <div class="controls">
     <button onclick="selectTop(3)">Top 3 episodes</button>
     <button onclick="selectLatest(5)">Latest 5</button>
-    <button onclick="selectPopular()">Most popular</button>
+    <button onclick="selectPopular()">Most relevant</button>
   </div>
 </header>
 
 <main>
 
   <!-- Episodes list -->
-  <section class="episodes" id="episode-list">
+  <section class="episodes" id="episodeList">
     <div class="loading">Loading episodes…</div>
   </section>
 
   <!-- Selection tray -->
   <aside class="tray">
     <h3>Selected Episodes</h3>
-    <ul id="selection-list"></ul>
-    <p id="selection-count">0 selected</p>
+    <ul id="trayList"></ul>
+    <p id="trayCount">0 selected</p>
     <button onclick="proceed()">Create Blend</button>
   </aside>
 
 </main>
 
 <script>
+  console.log("✅ UPDATED podcast.html loaded");
+
   const params = new URLSearchParams(window.location.search);
   const feed = params.get("feed");
 
-  const episodeList = document.getElementById("episode-list");
-  const selectionList = document.getElementById("selection-list");
-  const selectionCount = document.getElementById("selection-count");
+  const episodeList = document.getElementById("episodeList");
+  const trayList = document.getElementById("trayList");
+  const trayCount = document.getElementById("trayCount");
 
-  const selected = new Set();
   let episodes = [];
+  const selected = new Set();
 
   if (!feed) {
     episodeList.innerHTML =
@@ -173,7 +175,7 @@
   } else {
     loadEpisodes(feed);
   }
-console.log("UPDATED podcast.html loaded");
+
   async function loadEpisodes(feedUrl) {
     try {
       const res = await fetch(
@@ -181,7 +183,14 @@ console.log("UPDATED podcast.html loaded");
       );
       const data = await res.json();
 
-      episodes = data.episodes || [];
+      // ✅ TEMP ADAPTER: treat search results as episode-like objects
+      episodes = (data.results || []).map((r, index) => ({
+        id: index.toString(),
+        title: r.title,
+        published: r.date || "",
+        popularity: index // fallback relevance
+      }));
+
       renderEpisodes();
     } catch (err) {
       console.error(err);
@@ -205,74 +214,53 @@ console.log("UPDATED podcast.html loaded");
         />
         <div>
           <h4>${ep.title}</h4>
-          <small>
-            ${ep.published || ""}${ep.duration ? " · " + ep.duration : ""}
-          </small>
+          <small>${ep.published}</small>
         </div>
       </div>
     `).join("");
   }
 
   function renderTray() {
-    selectionList.innerHTML = [...selected].map(id => {
+    trayList.innerHTML = [...selected].map(id => {
       const ep = episodes.find(e => e.id === id);
       return `<li>${ep.title}</li>`;
     }).join("");
 
-    selectionCount.textContent = `${selected.size} selected`;
+    trayCount.textContent = `${selected.size} selected`;
   }
 
   function toggleSelection(id) {
-    if (selected.has(id)) {
-      selected.delete(id);
-    } else {
-      selected.add(id);
-    }
-
+    selected.has(id) ? selected.delete(id) : selected.add(id);
     renderEpisodes();
     renderTray();
   }
 
-  // ✅ Quick‑select logic
+  // ✅ Quick-select behaviors
 
   function selectTop(n) {
     selected.clear();
-    episodes.slice(0, n).forEach(e => selected.add(e.id));
-    renderEpisodes();
-    renderTray();
+    episodes.slice(0, n).forEach(ep => selected.add(ep.id));
+    renderEpisodes(); renderTray();
   }
 
   function selectLatest(n) {
     selected.clear();
-    episodes
-      .slice()
-      .sort((a, b) =>
-        new Date(b.published) - new Date(a.published)
-      )
-      .slice(0, n)
-      .forEach(e => selected.add(e.id));
-
-    renderEpisodes();
-    renderTray();
+    episodes.slice(0, n).forEach(ep => selected.add(ep.id));
+    renderEpisodes(); renderTray();
   }
 
   function selectPopular() {
     selected.clear();
-    episodes
-      .slice()
-      .sort((a, b) =>
-        (b.popularity || 0) - (a.popularity || 0)
-      )
-      .slice(0, 5)
-      .forEach(e => selected.add(e.id));
-
-    renderEpisodes();
-    renderTray();
+    episodes.slice(0, 5).forEach(ep => selected.add(ep.id));
+    renderEpisodes(); renderTray();
   }
 
   function proceed() {
-    // Next step placeholder
-    alert("Next: blend configuration");
+    localStorage.setItem(
+      "selectedEpisodes",
+      JSON.stringify([...selected])
+    );
+    alert("Next step: blend configuration");
   }
 </script>
 
