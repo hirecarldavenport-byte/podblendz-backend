@@ -2,30 +2,76 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Search Results</title>
+
   <style>
     body {
-      font-family: system-ui, sans-serif;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
       background: #f7f8fa;
       margin: 0;
       padding: 2rem;
+      color: #111;
     }
+
     h1 {
-      margin-bottom: 1rem;
+      margin-bottom: 0.5rem;
+      font-size: 1.75rem;
     }
+
+    #subtitle {
+      color: #666;
+      margin-bottom: 1.5rem;
+    }
+
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 1rem;
+      gap: 1.25rem;
     }
+
     .card {
       background: white;
-      border-radius: 12px;
-      padding: 1rem;
+      border-radius: 14px;
+      padding: 1.25rem;
       box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .card strong {
+      font-size: 1.05rem;
+      line-height: 1.3;
+    }
+
+    .card small {
+      color: #555;
+    }
+
+    .card button {
+      margin-top: auto;
+      border: none;
+      background: #111827;
+      color: white;
+      border-radius: 10px;
+      padding: 0.55rem 0.9rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      align-self: flex-start;
+    }
+
+    .card button:hover {
+      background: #2563eb;
+    }
+
+    .error {
+      color: #b91c1c;
     }
   </style>
 </head>
+
 <body>
 
 <h1>Search Results</h1>
@@ -35,26 +81,61 @@
 
 <script>
   const q = new URLSearchParams(location.search).get("q");
-  document.getElementById("subtitle").textContent =
-    q ? `Results for “${q}”` : "No query provided.";
+  const subtitle = document.getElementById("subtitle");
+  const resultsEl = document.getElementById("results");
 
-  if (q) {
+  subtitle.textContent = q
+    ? `Browsing podcasts related to “${q}”`
+    : "No search query provided.";
+
+  if (!q) {
+    resultsEl.innerHTML = "<p class='error'>Please provide a search term.</p>";
+  } else {
     fetch(`/rss/search?q=${encodeURIComponent(q)}`)
       .then(r => r.json())
-      .then(d => {
-        const el = document.getElementById("results");
-        (d.results || []).forEach(r => {
-          const div = document.createElement("div");
-          div.className = "card";
-          div.innerHTML = `<strong>${r.title}</strong><br/><small>${r.source}</small>`;
-          el.appendChild(div);
+      .then(data => {
+        const results = data.results || [];
+
+        if (!results.length) {
+          resultsEl.innerHTML =
+            "<p class='error'>No results found. Try a different topic.</p>";
+          return;
+        }
+
+        results.forEach(r => {
+          const card = document.createElement("div");
+          card.className = "card";
+
+          /**
+           * IMPORTANT:
+           * For now, we pass the podcast TITLE into podcast.html.
+           * Later, when /rss/episodes exists, we will pass r.feed instead.
+           */
+          const podcastQuery = encodeURIComponent(r.title);
+
+          card.innerHTML = `
+            <strong>${r.title}</strong>
+            <small>Source: ${r.source || "Unknown"}</small>
+
+            <button onclick="openPodcast('${podcastQuery}')">
+              View Episodes
+            </button>
+          `;
+
+          resultsEl.appendChild(card);
         });
       })
       .catch(() => {
-        document.getElementById("results").textContent = "Error loading results.";
+        resultsEl.innerHTML =
+          "<p class='error'>Error loading search results.</p>";
       });
+  }
+
+  function openPodcast(query) {
+    window.location.href = `/podcast.html?feed=${query}`;
   }
 </script>
 
 </body>
 </html>
+``
