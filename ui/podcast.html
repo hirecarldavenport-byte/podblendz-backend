@@ -177,7 +177,7 @@
   async function loadEpisodes(feedUrl) {
     try {
       const res = await fetch(
-        `/rss/episodes?feed=${encodeURIComponent(feedUrl)}`
+        `/rss/search?q=${encodeURIComponent(feedUrl)}`
       );
       const data = await res.json();
 
