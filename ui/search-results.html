@@ -31,7 +31,7 @@
     }
 
     .card {
-      background: white;
+      background: #ffffff;
       border-radius: 14px;
       padding: 1.25rem;
       box-shadow: 0 6px 18px rgba(0,0,0,0.08);
@@ -53,7 +53,7 @@
       margin-top: auto;
       border: none;
       background: #111827;
-      color: white;
+      color: #ffffff;
       border-radius: 10px;
       padding: 0.55rem 0.9rem;
       font-size: 0.85rem;
@@ -80,7 +80,9 @@
 <div class="grid" id="results"></div>
 
 <script>
-  const q = new URLSearchParams(location.search).get("q");
+  const params = new URLSearchParams(window.location.search);
+  const q = params.get("q");
+
   const subtitle = document.getElementById("subtitle");
   const resultsEl = document.getElementById("results");
 
@@ -89,10 +91,11 @@
     : "No search query provided.";
 
   if (!q) {
-    resultsEl.innerHTML = "<p class='error'>Please provide a search term.</p>";
+    resultsEl.innerHTML =
+      "<p class='error'>Please provide a search term.</p>";
   } else {
     fetch(`/rss/search?q=${encodeURIComponent(q)}`)
-      .then(r => r.json())
+      .then(res => res.json())
       .then(data => {
         const results = data.results || [];
 
@@ -102,37 +105,44 @@
           return;
         }
 
-        results.forEach(r => {
+        results.forEach(podcast => {
           const card = document.createElement("div");
           card.className = "card";
 
-          /**
-           * IMPORTANT:
-           * For now, we pass the podcast TITLE into podcast.html.
-           * Later, when /rss/episodes exists, we will pass r.feed instead.
-           */
-          const podcastQuery = encodeURIComponent(r.title);
+          const title = document.createElement("strong");
+          title.textContent = podcast.title;
 
-          card.innerHTML = `
-            <strong>${r.title}</strong>
-            <small>Source: ${r.source || "Unknown"}</small>
+          const source = document.createElement("small");
+          source.textContent = `Source: ${podcast.source || "Unknown"}`;
 
-            <button onclick="openPodcast('${podcastQuery}')">
-              View Episodes
-            </button>
-          `;
+          const button = document.createElement("button");
+          button.textContent = "View Episodes";
+          button.addEventListener("click", () => {
+            openPodcast(podcast.title);
+          });
+
+          card.appendChild(title);
+          card.appendChild(source);
+          card.appendChild(button);
 
           resultsEl.appendChild(card);
         });
       })
-      .catch(() => {
+      .catch(err => {
+        console.error(err);
         resultsEl.innerHTML =
           "<p class='error'>Error loading search results.</p>";
       });
   }
 
+  /**
+   * NOTE:
+   * For now, we pass the podcast TITLE to podcast.html.
+   * Later, when /rss/episodes exists, this will pass podcast.feed instead.
+   */
   function openPodcast(query) {
-    window.location.href = `/podcast.html?feed=${query}`;
+    window.location.href =
+      `/podcast.html?feed=${encodeURIComponent(query)}`;
   }
 </script>
 
