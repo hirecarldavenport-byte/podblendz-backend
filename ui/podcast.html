@@ -179,12 +179,12 @@
   async function loadEpisodes(feedUrl) {
     try {
       const res = await fetch(
-        `/rss/search?q=${encodeURIComponent(feedUrl)}`
+        `/rss/episodes?feed=${encodeURIComponent(feedUrl)}`
       );
       const data = await res.json();
 
       // ✅ TEMP ADAPTER: treat search results as episode-like objects
-      episodes = (data.results || []).map((r, index) => ({
+      episodes = (data.episodes || []).map((r, index) => ({
         id: index.toString(),
         title: r.title,
         published: r.date || "",
