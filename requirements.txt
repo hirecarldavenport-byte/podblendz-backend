@@ -2,3 +2,4 @@ fastapi>=0.109
 uvicorn>=0.25
 boto3>=1.28
 python-multipart
+feedparser>=6.0.0
