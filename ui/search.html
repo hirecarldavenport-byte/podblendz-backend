@@ -1,183 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <title>PodBlendz</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PodBlendz – Search</title>
 
   <style>
-    :root {
-      --bg: #080d12;
-      --fg: #e7ecf4;
-      --muted: #9aa5b1;
-      --brand: #60e7b7;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
     body {
       margin: 0;
-      background: var(--bg);
-      color: var(--fg);
-      font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: #070b10;
+      color: #e8edf3;
     }
 
-    /* ===== HERO SECTION ===== */
-    .hero {
-      position: relative;
-      min-height: 68vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
+    header {
+      padding: 1.5rem;
+      border-bottom: 1px solid #1f2933;
+      background: #0b1220;
     }
 
-    /* Hero background image */
-    .hero img {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      filter: grayscale(10%) saturate(110%) blur(4px);
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem;
     }
 
-    /* Gradient overlay */
-    .layer {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(
-        180deg,
-        rgba(7, 9, 13, 0.55),
-        rgba(7, 9, 13, 0.85)
-      );
+    .results {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
     }
 
-    /* Hero content */
-    .content {
-      position: relative;
-      max-width: 980px;
-      padding: 48px 20px;
-      text-align: center;
-      z-index: 2;
-    }
-
-    h1 {
-      font-size: clamp(28px, 6vw, 56px);
-      margin: 0 0 12px;
-      font-weight: 700;
-    }
-
-    .sub {
-      color: var(--muted);
-      margin: 0 0 28px;
-      font-size: clamp(14px, 2.2vw, 18px);
-    }
-
-    /* Search CTA */
-    .search {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    input[type="search"] {
-      width: min(680px, 90vw);
-      padding: 14px 16px;
-      border-radius: 10px;
-      border: 1px solid #222;
-      background: #0f1218;
-      color: var(--fg);
-      font-size: 16px;
-    }
-
-    input::placeholder {
-      color: #6b7280;
-    }
-
-    button {
-      padding: 14px 18px;
-      border-radius: 10px;
-      border: 0;
-      background: var(--brand);
-      color: #08110d;
-      font-weight: 600;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      filter: brightness(1.05);
-    }
-
-    button:focus {
-      outline: 2px solid var(--brand);
-      outline-offset: 2px;
-    }
-
-    /* ===== MOBILE POLISH ===== */
-    @media (max-width: 640px) {
-      .hero {
-        min-height: 72vh;
-      }
-
-      h1 {
-        font-size: clamp(24px, 7vw, 40px);
-      }
-
-      .sub {
-        font-size: 14px;
-      }
+    .card {
+      background: #ffffff;
+      color: #111;
+      padding: 1rem;
+      border-radius: 8px;
     }
   </style>
 </head>
-
 <body>
 
-  <section class="hero">
-    <!-- IMPORTANT: Image served from UI S3 bucket via CloudFront -->
-    <img src="/assets/copilot_image_1773703984768.jpeg" alt="" aria-hidden="true">
+<header>
+  <h1>Search Results</h1>
+  <p id="subtitle"></p>
+</header>
 
-    <div class="layer"></div>
+<main>
+  <div id="results" class="results"></div>
+</main>
 
-    <div class="content">
-      <h1>Create audio stories in seconds</h1>
-      <p class="sub">
-        Type a topic. We'll fetch, blend, and preview a narrative.
-      </p>
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const q = params.get("q");
 
-      <div class="search">
-        <input
-          id="q"
-          type="search"
-          placeholder="Search topics (e.g., climate tech)"
-          aria-label="Search topics"
-        >
-        <button id="go">Search</button>
-      </div>
-    </div>
-  </section>
+  const subtitle = document.getElementById("subtitle");
+  const resultsEl = document.getElementById("results");
 
-  <!-- Simple navigation to your second page -->
-  <script>
-    const go = document.getElementById('go');
-    const q  = document.getElementById('q');
-
-    function runSearch() {
-      const query = q.value.trim();
-      if (!query) return;
-      window.location.href = `/search.html?q=${encodeURIComponent(query)}`;
-    }
-
-    go.addEventListener('click', runSearch);
-    q.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') runSearch();
-    });
-  </script>
+  if (!q) {
+    subtitle.textContent = "No search query.";
+  } else {
+    subtitle.textContent = `Results for “${q}”`;
+    fetch(`/rss/search?q=${encodeURIComponent(q)}`)
+      .then(r => r.json())
+      .then(data => {
+        const results = data.results || [];
+        if (!results.length) {
+          resultsEl.innerHTML = "<p>No results.</p>";
+          return;
+        }
+        resultsEl.innerHTML = results.map(r => `
+          <div class="card">
+            <strong>${r.title}</strong><br/>
+            <small>${r.source || ""}</small>
+          </div>
+        `).join("");
+      })
+      .catch(err => {
+        resultsEl.innerHTML = "<p>Error loading results.</p>";
+        console.error(err);
+      });
+  }
+</script>
 
 </body>
 </html>
