@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Podcast Episodes</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: #f7f8fa;
+      color: #111;
+    }
+
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 1.5rem 2rem;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.6rem;
+    }
+
+    header p {
+      margin: 0.25rem 0 0;
+      color: #555;
+    }
+
+    .controls {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .controls button {
+      background: #111827;
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      padding: 0.4rem 0.9rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+
+    .controls button:hover {
+      background: #2563eb;
+    }
+
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 2rem;
+    }
+
+    .episodes {
+      background: white;
+      border-radius: 14px;
+      padding: 1.25rem;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+
+    .episode {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .episode:last-child {
+      border-bottom: none;
+    }
+
+    .episode h4 {
+      margin: 0;
+      font-size: 0.95rem;
+    }
+
+    .episode small {
+      color: #666;
+    }
+
+    .tray {
+      background: white;
+      border-radius: 14px;
+      padding: 1.25rem;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      position: sticky;
+      top: 2rem;
+      height: fit-content;
+    }
+
+    .tray h3 {
+      margin-top: 0;
+    }
+
+    .tray ul {
+      padding-left: 1rem;
+      margin: 0.5rem 0;
+    }
+
+    .tray button {
+      width: 100%;
+      margin-top: 1rem;
+      padding: 0.7rem;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .loading,
+    .error {
+      padding: 1rem;
+      color: #555;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>Podcast Episodes</h1>
+  <p>Select episodes to create your audio blend</p>
+
+  <!-- ✅ Quick-select buttons -->
+  <div class="controls">
+    <button onclick="selectTop(3)">Top 3 episodes</button>
+    <button onclick="selectLatest(5)">Latest 5</button>
+    <button onclick="selectPopular()">Most relevant</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- Episodes list -->
+  <section class="episodes" id="episodeList">
+    <div class="loading">Loading episodes…</div>
+  </section>
+
+  <!-- Selection tray -->
+  <aside class="tray">
+    <h3>Selected Episodes</h3>
+    <ul id="trayList"></ul>
+    <p id="trayCount">0 selected</p>
+    <button onclick="proceed()">Create Blend</button>
+  </aside>
+
+</main>
+
+<script>
+  console.log("✅ UPDATED podcast.html loaded");
+
+  const params = new URLSearchParams(window.location.search);
+  const feed = params.get("feed");
+
+  const episodeList = document.getElementById("episodeList");
+  const trayList = document.getElementById("trayList");
+  const trayCount = document.getElementById("trayCount");
+
+  let episodes = [];
+  const selected = new Set();
+
+  if (!feed) {
+    episodeList.innerHTML =
+      "<div class='error'>No podcast selected.</div>";
+  } else {
+    loadEpisodes(feed);
+  }
+
+  async function loadEpisodes(feedUrl) {
+    try {
+      const res = await fetch(
+        `/rss/episodes?feed=${encodeURIComponent(feedUrl)}`
+      );
+      const data = await res.json();
+
+      // ✅ TEMP ADAPTER: treat search results as episode-like objects
+      episodes = (data.episodes || []).map((r, index) => ({
+        id: index.toString(),
+        title: r.title,
+        published: r.date || "",
+        popularity: index // fallback relevance
+      }));
+
+      renderEpisodes();
+    } catch (err) {
+      console.error(err);
+      episodeList.innerHTML =
+        "<div class='error'>Error loading episodes.</div>";
+    }
+  }
+
+  function renderEpisodes() {
+    if (!episodes.length) {
+      episodeList.innerHTML =
+        "<div class='error'>No episodes found.</div>";
+      return;
+    }
+
+    episodeList.innerHTML = episodes.map(ep => `
+      <div class="episode">
+        <input type="checkbox"
+          ${selected.has(ep.id) ? "checked" : ""}
+          onchange="toggleSelection('${ep.id}')"
+        />
+        <div>
+          <h4>${ep.title}</h4>
+          <small>${ep.published}</small>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function renderTray() {
+    trayList.innerHTML = [...selected].map(id => {
+      const ep = episodes.find(e => e.id === id);
+      return `<li>${ep.title}</li>`;
+    }).join("");
+
+    trayCount.textContent = `${selected.size} selected`;
+  }
+
+  function toggleSelection(id) {
+    selected.has(id) ? selected.delete(id) : selected.add(id);
+    renderEpisodes();
+    renderTray();
+  }
+
+  // ✅ Quick-select behaviors
+
+  function selectTop(n) {
+    selected.clear();
+    episodes.slice(0, n).forEach(ep => selected.add(ep.id));
+    renderEpisodes(); renderTray();
+  }
+
+  function selectLatest(n) {
+    selected.clear();
+    episodes.slice(0, n).forEach(ep => selected.add(ep.id));
+    renderEpisodes(); renderTray();
+  }
+
+  function selectPopular() {
+    selected.clear();
+    episodes.slice(0, 5).forEach(ep => selected.add(ep.id));
+    renderEpisodes(); renderTray();
+  }
+
+  function proceed() {
+    localStorage.setItem(
+      "selectedEpisodes",
+      JSON.stringify([...selected])
+    );
+    alert("Next step: blend configuration");
+  }
+</script>
+
+</body>
+</html>

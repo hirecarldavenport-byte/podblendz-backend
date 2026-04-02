@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Search Results</title>
+
+  <style>
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: #f7f8fa;
+      margin: 0;
+      padding: 2rem;
+      color: #111;
+    }
+
+    h1 {
+      margin-bottom: 0.5rem;
+      font-size: 1.75rem;
+    }
+
+    #subtitle {
+      color: #666;
+      margin-bottom: 1.5rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 1.25rem;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .card strong {
+      font-size: 1.05rem;
+      line-height: 1.3;
+    }
+
+    .card small {
+      color: #555;
+    }
+
+    .card button {
+      margin-top: auto;
+      border: none;
+      background: #111827;
+      color: #ffffff;
+      border-radius: 10px;
+      padding: 0.55rem 0.9rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      align-self: flex-start;
+    }
+
+    .card button:hover {
+      background: #2563eb;
+    }
+
+    .error {
+      color: #b91c1c;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>Search Results</h1>
+<p id="subtitle"></p>
+
+<div class="grid" id="results"></div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const q = params.get("q");
+
+  const subtitle = document.getElementById("subtitle");
+  const resultsEl = document.getElementById("results");
+
+  subtitle.textContent = q
+    ? `Browsing podcasts related to “${q}”`
+    : "No search query provided.";
+
+  if (!q) {
+    resultsEl.innerHTML =
+      "<p class='error'>Please provide a search term.</p>";
+  } else {
+    fetch(`/rss/search?q=${encodeURIComponent(q)}`)
+      .then(res => res.json())
+      .then(data => {
+        const results = data.results || [];
+
+        if (!results.length) {
+          resultsEl.innerHTML =
+            "<p class='error'>No results found. Try a different topic.</p>";
+          return;
+        }
+
+        results.forEach(podcast => {
+          const card = document.createElement("div");
+          card.className = "card";
+
+          const title = document.createElement("strong");
+          title.textContent = podcast.title;
+
+          const source = document.createElement("small");
+          source.textContent = `Source: ${podcast.source || "Unknown"}`;
+
+          const button = document.createElement("button");
+          button.textContent = "View Episodes";
+          button.addEventListener("click", () => {
+            openPodcast(podcast.title);
+          });
+
+          card.appendChild(title);
+          card.appendChild(source);
+          card.appendChild(button);
+
+          resultsEl.appendChild(card);
+        });
+      })
+      .catch(err => {
+        console.error(err);
+        resultsEl.innerHTML =
+          "<p class='error'>Error loading search results.</p>";
+      });
+  }
+
+  /**
+   * NOTE:
+   * For now, we pass the podcast TITLE to podcast.html.
+   * Later, when /rss/episodes exists, this will pass podcast.feed instead.
+   */
+  function openPodcast(query) {
+    window.location.href =
+      `/podcast.html?feed=${encodeURIComponent(query)}`;
+  }
+</script>
+
+</body>
+</html>
+``
