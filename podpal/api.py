@@ -47,10 +47,16 @@ def extract_audio_url(entry: Dict) -> Optional[str]:
 # ---------------------------------------------------------------------
 
 @app.get("/health")
+@app.get("/health")
 def health():
     return {"status": "ok"}
 
+    return {"status": "ok"}
 
+
+# ---------------------------------------------------------------------
+# /rss/search — Podcast discovery
+# ---------------------------------------------------------------------
 # ---------------------------------------------------------------------
 # /rss/search — Podcast discovery
 # ---------------------------------------------------------------------
@@ -64,6 +70,7 @@ def rss_search(q: str = Query(..., description="Search term")):
 
     results = [
         {
+            "id": make_id(q),
             "id": make_id(q),
             "title": f"Sample podcast result for '{q}'",
             "source": "itunes",
