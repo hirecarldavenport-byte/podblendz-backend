@@ -44,21 +44,34 @@
     }
 
     /* HERO */
-    .hero {
+.hero {
+  min-height: 100vh;
   background:
     linear-gradient(
       to right,
       rgba(5,7,12,0.95) 0%,
-      rgba(5,7,12,0.65) 45%,
-      rgba(5,7,12,0.0) 75%
+      rgba(5,7,12,0.65) 40%,
+      rgba(5,7,12,0.0) 65%
     ),
     url("/assets/black-lady-on-the-train.jpg");
   background-size: cover;
-  background-position: 65% 45%;
+  background-position: 62% 38%;
   background-repeat: no-repeat;
   padding: 7rem 2.5rem;
   display: flex;
   align-items: center;
+}  /* ✅ THIS BRACE IS REQUIRED */
+
+/* ✅ MOBILE ADJUSTMENT */
+@media (max-width: 768px) {
+  .hero {
+    background-position: 55% 32%;
+  }
+}
+
+/* other styles */
+.hero-content {
+  max-width: 640px;
 }
 
 
