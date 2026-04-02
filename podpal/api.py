@@ -1,138 +1,118 @@
-from fastapi import FastAPI, Query
-from fastapi.responses import FileResponse, JSONResponse
-from datetime import datetime
-from pathlib import Path
-from typing import Literal
+"""
+api.py
 
-# ------------------------------------------------------------------------------
-# App setup
-# ------------------------------------------------------------------------------
+Main FastAPI application for PodBlendz.
+"""
 
-app = FastAPI(
-    title="Pod Blendz API",
-    description="Backend services for Pod Blendz audio generation",
-    version="0.1.0",
-)
+from typing import Optional, List, Dict
+import hashlib
+import feedparser
+from fastapi import FastAPI, Query, HTTPException
 
-# ------------------------------------------------------------------------------
-# Directories
-# ------------------------------------------------------------------------------
+app = FastAPI()
 
-BASE_DIR = Path(__file__).resolve().parent
-OUTPUT_DIR = BASE_DIR / "output"
-MEDIA_DIR = BASE_DIR / "media"
 
-OUTPUT_DIR.mkdir(exist_ok=True)
-MEDIA_DIR.mkdir(exist_ok=True)
+# ---------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------
 
-# ------------------------------------------------------------------------------
-# Meta / Health
-# ------------------------------------------------------------------------------
+def make_id(value: str) -> str:
+    return hashlib.md5(value.encode("utf-8")).hexdigest()
 
-@app.get("/health", include_in_schema=False)
+
+def parse_duration(entry: Dict) -> Optional[int]:
+    raw = entry.get("itunes_duration") or entry.get("duration")
+    if not raw:
+        return None
+
+    try:
+        parts = [int(p) for p in raw.split(":")]
+        seconds = 0
+        for p in parts:
+            seconds = seconds * 60 + p
+        return seconds
+    except Exception:
+        return None
+
+
+def extract_audio_url(entry: Dict) -> Optional[str]:
+    for enclosure in entry.get("enclosures", []):
+        if enclosure.get("type", "").startswith("audio"):
+            return enclosure.get("url")
+    return None
+
+
+# ---------------------------------------------------------------------
+# Health
+# ---------------------------------------------------------------------
+
+@app.get("/health")
 def health():
-    return {
-        "status": "ok",
-        "service": "pod-blendz",
-        "time": datetime.utcnow().isoformat(),
-    }
+    return {"status": "ok"}
 
-@app.get("/version", include_in_schema=False)
-def version():
-    return {
-        "version": "0.1.0",
-        "build": "render",
-    }
 
-@app.get("/info", include_in_schema=False)
-def info():
-    return {
-        "service": "Pod Blendz",
-        "status": "running",
-        "output_dir": str(OUTPUT_DIR),
-    }
-
-# ------------------------------------------------------------------------------
-# 🚫 IMPORTANT: NO ROOT ("/") ROUTE
-# ------------------------------------------------------------------------------
-# DO NOT add @app.get("/")
-# CloudFront/S3 owns "/" and "/index.html"
-# ------------------------------------------------------------------------------
-# ------------------------------------------------------------------------------
-# API ROUTES
-# ------------------------------------------------------------------------------
+# ---------------------------------------------------------------------
+# /rss/search — Podcast discovery
+# ---------------------------------------------------------------------
 
 @app.get("/rss/search")
-def rss_search(
-    q: str = Query(..., description="Search term"),
-    source: Literal["itunes", "podcastindex"] = "itunes",
-    country: str = Query("US", min_length=2, max_length=2),
-    limit: int = Query(25, ge=1, le=50),
-):
+def rss_search(q: str = Query(..., description="Search term")):
     """
-    Search podcast feeds.
+    Temporary search implementation.
+    IMPORTANT: Includes `feed` so frontend can fetch episodes.
     """
-    # Stubbed search response (replace with real implementation)
+
     results = [
         {
+            "id": make_id(q),
             "title": f"Sample podcast result for '{q}'",
-            "source": source,
-            "country": country,
+            "source": "itunes",
+
+            # ✅ REAL RSS FEED URL (example; replace later with real search)
+            "feed": "https://feeds.simplecast.com/54nAGcIl",
         }
     ]
 
-    return {
-        "query": q,
-        "source": source,
-        "results": results[:limit],
-    }
+    return {"results": results}
 
-# ------------------------------------------------------------------------------
-# Generated Output Files
-# ------------------------------------------------------------------------------
 
-@app.get("/blend/file")
-def get_blend_file(name: str):
-    """
-    Retrieve a generated blend file
-    """
-    file_path = OUTPUT_DIR / name
-    if not file_path.exists():
-        return JSONResponse(
-            status_code=404,
-            content={"error": f"File not found: {name}"},
+# ---------------------------------------------------------------------
+# /rss/episodes — Episode listing
+# ---------------------------------------------------------------------
+
+@app.get("/rss/episodes")
+def rss_episodes(feed: str = Query(...)):
+    try:
+        parsed = feedparser.parse(feed)
+        entries = list(parsed.entries or [])
+
+        episodes: List[Dict] = []
+
+        for entry in entries:
+            raw_id = (
+                entry.get("id")
+                or entry.get("guid")
+                or entry.get("link")
+                or entry.get("title")
+                or "unknown"
+            )
+
+            episode_id = make_id(str(raw_id))
+
+            episodes.append({
+                "id": episode_id,
+                "title": entry.get("title", "Untitled episode"),
+                "published": entry.get("published", ""),
+                "summary": entry.get("summary", ""),
+                "duration": parse_duration(entry),
+                "audio_url": extract_audio_url(entry),
+                "popularity": None,
+            })
+
+        return {"episodes": episodes}
+
+    except Exception as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to parse RSS feed: {exc}"
         )
-
-    return FileResponse(
-        path=file_path,
-        media_type="audio/mpeg",
-        filename=name,
-    )
-
-@app.get("/output/files")
-def list_output_files():
-    """
-    List generated output files
-    """
-    if not OUTPUT_DIR.exists():
-        return []
-
-    return sorted(
-        f.name for f in OUTPUT_DIR.iterdir() if f.is_file()
-    )
-
-@app.get("/media/clips")
-def list_media_clips():
-    """
-    List uploaded or generated media clips
-    """
-    if not MEDIA_DIR.exists():
-        return []
-
-    return sorted(
-        f.name for f in MEDIA_DIR.iterdir() if f.is_file()
-    )
-
-# ------------------------------------------------------------------------------
-# END OF FILE
-# ------------------------------------------------------------------------------
