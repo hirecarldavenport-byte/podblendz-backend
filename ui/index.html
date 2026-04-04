@@ -6,7 +6,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
 <style>
-/* ================= RESET ================= */
+/* ======================================================
+   BASE / RESET
+====================================================== */
 * { box-sizing: border-box; }
 
 body {
@@ -20,7 +22,9 @@ body {
 
 h1, h2, h3, p { margin: 0 0 12px 0; }
 
-/* ================= HEADER ================= */
+/* ======================================================
+   HEADER
+====================================================== */
 header {
   position: fixed;
   top: 0;
@@ -35,7 +39,9 @@ header {
   font-weight: 700;
 }
 
-/* ================= HERO ================= */
+/* ======================================================
+   HERO
+====================================================== */
 #hero {
   min-height: 100vh;
   padding: 8rem 2.5rem 4rem;
@@ -92,13 +98,9 @@ header {
   cursor: pointer;
 }
 
-.hero-subtext {
-  font-size: 0.75rem;
-  color: #aaa;
-  margin-top: 0.75rem;
-}
-
-/* ================= HOME ================= */
+/* ======================================================
+   HOME
+====================================================== */
 #home {
   display: none;
   min-height: 100vh;
@@ -129,37 +131,35 @@ header {
   margin: 0 auto;
 }
 
+/* ======================================================
+   SEARCH
+====================================================== */
+.home-search {
+  margin-top: 1.75rem;
+}
+
 .home-search input {
   width: 100%;
-  padding: 1.25rem 1.25rem;
+  padding: 1.35rem;
   border-radius: 14px;
   border: none;
   background: #151924;
-  color: #ffffff;
-  font-size: 1.15rem;
-  line-height: 1.4;
-  margin-top: 1.75rem;
-  margin-bottom: 1.25rem;
-@media (min-width: 1024px) {
-  .home-search input {
-    font-size: 1.25rem;
-    padding: 1.4rem;
-  }
+  color: #fff;
+  font-size: 1.2rem;
 }
 
-
-}
-
-/* ================= SUPPORTING UI ================= */
+/* ======================================================
+   SUPPORTING UI
+====================================================== */
 .section-title {
-  margin-top: 2.5rem;
+  margin-top: 2.25rem;
   font-size: 0.85rem;
   color: #c8c8c8;
 }
 
 .pill {
   display: inline-block;
-  padding: 0.5rem 0.9rem;
+  padding: 0.55rem 1rem;
   border-radius: 999px;
   background: #1b2030;
   margin-right: 0.4rem;
@@ -172,17 +172,22 @@ header {
   color: #000;
 }
 
-/* ================= FLOW SECTIONS ================= */
+/* ======================================================
+   FLOW SECTIONS
+====================================================== */
 #search-interpretation,
 #length-selection,
 #blendz-ack,
 #blendz-timeline,
-#blendz-player {
+#blendz-player,
+#reset-blendz {
   display: none;
   margin-top: 20px;
 }
 
-/* ================= TIMELINE ================= */
+/* ======================================================
+   TIMELINE
+====================================================== */
 .timeline-step {
   display: flex;
   align-items: center;
@@ -190,7 +195,6 @@ header {
   opacity: 0.25;
   transition: opacity 0.4s ease;
 }
-
 .timeline-step.active { opacity: 1; }
 
 .dot {
@@ -204,15 +208,31 @@ header {
   background: linear-gradient(180deg,#ff9a42,#f97316);
 }
 
-/* ================= PLAYER ================= */
+/* ======================================================
+   PLAYER
+====================================================== */
 #blendz-player {
   margin-top: 28px;
   padding: 16px;
   background: rgba(255,255,255,0.04);
   border-radius: 12px;
 }
+#audio {
+  width: 100%;
+}
 
-audio { width: 100%; }
+/* ======================================================
+   RESET BUTTON
+====================================================== */
+#reset-blendz button {
+  margin-top: 20px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.35);
+  padding: 0.8rem 2rem;
+  border-radius: 999px;
+  color: #fff;
+  cursor: pointer;
+}
 
 @media (max-width: 768px) {
   .home-bg { display: none; }
@@ -226,6 +246,7 @@ audio { width: 100%; }
   <div class="logo">🎧 PodBlendz</div>
 </header>
 
+<!-- ================= HERO ================= -->
 <section id="hero">
   <div class="hero-content">
     <h1>Your Podcasts.<span>Your Blendz.</span><span>Your Way.</span></h1>
@@ -235,13 +256,10 @@ audio { width: 100%; }
       <button id="start-blendz" class="btn-primary">Generate Your Blendz</button>
       <button class="btn-outline">Watch Demo</button>
     </div>
-
-    <div class="hero-subtext">
-      Something I’ve always wanted, but didn’t know how to describe.
-    </div>
   </div>
 </section>
 
+<!-- ================= HOME ================= -->
 <section id="home">
 <div class="home-bg"></div>
 <div class="home-content">
@@ -249,36 +267,37 @@ audio { width: 100%; }
 <h2>Good morning.</h2>
 <p>What’s on your mind today?</p>
 
-<form id="search-form">
-<input id="search-input" placeholder="Search by idea, topic, or show..." />
+<form id="search-form" class="home-search">
+  <input id="search-input" placeholder="Search by idea, topic, or show…" />
 </form>
 
 <div id="search-interpretation">
-<p><strong>Interpreting this as:</strong> A topic-based exploration</p>
-<p style="color:#8b91a6;font-size:0.85rem;">
-We’ll gather moments across voices that reflect this idea.
-</p>
+  <p><strong>Interpreting this as:</strong> A topic-based exploration</p>
 </div>
 
 <div id="length-selection">
-<p class="section-title">How long should this Blendz be?</p>
-<div class="pill" data-length="5">5 min · Quick Lens</div>
-<div class="pill" data-length="10">10 min · Full Thought</div>
-<div class="pill" data-length="25">25 min · Deep Dive</div>
+  <p class="section-title">How long should this Blendz be?</p>
+  <div class="pill" data-length="5">5 min · Quick Lens</div>
+  <div class="pill" data-length="10">10 min · Full Thought</div>
+  <div class="pill" data-length="25">25 min · Deep Dive</div>
 </div>
 
 <div id="blendz-ack">Alright. Let’s <strong>Blendz</strong>.</div>
 
 <div id="blendz-timeline">
-<div class="timeline-step"><span class="dot"></span><span>Collecting moments</span></div>
-<div class="timeline-step"><span class="dot"></span><span>Shaping ideas</span></div>
-<div class="timeline-step"><span class="dot"></span><span>Blending voices</span></div>
-<div class="timeline-step"><span class="dot"></span><span>Your Blendz is ready</span></div>
+  <div class="timeline-step"><span class="dot"></span><span>Collecting moments</span></div>
+  <div class="timeline-step"><span class="dot"></span><span>Shaping ideas</span></div>
+  <div class="timeline-step"><span class="dot"></span><span>Blending voices</span></div>
+  <div class="timeline-step"><span class="dot"></span><span>Your Blendz is ready</span></div>
 </div>
 
 <div id="blendz-player">
-<p class="section-title">Your Blendz</p>
-<audio id="blendz-audio" controls></audio>
+  <p class="section-title">Your Blendz</p>
+  <audio id="audio" controls></audio>
+</div>
+
+<div id="reset-blendz">
+  <button>Create another Blendz</button>
 </div>
 
 <div class="section-title">Voices you might blend</div>
@@ -307,7 +326,8 @@ const timeline = document.getElementById("blendz-timeline");
 const steps = document.querySelectorAll(".timeline-step");
 
 const player = document.getElementById("blendz-player");
-const audioEl = document.getElementById("blendz-audio");
+const audioEl = document.getElementById("audio");
+const resetBtn = document.querySelector("#reset-blendz button");
 
 let blendzStarted = false;
 let selectedLength = null;
@@ -326,8 +346,7 @@ searchForm.onsubmit = e => {
   lengthSelection.style.display = "block";
 };
 
-document.querySelectorAll(".pill").forEach(pill => {
-  if (!pill.dataset.length) return;
+document.querySelectorAll("#length-selection .pill").forEach(pill => {
   pill.onclick = () => {
     document.querySelectorAll(".pill").forEach(p => p.classList.remove("selected"));
     pill.classList.add("selected");
@@ -359,7 +378,7 @@ async function startTimeline() {
         length: selectedLength
       })
     });
-    if (!response.ok) throw new Error("Backend failure");
+    if (!response.ok) throw new Error("Backend failed");
     result = await response.json();
   } catch (err) {
     alert("There was a problem creating your Blendz.");
@@ -370,7 +389,25 @@ async function startTimeline() {
   steps[3].classList.add("active");
   audioEl.src = result.audio_file;
   player.style.display = "block";
+  document.getElementById("reset-blendz").style.display = "block";
 }
+
+resetBtn.onclick = () => {
+  blendzStarted = false;
+  selectedLength = null;
+
+  searchInput.disabled = false;
+  searchInput.value = "";
+
+  interpretation.style.display = "none";
+  lengthSelection.style.display = "none";
+  ack.style.display = "none";
+  timeline.style.display = "none";
+  player.style.display = "none";
+  document.getElementById("reset-blendz").style.display = "none";
+
+  steps.forEach(step => step.classList.remove("active"));
+};
 
 function sleep(ms) {
   return new Promise(r => setTimeout(r, ms));
@@ -379,3 +416,4 @@ function sleep(ms) {
 
 </body>
 </html>
+``
