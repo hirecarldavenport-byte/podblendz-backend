@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <style>
+    /* ================= BASE ================= */
     * { box-sizing: border-box; }
 
     body {
@@ -15,9 +16,18 @@
       color: #ffffff;
     }
 
-    a { text-decoration: none; color: inherit; }
+    h1, h2, h3, p {
+      margin: 0 0 12px 0;
+    }
 
-    /* ================= NAV ================= */
+    button {
+      font-size: 0.85rem;
+      border-radius: 999px;
+      cursor: pointer;
+      border: none;
+    }
+
+    /* ================= HEADER ================= */
     header {
       position: fixed;
       top: 0;
@@ -34,23 +44,11 @@
     .logo {
       font-weight: 700;
       letter-spacing: 1px;
-      font-size: 0.95rem;
-    }
-
-    nav a {
-      margin-left: 1.75rem;
-      font-size: 0.85rem;
-      color: #e2e2e2;
-    }
-
-    nav a.signup {
-      border: 1px solid rgba(255,255,255,0.35);
-      padding: 0.25rem 0.7rem;
-      border-radius: 6px;
+      font-size: 0.9rem;
     }
 
     /* ================= HERO ================= */
-    .hero {
+    #hero {
       min-height: 100vh;
       background:
         linear-gradient(
@@ -62,14 +60,13 @@
         url("/assets/black-lady-on-the-train.jpg");
       background-size: cover;
       background-position: 62% 38%;
-      background-repeat: no-repeat;
       padding: 7.5rem 2.5rem 3rem;
       display: flex;
       align-items: center;
     }
 
     .hero-content {
-      max-width: 620px;
+      max-width: 640px;
     }
 
     .hero h1 {
@@ -91,14 +88,11 @@
     .hero-actions {
       display: flex;
       gap: 0.75rem;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.2rem;
     }
 
     .btn {
       padding: 0.55rem 1.25rem;
-      font-size: 0.85rem;
-      border-radius: 999px;
-      cursor: pointer;
       background: transparent;
       color: #fff;
       border: 1px solid rgba(255,255,255,0.35);
@@ -106,12 +100,8 @@
 
     .btn-primary {
       background: linear-gradient(180deg,#ff9a42,#f97316);
-      color: white;
       padding: 0.85rem 2rem;
-      border-radius: 999px;
       font-weight: 600;
-      border: none;
-      cursor: pointer;
       box-shadow:
         0 8px 24px rgba(0,0,0,0.8),
         inset 0 1px 2px rgba(255,255,255,0.3);
@@ -120,167 +110,143 @@
     .hero-subtext {
       font-size: 0.75rem;
       color: #aaa;
-      margin-top: 0.4rem;
     }
 
-    /* ================= SECTIONS ================= */
-    .categories {
-      display: grid;
-      grid-template-columns: repeat(3,1fr);
-      gap: 1.2rem;
-      padding: 2.5rem;
-      background: linear-gradient(#0f1321,#0b0e14);
+    /* ================= HOME ================= */
+    #home {
+      display: none;
+      max-width: 720px;
+      margin: 6rem auto;
+      padding: 0 2rem;
     }
 
-    .category, .blend-card {
-      background: #181d2c;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05);
-      transition: transform .2s ease;
+    .home-greeting h2 {
+      font-size: 1.8rem;
+      font-weight: 500;
     }
 
-    .category:hover,
-    .blend-card:hover {
-      transform: translateY(-3px);
+    .home-greeting p {
+      color: #c8c8c8;
     }
 
-    .category img,
-    .blend-card img {
+    .home-search input {
       width: 100%;
-      height: 120px;
-      object-fit: cover;
-    }
-
-    .category div,
-    .blend-card div {
       padding: 1rem;
+      border-radius: 10px;
+      border: none;
+      background: #151924;
+      color: #fff;
+      font-size: 1rem;
+      margin: 1.25rem 0;
     }
 
-    .latest {
-      padding: 2.5rem;
+    .home-search input::placeholder {
+      color: #8b91a6;
     }
 
-    .latest h3 {
-      font-size: 1.2rem;
-      margin-bottom: 1.4rem;
+    .home-hints {
+      font-size: 0.85rem;
+      color: #8b91a6;
     }
 
-    .latest-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill,minmax(220px,1fr));
-      gap: 1.4rem;
+    .home-hints li {
+      margin-bottom: 0.4rem;
     }
 
-    @media (max-width: 768px) {
-      .hero {
-        background-position: 55% 32%;
-      }
-      .categories {
-        grid-template-columns: 1fr;
-      }
+    .section-title {
+      font-size: 0.85rem;
+      margin-top: 2.25rem;
+      margin-bottom: 0.8rem;
+      color: #c8c8c8;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 0.5rem 0.9rem;
+      border-radius: 999px;
+      background: #1b2030;
+      margin-right: 0.4rem;
+      margin-bottom: 0.4rem;
+      font-size: 0.8rem;
+      cursor: pointer;
     }
   </style>
 </head>
 
 <body>
 
-<header>
-  <div class="logo">pod blendz</div>
-  <nav>
-    Explore
-    My Blendz
-    Create
-    Sign Up
-  </nav>
-</header>
+  <header>
+    <div class="logo">pod blendz</div>
+  </header>
 
-<section class="hero">
-  <div class="hero-content">
-    <h1>
-      Your Podcasts.
-      <span>Your Blendz.</span>
-      <span>Your Way.</span>
-    </h1>
+  <!-- ================= HERO ================= -->
+  <section id="hero">
+    <div class="hero-content">
+      <h1>
+        Your Podcasts.
+        <span>Your Blendz.</span>
+        <span>Your Way.</span>
+      </h1>
+      <h2>Listen Smarter. Share Deeper. Blend Ideas.</h2>
 
-    <h2>Listen Smarter. Share Deeper. Blend Ideas.</h2>
+      <div class="hero-actions">
+        <button class="btn">Watch Demo</button>
+        <button class="btn-primary" id="start-blendz">Generate Your Blendz</button>
+      </div>
 
-    <div class="hero-actions">
-      <button class="btn">Get Started</button>
-      <button class="btn">Watch Demo</button>
-    </div>
-
-    <button class="btn-primary">Generate Your Blendz</button>
-    <div class="hero-subtext">
-      Start mixing your favorite podcast moments
-    </div>
-  </div>
-</section>
-
-<section class="categories">
-  <div class="category">
-    <img src="/assets/placeholder-category.jpg" />
-    <div>
-      <h3>Trending Blendz</h3>
-      <p>The hottest mixes right now</p>
-    </div>
-  </div>
-
-  <div class="category">
-    <img src="/assets/placeholder-category.jpg" />
-    <div>
-      <h3>Quick Hits</h3>
-      <p>Short and impactful blends</p>
-    </div>
-  </div>
-
-  <div class="category">
-    <img src="/assets/placeholder-category.jpg" />
-    <div>
-      <h3>Deep Dives</h3>
-      <p>Long‑form podcast ideas</p>
-    </div>
-  </div>
-</section>
-
-<section class="latest">
-  <h3>Latest Blendz</h3>
-
-  <div class="latest-grid">
-    <div class="blend-card">
-      <img src="/assets/placeholder-blend.jpg" />
-      <div>
-        <h4>Tech Innovations Weekly</h4>
-        <span>Tech & Science</span>
+      <div class="hero-subtext">
+        Start mixing your favorite podcast moments
       </div>
     </div>
+  </section>
 
-    <div class="blend-card">
-      <img src="/assets/placeholder-blend.jpg" />
-      <div>
-        <h4>Mindful Moments</h4>
-        <span>Health & Wellness</span>
-      </div>
+  <!-- ================= HOME ================= -->
+  <section id="home">
+
+    <div class="home-greeting">
+      <h2>Good morning.</h2>
+      <p>What’s on your mind today?</p>
     </div>
 
-    <div class="blend-card">
-      <img src="/assets/placeholder-blend.jpg" />
-      <div>
-        <h4>True Crime: Twisted Tales</h4>
-        <span>True Crime</span>
-      </div>
+    <div class="home-search">
+      <input
+        id="search-input"
+        type="text"
+        placeholder="Search by idea, topic, or show…"
+      />
     </div>
 
-    <div class="blend-card">
-      <img src="/assets/placeholder-blend.jpg" />
-      <div>
-        <h4>Startup Success Stories</h4>
-        <span>Business & Startups</span>
-      </div>
+    <div class="home-hints">
+      <p>Try:</p>
+      <ul>
+        <li>Faith and personal growth</li>
+        <li>The Daily – latest episodes</li>
+        <li>KevOnStage on culture</li>
+      </ul>
     </div>
-  </div>
-</section>
+
+    <div class="section-title">Voices you might blend</div>
+    <div class="pill">KevOnStage</div>
+
+    <div class="section-title">Ideas people are exploring</div>
+    <div class="pill">Faith</div>
+    <div class="pill">Culture</div>
+    <div class="pill">Power</div>
+
+  </section>
+
+  <!-- ================= SCRIPT ================= -->
+  <script>
+    const hero = document.getElementById("hero");
+    const home = document.getElementById("home");
+    const startBtn = document.getElementById("start-blendz");
+
+    startBtn.addEventListener("click", () => {
+      hero.style.display = "none";
+      home.style.display = "block";
+      window.scrollTo(0, 0);
+    });
+  </script>
 
 </body>
 </html>
-``
