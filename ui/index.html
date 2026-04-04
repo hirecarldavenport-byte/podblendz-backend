@@ -5,9 +5,8 @@
   <title>PodBlendz</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- ================= STYLES ================= -->
   <style>
-    /* ===== Reset & Base ===== */
+    /* ========= RESET ========= */
     * { box-sizing: border-box; }
 
     body {
@@ -15,7 +14,7 @@
       font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
       background: #0b0e14;
       color: #ffffff;
-      line-height: 1.5;
+      line-height: 1.55;
       overflow-x: hidden;
     }
 
@@ -23,14 +22,7 @@
     ul { margin: 8px 0; padding-left: 18px; }
     li { margin-bottom: 6px; }
 
-    button {
-      cursor: pointer;
-      border: none;
-      border-radius: 999px;
-      font-size: 0.85rem;
-    }
-
-    /* ===== Header ===== */
+    /* ========= HEADER ========= */
     header {
       position: fixed;
       top: 0;
@@ -51,7 +43,7 @@
       font-size: 0.95rem;
     }
 
-    /* ===== Hero ===== */
+    /* ========= HERO ========= */
     #hero {
       min-height: 100vh;
       padding: 8rem 2.5rem 4rem;
@@ -72,7 +64,11 @@
 
     .hero-content { max-width: 640px; }
 
-    .hero h1 { font-size: 2.9rem; line-height: 1.15; }
+    .hero h1 {
+      font-size: 2.9rem;
+      line-height: 1.15;
+    }
+
     .hero h1 span { display: block; }
 
     .hero h2 {
@@ -93,12 +89,16 @@
       background: transparent;
       color: #fff;
       border: 1px solid rgba(255,255,255,0.35);
+      border-radius: 999px;
+      cursor: pointer;
     }
 
     .btn-primary {
       background: linear-gradient(180deg,#ff9a42,#f97316);
       padding: 0.85rem 2rem;
       font-weight: 600;
+      border-radius: 999px;
+      cursor: pointer;
     }
 
     .hero-subtext {
@@ -106,7 +106,7 @@
       color: #aaa;
     }
 
-    /* ===== Home ===== */
+    /* ========= HOME ========= */
     #home {
       display: none;
       min-height: 100vh;
@@ -142,7 +142,7 @@
     .home-greeting h2 { font-size: 1.8rem; }
     .home-greeting p { color: #c8c8c8; }
 
-    /* ===== Search ===== */
+    /* ========= SEARCH ========= */
     .home-search {
       margin-top: 1.25rem;
     }
@@ -161,7 +161,7 @@
       color: #8b91a6;
     }
 
-    /* ===== Supporting Content ===== */
+    /* ========= SUPPORT ========= */
     .section-title {
       margin-top: 2.25rem;
       margin-bottom: 0.8rem;
@@ -181,8 +181,9 @@
     }
 
     .pill:hover { background: #262c40; }
+    .pill.selected { background: #f97316; color: #000; }
 
-    /* ===== Interpretation ===== */
+    /* ========= INTERPRETATION ========= */
     #search-interpretation,
     #length-selection {
       display: none;
@@ -195,16 +196,16 @@
       color: #8b91a6;
     }
 
-    /* ===== Acknowledgment ===== */
-    .blendz-ack {
+    /* ========= ACK ========= */
+    #blendz-ack {
       display: none;
       margin-top: 28px;
       font-size: 1.1rem;
       font-weight: 500;
     }
 
-    /* ===== Timeline ===== */
-    .blendz-timeline {
+    /* ========= TIMELINE ========= */
+    #blendz-timeline {
       display: none;
       margin-top: 36px;
       padding-left: 12px;
@@ -230,7 +231,6 @@
       border-radius: 50%;
       background: #555;
       margin-right: 12px;
-      flex-shrink: 0;
     }
 
     .timeline-step.active .dot {
@@ -250,165 +250,181 @@
 
 <body>
 
-  <!-- ===== Header ===== -->
-  <header>
-    <div class="logo">🎧 PodBlendz</div>
-  </header>
+<header>
+  <div class="logo">🎧 PodBlendz</div>
+</header>
 
-  <!-- ===== Hero ===== -->
-  <section id="hero">
-    <div class="hero-content">
-      <h1>
-        Your Podcasts.
-        <span>Your Blendz.</span>
-        <span>Your Way.</span>
-      </h1>
-      <h2>Listen Smarter. Share Deeper. Blend Ideas.</h2>
+<!-- ========= HERO ========= -->
+<section id="hero">
+  <div class="hero-content">
+    <h1>
+      Your Podcasts.
+      <span>Your Blendz.</span>
+      <span>Your Way.</span>
+    </h1>
+    <h2>Listen Smarter. Share Deeper. Blend Ideas.</h2>
 
-      <div class="hero-actions">
-        <button class="btn">Watch Demo</button>
-        <button id="start-blendz" class="btn-primary">Generate Your Blendz</button>
+    <div class="hero-actions">
+      <button class="btn">Watch Demo</button>
+      <button id="start-blendz" class="btn-primary">Generate Your Blendz</button>
+    </div>
+
+    <div class="hero-subtext">
+      Start mixing your favorite podcast moments
+    </div>
+  </div>
+</section>
+
+<!-- ========= HOME ========= -->
+<section id="home">
+  <div class="home-bg"></div>
+
+  <div class="home-content">
+    <div class="home-greeting">
+      <h2>Good morning.</h2>
+      <p>What’s on your mind today?</p>
+    </div>
+
+    <form id="search-form" class="home-search">
+      <input id="search-input" type="text"
+        placeholder="Search by idea, topic, or show..."
+        autocomplete="off" />
+    </form>
+
+    <div id="search-interpretation">
+      <p><strong>Interpreting this as:</strong> A topic-based exploration</p>
+      <p class="interpretation-subtext">
+        We’ll gather moments across voices that reflect this idea.
+      </p>
+    </div>
+
+    <div id="length-selection">
+      <p class="section-title">How long should this Blendz be?</p>
+      <div class="pill" data-length="5">5 min · Quick Lens</div>
+      <div class="pill" data-length="10">10 min · Full Thought</div>
+      <div class="pill" data-length="25">25 min · Deep Dive</div>
+    </div>
+
+    <div id="blendz-ack">
+      Alright. Let’s <strong>Blendz</strong>.
+    </div>
+
+    <div id="blendz-timeline">
+      <div class="timeline-step">
+        <span class="dot"></span>
+        <span class="label">Collecting moments</span>
       </div>
-
-      <div class="hero-subtext">
-        Start mixing your favorite podcast moments
+      <div class="timeline-step">
+        <span class="dot"></span>
+        <span class="label">Shaping ideas</span>
+      </div>
+      <div class="timeline-step">
+        <span class="dot"></span>
+        <span class="label">Blending voices</span>
+      </div>
+      <div class="timeline-step">
+        <span class="dot"></span>
+        <span class="label">Your <strong>Blendz</strong> is ready</span>
       </div>
     </div>
-  </section>
 
-  <!-- ===== Home ===== -->
-  <section id="home">
-    <div class="home-bg"></div>
+    <div class="section-title">Voices you might blend</div>
+    <div class="pill">KevOnStage</div>
 
-    <div class="home-content">
-      <div class="home-greeting">
-        <h2>Good morning.</h2>
-        <p>What’s on your mind today?</p>
-      </div>
+    <div class="section-title">Ideas people are exploring</div>
+    <div class="pill">Faith</div>
+    <div class="pill">Culture</div>
+    <div class="pill">Power</div>
+  </div>
+</section>
 
-      <!-- Native search form (focus-safe) -->
-      <form id="search-form" class="home-search">
-        <input
-          id="search-input"
-          type="text"
-          placeholder="Search by idea, topic, or show…"
-          autocomplete="off"
-        />
-      </form>
+<!-- ========= SCRIPT ========= -->
+<script>
+  const hero = document.getElementById("hero");
+  const home = document.getElementById("home");
+  const startBtn = document.getElementById("start-blendz");
 
-      <div id="search-interpretation">
-        <p><strong>Interpreting this as:</strong> A topic-based exploration</p>
-        <p class="interpretation-subtext">
-          We’ll gather moments across voices that reflect this idea.
-        </p>
-      </div>
+  const searchForm = document.getElementById("search-form");
+  const searchInput = document.getElementById("search-input");
 
-      <div id="length-selection">
-        <p class="section-title">How long should this Blendz be?</p>
-        <div class="pill" data-length="5">5 min · Quick Lens</div>
-        <div class="pill" data-length="10">10 min · Full Thought</div>
-        <div class="pill" data-length="25">25 min · Deep Dive</div>
-      </div>
+  const interpretation = document.getElementById("search-interpretation");
+  const lengthSelection = document.getElementById("length-selection");
+  const lengthPills = document.querySelectorAll("#length-selection .pill");
 
-      <div id="blendz-ack" class="blendz-ack">
-        Alright. Let’s <strong>Blendz</strong>.
-      </div>
+  const ack = document.getElementById("blendz-ack");
+  const timeline = document.getElementById("blendz-timeline");
+  const steps = document.querySelectorAll(".timeline-step");
 
-      <div id="blendz-timeline" class="blendz-timeline">
-        <div class="timeline-step">
-          <span class="dot"></span>
-          <span class="label">Collecting moments</span>
-        </div>
-        <div class="timeline-step">
-          <span class="dot"></span>
-          <span class="label">Shaping ideas</span>
-        </div>
-        <div class="timeline-step">
-          <span class="dot"></span>
-          <span class="label">Blending voices</span>
-        </div>
-        <div class="timeline-step">
-          <span class="dot"></span>
-          <span class="label">Your <strong>Blendz</strong> is ready</span>
-        </div>
-      </div>
+  let blendzStarted = false;
+  let selectedBlendzLength = null;
 
-      <div class="section-title">Voices you might blend</div>
-      <div class="pill">KevOnStage</div>
+  startBtn.onclick = () => {
+    hero.style.display = "none";
+    home.style.display = "block";
+    searchInput.focus();
+  };
 
-      <div class="section-title">Ideas people are exploring</div>
-      <div class="pill">Faith</div>
-      <div class="pill">Culture</div>
-      <div class="pill">Power</div>
-    </div>
-  </section>
+  searchForm.onsubmit = (e) => {
+    e.preventDefault();
+    if (!searchInput.value.trim()) return;
 
-  <!-- ===== Script ===== -->
-  <script>
-    const hero = document.getElementById("hero");
-    const home = document.getElementById("home");
-    const startBtn = document.getElementById("start-blendz");
-    const searchForm = document.getElementById("search-form");
-    const searchInput = document.getElementById("search-input");
-    const interpretation = document.getElementById("search-interpretation");
-    const lengthSelection = document.getElementById("length-selection");
-    const ack = document.getElementById("blendz-ack");
-    const timeline = document.getElementById("blendz-timeline");
-    const steps = document.querySelectorAll(".timeline-step");
-    const lengthPills = document.querySelectorAll("#length-selection .pill");
+    searchInput.disabled = true;
+    interpretation.style.display = "block";
+    lengthSelection.style.display = "block";
+  };
 
-    let blendzStarted = false;
-function startTimeline() {
-  // Guard: prevent running more than once
-  if (blendzStarted) return;
-  blendzStarted = true;
+  async function startTimeline() {
+    if (blendzStarted) return;
+    blendzStarted = true;
 
-  timeline.style.display = "block";
+    timeline.style.display = "block";
 
-  steps.forEach((step, index) => {
-    setTimeout(() => {
-      step.classList.add("active");
-    }, index * 900);
-  });
-}
+    steps[0].classList.add("active");
+    await new Promise(r => setTimeout(r, 900));
 
-    startBtn.onclick = () => {
-      hero.style.display = "none";
-      home.style.display = "block";
-      searchInput.focus();
-    };
+    steps[1].classList.add("active");
+    await new Promise(r => setTimeout(r, 900));
 
-    searchForm.onsubmit = (e) => {
-      e.preventDefault();
-      if (!searchInput.value.trim()) return;
+    steps[2].classList.add("active");
 
-      searchInput.disabled = true;
-      interpretation.style.display = "block";
-      lengthSelection.style.display = "block";
-    };
-
-    function startTimeline() {
-      timeline.style.display = "block";
-      steps.forEach((step, i) => {
-        setTimeout(() => {
-          step.classList.add("active");
-        }, i * 900);
+    try {
+      const response = await fetch("/blend/preview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: searchInput.value.trim(),
+          length: selectedBlendzLength
+        })
       });
+
+      if (!response.ok) throw new Error("Backend error");
+
+      const result = await response.json();
+      console.log("Blendz complete:", result);
+    } catch (err) {
+      console.error(err);
+      alert("There was a problem creating your Blendz.");
+      return;
     }
 
-    lengthPills.forEach(pill => {
-  pill.onclick = () => {
-    lengthPills.forEach(p => p.classList.remove("btn-primary"));
-    pill.classList.add("btn-primary");
+    steps[3].classList.add("active");
+  }
 
-    ack.style.display = "block";
+  lengthPills.forEach(pill => {
+    pill.onclick = () => {
+      lengthPills.forEach(p => p.classList.remove("selected"));
+      pill.classList.add("selected");
 
-    setTimeout(() => {
-      startTimeline();
-    }, 1000);
-  };
-});
-  </script>
+      selectedBlendzLength = pill.dataset.length;
+
+      ack.style.display = "block";
+
+      setTimeout(() => {
+        startTimeline();
+      }, 900);
+    };
+  });
+</script>
 
 </body>
 </html>
