@@ -6,8 +6,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <style>
-    /* ================= BASE ================= */
-    * { box-sizing: border-box; }
+    /* ================= RESET ================= */
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
@@ -15,9 +17,12 @@
       background: #0b0e14;
       color: #ffffff;
       line-height: 1.5;
+      overflow-x: hidden;
     }
 
-    h1, h2, h3, p { margin: 0 0 12px 0; }
+    h1, h2, h3, p {
+      margin: 0 0 12px 0;
+    }
 
     button {
       cursor: pointer;
@@ -30,10 +35,11 @@
     header {
       position: fixed;
       top: 0;
+      left: 0;
       width: 100%;
-      z-index: 10;
-      padding: 0.8rem 2.2rem;
-      background: rgba(15,17,24,0.75);
+      z-index: 100;
+      padding: 0.9rem 2.2rem;
+      background: rgba(15, 17, 24, 0.75);
       backdrop-filter: blur(8px);
       display: flex;
       align-items: center;
@@ -46,34 +52,40 @@
       font-weight: 700;
       letter-spacing: 0.5px;
       font-size: 0.95rem;
+      user-select: none;
     }
 
     /* ================= HERO ================= */
     #hero {
       min-height: 100vh;
-      background:
+      padding: 8rem 2.5rem 3rem;
+      display: flex;
+      align-items: center;
+      background-image:
         linear-gradient(
           to right,
-          rgba(5,7,12,0.95),
-          rgba(5,7,12,0.65),
-          rgba(5,7,12,0.0)
+          rgba(5, 7, 12, 0.95),
+          rgba(5, 7, 12, 0.65),
+          rgba(5, 7, 12, 0.0)
         ),
         url("/assets/black-lady-on-the-train.jpg");
       background-size: cover;
       background-position: 62% 38%;
-      padding: 7.5rem 2.5rem 3rem;
-      display: flex;
-      align-items: center;
+      background-repeat: no-repeat;
     }
 
-    .hero-content { max-width: 640px; }
+    .hero-content {
+      max-width: 640px;
+    }
 
     .hero h1 {
       font-size: 2.9rem;
       line-height: 1.15;
     }
 
-    .hero h1 span { display: block; }
+    .hero h1 span {
+      display: block;
+    }
 
     .hero h2 {
       font-style: italic;
@@ -86,28 +98,28 @@
     .hero-actions {
       display: flex;
       gap: 0.75rem;
-      margin-bottom: 1rem;
+      margin-bottom: 1.25rem;
     }
 
     .btn {
       padding: 0.55rem 1.25rem;
       background: transparent;
-      color: #fff;
-      border: 1px solid rgba(255,255,255,0.35);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.35);
     }
 
     .btn-primary {
-      background: linear-gradient(180deg,#ff9a42,#f97316);
+      background: linear-gradient(180deg, #ff9a42, #f97316);
       padding: 0.85rem 2rem;
       font-weight: 600;
       box-shadow:
-        0 8px 24px rgba(0,0,0,0.8),
-        inset 0 1px 2px rgba(255,255,255,0.3);
+        0 8px 24px rgba(0, 0, 0, 0.8),
+        inset 0 1px 2px rgba(255, 255, 255, 0.3);
     }
 
     .hero-subtext {
       font-size: 0.75rem;
-      color: #aaa;
+      color: #aaaaaa;
     }
 
     /* ================= HOME ================= */
@@ -115,7 +127,7 @@
       display: none;
       position: relative;
       min-height: 100vh;
-      padding: 6rem 2rem;
+      padding: 8rem 2rem 6rem;
       overflow: hidden;
     }
 
@@ -128,15 +140,17 @@
       background-image:
         linear-gradient(
           to left,
-          rgba(11,14,20,0.85),
-          rgba(11,14,20,1)
+          rgba(11, 14, 20, 0.8),
+          rgba(11, 14, 20, 1)
         ),
         url("/assets/black-lady-on-the-train.jpg");
       background-size: cover;
       background-position: center;
-      opacity: 0.35;
+      background-repeat: no-repeat;
+      opacity: 0.38;
       filter: blur(6px) grayscale(30%);
       pointer-events: none;
+      z-index: 0;
     }
 
     .home-content {
@@ -146,17 +160,13 @@
       margin: 0 auto;
     }
 
-    .home-greeting h2 { font-size: 1.8rem; }
-
-    .home-greeting p { color: #c8c8c8; }
-
     .home-search input {
       width: 100%;
       padding: 1rem;
       border-radius: 10px;
       border: none;
       background: #151924;
-      color: #fff;
+      color: #ffffff;
       font-size: 1rem;
       margin-top: 1.25rem;
     }
@@ -167,147 +177,100 @@
       font-size: 0.8rem;
     }
 
-    .home-search input::placeholder { color: #8b91a6; }
-
-    .home-hints { font-size: 0.85rem; color: #8b91a6; }
-
-    .section-title {
-      margin-top: 2.25rem;
-      margin-bottom: 0.8rem;
-      font-size: 0.85rem;
-      color: #c8c8c8;
-    }
-
-    .pill {
-      display: inline-block;
-      padding: 0.5rem 0.9rem;
-      border-radius: 999px;
-      background: #1b2030;
-      margin-right: 0.4rem;
-      margin-bottom: 0.4rem;
-      font-size: 0.8rem;
-      cursor: pointer;
-    }
-
-    .pill:hover { background: #262c40; }
-
-    /* ================= INTERPRETATION ================= */
     #search-interpretation,
     #length-selection {
       display: none;
       margin-top: 16px;
       color: #c8c8c8;
-      font-size: 0.9rem;
     }
 
     .interpretation-subtext {
       font-size: 0.8rem;
       color: #8b91a6;
-      margin-top: 4px;
-    }
-
-    .home-dim {
-      opacity: 0.35;
-      transition: opacity 0.3s ease;
     }
 
     @media (max-width: 768px) {
-      .home-bg { display: none; }
+      .home-bg {
+        display: none;
+      }
     }
   </style>
 </head>
 
 <body>
+  <header>
+    <div class="logo">🎧 PodBlendz</div>
+  </header>
 
-<header>
-  <div class="logo">🎧 PodBlendz</div>
-</header>
+  <section id="hero">
+    <div class="hero-content">
+      <h1>Your Podcasts.<span>Your Blendz.</span><span>Your Way.</span></h1>
+      <h2>Listen Smarter. Share Deeper. Blend Ideas.</h2>
 
-<section id="hero">
-  <div class="hero-content">
-    <h1>Your Podcasts.<span>Your Blendz.</span><span>Your Way.</span></h1>
-    <h2>Listen Smarter. Share Deeper. Blend Ideas.</h2>
+      <div class="hero-actions">
+        <button class="btn">Watch Demo</button>
+        <button id="start-blendz" class="btn-primary">Generate Your Blendz</button>
+      </div>
 
-    <div class="hero-actions">
-      <button class="btn">Watch Demo</button>
-      <button id="start-blendz" class="btn-primary">Generate Your Blendz</button>
+      <div class="hero-subtext">
+        Start mixing your favorite podcast moments
+      </div>
     </div>
+  </section>
 
-    <div class="hero-subtext">Start mixing your favorite podcast moments</div>
-  </div>
-</section>
+  <section id="home">
+    <div class="home-bg"></div>
 
-<section id="home">
-  <div class="home-bg"></div>
-
-  <div class="home-content">
-    <div class="home-greeting">
+    <div class="home-content">
       <h2>Good morning.</h2>
       <p>What’s on your mind today?</p>
+
+      <div class="home-search">
+        <input id="search-input" placeholder="Search by idea, topic, or show…" />
+        <button id="search-btn" class="btn-primary">Continue</button>
+      </div>
+
+      <div id="search-interpretation">
+        <p><strong>Interpreting this as:</strong> A topic-based exploration</p>
+        <p class="interpretation-subtext">
+          We’ll gather moments across voices that reflect this idea.
+        </p>
+      </div>
+
+      <div id="length-selection">
+        <p>How long should this Blendz be?</p>
+        <button class="btn">5 min</button>
+        <button class="btn">10 min</button>
+        <button class="btn">25 min</button>
+      </div>
     </div>
+  </section>
 
-    <div class="home-search">
-      <input id="search-input" placeholder="Search by idea, topic, or show…" />
-      <button id="search-btn" class="btn-primary">Continue</button>
-    </div>
+  <script>
+    const hero = document.getElementById("hero");
+    const home = document.getElementById("home");
+    const startBtn = document.getElementById("start-blendz");
+    const searchInput = document.getElementById("search-input");
+    const searchBtn = document.getElementById("search-btn");
+    const interpretation = document.getElementById("search-interpretation");
+    const lengthSelection = document.getElementById("length-selection");
 
-    <div id="search-interpretation">
-      <p><strong>Interpreting this as:</strong> A topic-based exploration</p>
-      <p class="interpretation-subtext">
-        We’ll gather moments across voices that reflect this idea.
-      </p>
-    </div>
+    startBtn.onclick = () => {
+      hero.style.display = "none";
+      home.style.display = "block";
+      searchInput.focus();
+      history.pushState({ view: "home" }, "");
+    };
 
-    <div id="length-selection">
-      <p class="section-title">How long should this Blendz be?</p>
-      <div class="pill" data-length="5">5 min · Quick Lens</div>
-      <div class="pill" data-length="10">10 min · Full Thought</div>
-      <div class="pill" data-length="25">25 min · Deep Dive</div>
-    </div>
-  </div>
-</section>
+    function commitSearch() {
+      if (!searchInput.value.trim()) return;
+      searchInput.disabled = true;
+      interpretation.style.display = "block";
+      lengthSelection.style.display = "block";
+    }
 
-<script>
-  const hero = document.getElementById("hero");
-  const home = document.getElementById("home");
-  const startBtn = document.getElementById("start-blendz");
-  const searchInput = document.getElementById("search-input");
-  const searchBtn = document.getElementById("search-btn");
-  const interpretation = document.getElementById("search-interpretation");
-  const lengthSelection = document.getElementById("length-selection");
-
-  function showHome(push = true) {
-    hero.style.display = "none";
-    home.style.display = "block";
-    window.scrollTo(0, 0);
-    searchInput.focus();
-    if (push) history.pushState({ view: "home" }, "");
-  }
-
-  function showHero() {
-    home.style.display = "none";
-    hero.style.display = "flex";
-  }
-
-  history.replaceState({ view: "hero" }, "");
-
-  window.addEventListener("popstate", e => {
-    e.state?.view === "home" ? showHome(false) : showHero();
-  });
-
-  startBtn.onclick = () => showHome();
-
-  function commitSearch() {
-    if (!searchInput.value.trim()) return;
-    searchInput.disabled = true;
-
-    interpretation.style.display = "block";
-    lengthSelection.style.display = "block";
-  }
-
-  searchBtn.onclick = commitSearch;
-  searchInput.onkeydown = e => e.key === "Enter" && commitSearch();
-</script>
-
+    searchBtn.onclick = commitSearch;
+    searchInput.onkeydown = e => e.key === "Enter" && commitSearch();
+  </script>
 </body>
 </html>
