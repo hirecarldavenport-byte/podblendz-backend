@@ -51,11 +51,7 @@
       gap: 0.5rem;
       font-weight: 700;
       letter-spacing: 0.5px;
-      font-size: 0.9rem;
-    }
-
-    .logo span {
-      font-size: 1.1rem;
+      font-size: 0.95rem;
     }
 
     /* ======================================================
@@ -88,9 +84,7 @@
       margin-bottom: 0.5rem;
     }
 
-    .hero h1 span {
-      display: block;
-    }
+    .hero h1 span { display: block; }
 
     .hero h2 {
       font-style: italic;
@@ -133,13 +127,11 @@
     #home {
       display: none;
       position: relative;
-      max-width: 100%;
       min-height: 100vh;
       padding: 6rem 2rem;
       overflow: hidden;
     }
 
-    /* Background anchor (desktop only) */
     .home-bg {
       position: absolute;
       top: 0;
@@ -222,29 +214,40 @@
       background: #262c40;
     }
 
-    /* Mobile: remove image anchor */
+    /* ================= SEARCH INTERPRETATION ================= */
+
+    #search-interpretation {
+      margin-top: 16px;
+      font-size: 0.9rem;
+      color: #c8c8c8;
+      display: none;
+    }
+
+    .interpretation-subtext {
+      font-size: 0.8rem;
+      color: #8b91a6;
+      margin-top: 4px;
+    }
+
+    .home-dim {
+      opacity: 0.35;
+      transition: opacity 0.3s ease;
+    }
+
     @media (max-width: 768px) {
-      .home-bg {
-        display: none;
-      }
+      .home-bg { display: none; }
     }
   </style>
 </head>
 
 <body>
 
-  <!-- ======================================================
-       HEADER
-  ====================================================== -->
+  <!-- ================= HEADER ================= -->
   <header>
-    <div class="logo">
-      🎧 <span>PodBlendz</span>
-    </div>
+    <div class="logo">🎧 PodBlendz</div>
   </header>
 
-  <!-- ======================================================
-       HERO
-  ====================================================== -->
+  <!-- ================= HERO ================= -->
   <section id="hero">
     <div class="hero-content">
       <h1>
@@ -252,7 +255,6 @@
         <span>Your Blendz.</span>
         <span>Your Way.</span>
       </h1>
-
       <h2>Listen Smarter. Share Deeper. Blend Ideas.</h2>
 
       <div class="hero-actions">
@@ -268,13 +270,12 @@
     </div>
   </section>
 
-  <!-- ======================================================
-       HOME
-  ====================================================== -->
+  <!-- ================= HOME ================= -->
   <section id="home">
     <div class="home-bg"></div>
 
     <div class="home-content">
+
       <div class="home-greeting">
         <h2>Good morning.</h2>
         <p>What’s on your mind today?</p>
@@ -286,6 +287,13 @@
           type="text"
           placeholder="Search by idea, topic, or show…"
         />
+      </div>
+
+      <div id="search-interpretation">
+        <p><strong>Interpreting this as:</strong> A topic-based exploration</p>
+        <p class="interpretation-subtext">
+          We’ll gather moments across voices that reflect this idea.
+        </p>
       </div>
 
       <div class="home-hints">
@@ -304,21 +312,36 @@
       <div class="pill">Faith</div>
       <div class="pill">Culture</div>
       <div class="pill">Power</div>
+
     </div>
   </section>
 
-  <!-- ======================================================
-       SCRIPT
-  ====================================================== -->
+  <!-- ================= SCRIPT ================= -->
   <script>
     const hero = document.getElementById("hero");
     const home = document.getElementById("home");
     const startBtn = document.getElementById("start-blendz");
+    const searchInput = document.getElementById("search-input");
+    const interpretation = document.getElementById("search-interpretation");
 
     startBtn.addEventListener("click", () => {
       hero.style.display = "none";
       home.style.display = "block";
       window.scrollTo(0, 0);
+      searchInput.focus();
+    });
+
+    searchInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && searchInput.value.trim() !== "") {
+        searchInput.disabled = true;
+        searchInput.style.opacity = "0.8";
+
+        document.querySelectorAll(
+          ".home-hints, .section-title, .pill"
+        ).forEach(el => el.classList.add("home-dim"));
+
+        interpretation.style.display = "block";
+      }
     });
   </script>
 
