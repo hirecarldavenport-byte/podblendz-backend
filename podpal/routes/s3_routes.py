@@ -16,4 +16,3 @@ def presign_url(key: str):
 @router.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
     return await s3.upload_file(file)
-    
