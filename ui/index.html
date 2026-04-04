@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
 <style>
-/* ================= BASE ================= */
+/* ================= RESET ================= */
 * { box-sizing: border-box; }
 
 body {
@@ -18,7 +18,7 @@ body {
   overflow-x: hidden;
 }
 
-h1, h2, p { margin: 0 0 12px 0; }
+h1, h2, h3, p { margin: 0 0 12px 0; }
 
 /* ================= HEADER ================= */
 header {
@@ -38,7 +38,7 @@ header {
 /* ================= HERO ================= */
 #hero {
   min-height: 100vh;
-  padding: 8rem 2.5rem;
+  padding: 8rem 2.5rem 4rem;
   display: flex;
   align-items: center;
   background-image:
@@ -55,7 +55,10 @@ header {
 
 .hero-content { max-width: 640px; }
 
-.hero h1 { font-size: 2.9rem; line-height: 1.15; }
+.hero h1 {
+  font-size: 2.9rem;
+  line-height: 1.15;
+}
 .hero h1 span { display: block; }
 
 .hero h2 {
@@ -65,15 +68,34 @@ header {
   margin-bottom: 1.75rem;
 }
 
-.hero-actions { margin-top: 1.5rem; }
+.hero-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
 
 .btn-primary {
   background: linear-gradient(180deg,#ff9a42,#f97316);
-  padding: 0.9rem 2.4rem;
+  padding: 0.85rem 2.2rem;
   border-radius: 999px;
   font-weight: 600;
   border: none;
   cursor: pointer;
+}
+
+.btn-outline {
+  padding: 0.85rem 2.2rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.35);
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+}
+
+.hero-subtext {
+  font-size: 0.75rem;
+  color: #aaa;
+  margin-top: 0.75rem;
 }
 
 /* ================= HOME ================= */
@@ -103,22 +125,34 @@ header {
 }
 
 .home-content {
-  max-width: 720px;
+  max-width: 860px;
   margin: 0 auto;
 }
 
 .home-search input {
   width: 100%;
-  padding: 1rem;
-  border-radius: 10px;
+  padding: 1.25rem 1.25rem;
+  border-radius: 14px;
   border: none;
   background: #151924;
-  color: #fff;
-  font-size: 1rem;
+  color: #ffffff;
+  font-size: 1.15rem;
+  line-height: 1.4;
+  margin-top: 1.75rem;
+  margin-bottom: 1.25rem;
+@media (min-width: 1024px) {
+  .home-search input {
+    font-size: 1.25rem;
+    padding: 1.4rem;
+  }
 }
 
+
+}
+
+/* ================= SUPPORTING UI ================= */
 .section-title {
-  margin-top: 2rem;
+  margin-top: 2.5rem;
   font-size: 0.85rem;
   color: #c8c8c8;
 }
@@ -138,7 +172,7 @@ header {
   color: #000;
 }
 
-/* ================= FLOW STATES ================= */
+/* ================= FLOW SECTIONS ================= */
 #search-interpretation,
 #length-selection,
 #blendz-ack,
@@ -166,7 +200,6 @@ header {
   background: #555;
   margin-right: 12px;
 }
-
 .timeline-step.active .dot {
   background: linear-gradient(180deg,#ff9a42,#f97316);
 }
@@ -179,9 +212,7 @@ header {
   border-radius: 12px;
 }
 
-#blendz-player audio {
-  width: 100%;
-}
+audio { width: 100%; }
 
 @media (max-width: 768px) {
   .home-bg { display: none; }
@@ -199,8 +230,14 @@ header {
   <div class="hero-content">
     <h1>Your Podcasts.<span>Your Blendz.</span><span>Your Way.</span></h1>
     <h2>Listen Smarter. Share Deeper. Blend Ideas.</h2>
+
     <div class="hero-actions">
       <button id="start-blendz" class="btn-primary">Generate Your Blendz</button>
+      <button class="btn-outline">Watch Demo</button>
+    </div>
+
+    <div class="hero-subtext">
+      Something I’ve always wanted, but didn’t know how to describe.
     </div>
   </div>
 </section>
@@ -244,6 +281,14 @@ We’ll gather moments across voices that reflect this idea.
 <audio id="blendz-audio" controls></audio>
 </div>
 
+<div class="section-title">Voices you might blend</div>
+<div class="pill">KevOnStage</div>
+
+<div class="section-title">Ideas people are exploring</div>
+<div class="pill">Faith</div>
+<div class="pill">Culture</div>
+<div class="pill">Power</div>
+
 </div>
 </section>
 
@@ -281,6 +326,17 @@ searchForm.onsubmit = e => {
   lengthSelection.style.display = "block";
 };
 
+document.querySelectorAll(".pill").forEach(pill => {
+  if (!pill.dataset.length) return;
+  pill.onclick = () => {
+    document.querySelectorAll(".pill").forEach(p => p.classList.remove("selected"));
+    pill.classList.add("selected");
+    selectedLength = pill.dataset.length;
+    ack.style.display = "block";
+    setTimeout(startTimeline, 800);
+  };
+});
+
 async function startTimeline() {
   if (blendzStarted) return;
   blendzStarted = true;
@@ -289,10 +345,8 @@ async function startTimeline() {
 
   steps[0].classList.add("active");
   await sleep(800);
-
   steps[1].classList.add("active");
   await sleep(800);
-
   steps[2].classList.add("active");
 
   let result;
@@ -305,7 +359,7 @@ async function startTimeline() {
         length: selectedLength
       })
     });
-    if (!response.ok) throw new Error("Backend failed");
+    if (!response.ok) throw new Error("Backend failure");
     result = await response.json();
   } catch (err) {
     alert("There was a problem creating your Blendz.");
@@ -314,7 +368,6 @@ async function startTimeline() {
   }
 
   steps[3].classList.add("active");
-
   audioEl.src = result.audio_file;
   player.style.display = "block";
 }
@@ -322,16 +375,6 @@ async function startTimeline() {
 function sleep(ms) {
   return new Promise(r => setTimeout(r, ms));
 }
-
-document.querySelectorAll(".pill").forEach(pill => {
-  pill.onclick = () => {
-    document.querySelectorAll(".pill").forEach(p => p.classList.remove("selected"));
-    pill.classList.add("selected");
-    selectedLength = pill.dataset.length;
-    ack.style.display = "block";
-    setTimeout(startTimeline, 800);
-  };
-});
 </script>
 
 </body>
