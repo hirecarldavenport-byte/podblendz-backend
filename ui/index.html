@@ -357,6 +357,21 @@
     const steps = document.querySelectorAll(".timeline-step");
     const lengthPills = document.querySelectorAll("#length-selection .pill");
 
+    let blendzStarted = false;
+function startTimeline() {
+  // Guard: prevent running more than once
+  if (blendzStarted) return;
+  blendzStarted = true;
+
+  timeline.style.display = "block";
+
+  steps.forEach((step, index) => {
+    setTimeout(() => {
+      step.classList.add("active");
+    }, index * 900);
+  });
+}
+
     startBtn.onclick = () => {
       hero.style.display = "none";
       home.style.display = "block";
@@ -382,17 +397,17 @@
     }
 
     lengthPills.forEach(pill => {
-      pill.onclick = () => {
-        lengthPills.forEach(p => p.classList.remove("btn-primary"));
-        pill.classList.add("btn-primary");
+  pill.onclick = () => {
+    lengthPills.forEach(p => p.classList.remove("btn-primary"));
+    pill.classList.add("btn-primary");
 
-        ack.style.display = "block";
+    ack.style.display = "block";
 
-        setTimeout(() => {
-          startTimeline();
-        }, 1000);
-      };
-    });
+    setTimeout(() => {
+      startTimeline();
+    }, 1000);
+  };
+});
   </script>
 
 </body>
