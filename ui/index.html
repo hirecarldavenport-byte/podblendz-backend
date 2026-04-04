@@ -6,9 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <style>
-    /* ======================================================
-       BASE
-    ====================================================== */
+    /* ================= BASE ================= */
     * { box-sizing: border-box; }
 
     body {
@@ -19,9 +17,7 @@
       line-height: 1.5;
     }
 
-    h1, h2, h3, p {
-      margin: 0 0 12px 0;
-    }
+    h1, h2, h3, p { margin: 0 0 12px 0; }
 
     button {
       cursor: pointer;
@@ -30,9 +26,7 @@
       font-size: 0.85rem;
     }
 
-    /* ======================================================
-       HEADER / LOGO
-    ====================================================== */
+    /* ================= HEADER ================= */
     header {
       position: fixed;
       top: 0;
@@ -54,17 +48,15 @@
       font-size: 0.95rem;
     }
 
-    /* ======================================================
-       HERO
-    ====================================================== */
+    /* ================= HERO ================= */
     #hero {
       min-height: 100vh;
       background:
         linear-gradient(
           to right,
-          rgba(5,7,12,0.95) 0%,
-          rgba(5,7,12,0.65) 40%,
-          rgba(5,7,12,0.0) 65%
+          rgba(5,7,12,0.95),
+          rgba(5,7,12,0.65),
+          rgba(5,7,12,0.0)
         ),
         url("/assets/black-lady-on-the-train.jpg");
       background-size: cover;
@@ -74,14 +66,11 @@
       align-items: center;
     }
 
-    .hero-content {
-      max-width: 640px;
-    }
+    .hero-content { max-width: 640px; }
 
     .hero h1 {
       font-size: 2.9rem;
       line-height: 1.15;
-      margin-bottom: 0.5rem;
     }
 
     .hero h1 span { display: block; }
@@ -97,7 +86,7 @@
     .hero-actions {
       display: flex;
       gap: 0.75rem;
-      margin-bottom: 1.25rem;
+      margin-bottom: 1rem;
     }
 
     .btn {
@@ -121,9 +110,7 @@
       color: #aaa;
     }
 
-    /* ======================================================
-       HOME
-    ====================================================== */
+    /* ================= HOME ================= */
     #home {
       display: none;
       position: relative;
@@ -159,14 +146,9 @@
       margin: 0 auto;
     }
 
-    .home-greeting h2 {
-      font-size: 1.8rem;
-      font-weight: 500;
-    }
+    .home-greeting h2 { font-size: 1.8rem; }
 
-    .home-greeting p {
-      color: #c8c8c8;
-    }
+    .home-greeting p { color: #c8c8c8; }
 
     .home-search input {
       width: 100%;
@@ -176,21 +158,18 @@
       background: #151924;
       color: #fff;
       font-size: 1rem;
-      margin: 1.25rem 0;
+      margin-top: 1.25rem;
     }
 
-    .home-search input::placeholder {
-      color: #8b91a6;
+    .home-search button {
+      margin-top: 0.75rem;
+      padding: 0.6rem 1.4rem;
+      font-size: 0.8rem;
     }
 
-    .home-hints {
-      font-size: 0.85rem;
-      color: #8b91a6;
-    }
+    .home-search input::placeholder { color: #8b91a6; }
 
-    .home-hints li {
-      margin-bottom: 0.4rem;
-    }
+    .home-hints { font-size: 0.85rem; color: #8b91a6; }
 
     .section-title {
       margin-top: 2.25rem;
@@ -210,17 +189,15 @@
       cursor: pointer;
     }
 
-    .pill:hover {
-      background: #262c40;
-    }
+    .pill:hover { background: #262c40; }
 
-    /* ================= SEARCH INTERPRETATION ================= */
-
-    #search-interpretation {
-      margin-top: 16px;
-      font-size: 0.9rem;
-      color: #c8c8c8;
+    /* ================= INTERPRETATION ================= */
+    #search-interpretation,
+    #length-selection {
       display: none;
+      margin-top: 16px;
+      color: #c8c8c8;
+      font-size: 0.9rem;
     }
 
     .interpretation-subtext {
@@ -242,108 +219,95 @@
 
 <body>
 
-  <!-- ================= HEADER ================= -->
-  <header>
-    <div class="logo">🎧 PodBlendz</div>
-  </header>
+<header>
+  <div class="logo">🎧 PodBlendz</div>
+</header>
 
-  <!-- ================= HERO ================= -->
-  <section id="hero">
-    <div class="hero-content">
-      <h1>
-        Your Podcasts.
-        <span>Your Blendz.</span>
-        <span>Your Way.</span>
-      </h1>
-      <h2>Listen Smarter. Share Deeper. Blend Ideas.</h2>
+<section id="hero">
+  <div class="hero-content">
+    <h1>Your Podcasts.<span>Your Blendz.</span><span>Your Way.</span></h1>
+    <h2>Listen Smarter. Share Deeper. Blend Ideas.</h2>
 
-      <div class="hero-actions">
-        <button class="btn">Watch Demo</button>
-        <button class="btn-primary" id="start-blendz">
-          Generate Your Blendz
-        </button>
-      </div>
-
-      <div class="hero-subtext">
-        Start mixing your favorite podcast moments
-      </div>
+    <div class="hero-actions">
+      <button class="btn">Watch Demo</button>
+      <button id="start-blendz" class="btn-primary">Generate Your Blendz</button>
     </div>
-  </section>
 
-  <!-- ================= HOME ================= -->
-  <section id="home">
-    <div class="home-bg"></div>
+    <div class="hero-subtext">Start mixing your favorite podcast moments</div>
+  </div>
+</section>
 
-    <div class="home-content">
+<section id="home">
+  <div class="home-bg"></div>
 
-      <div class="home-greeting">
-        <h2>Good morning.</h2>
-        <p>What’s on your mind today?</p>
-      </div>
-
-      <div class="home-search">
-        <input
-          id="search-input"
-          type="text"
-          placeholder="Search by idea, topic, or show…"
-        />
-      </div>
-
-      <div id="search-interpretation">
-        <p><strong>Interpreting this as:</strong> A topic-based exploration</p>
-        <p class="interpretation-subtext">
-          We’ll gather moments across voices that reflect this idea.
-        </p>
-      </div>
-
-      <div class="home-hints">
-        <p>Try:</p>
-        <ul>
-          <li>Faith and personal growth</li>
-          <li>The Daily – latest episodes</li>
-          <li>KevOnStage on culture</li>
-        </ul>
-      </div>
-
-      <div class="section-title">Voices you might blend</div>
-      <div class="pill">KevOnStage</div>
-
-      <div class="section-title">Ideas people are exploring</div>
-      <div class="pill">Faith</div>
-      <div class="pill">Culture</div>
-      <div class="pill">Power</div>
-
+  <div class="home-content">
+    <div class="home-greeting">
+      <h2>Good morning.</h2>
+      <p>What’s on your mind today?</p>
     </div>
-  </section>
 
-  <!-- ================= SCRIPT ================= -->
-  <script>
-    const hero = document.getElementById("hero");
-    const home = document.getElementById("home");
-    const startBtn = document.getElementById("start-blendz");
-    const searchInput = document.getElementById("search-input");
-    const interpretation = document.getElementById("search-interpretation");
+    <div class="home-search">
+      <input id="search-input" placeholder="Search by idea, topic, or show…" />
+      <button id="search-btn" class="btn-primary">Continue</button>
+    </div>
 
-    startBtn.addEventListener("click", () => {
-      hero.style.display = "none";
-      home.style.display = "block";
-      window.scrollTo(0, 0);
-      searchInput.focus();
-    });
+    <div id="search-interpretation">
+      <p><strong>Interpreting this as:</strong> A topic-based exploration</p>
+      <p class="interpretation-subtext">
+        We’ll gather moments across voices that reflect this idea.
+      </p>
+    </div>
 
-    searchInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && searchInput.value.trim() !== "") {
-        searchInput.disabled = true;
-        searchInput.style.opacity = "0.8";
+    <div id="length-selection">
+      <p class="section-title">How long should this Blendz be?</p>
+      <div class="pill" data-length="5">5 min · Quick Lens</div>
+      <div class="pill" data-length="10">10 min · Full Thought</div>
+      <div class="pill" data-length="25">25 min · Deep Dive</div>
+    </div>
+  </div>
+</section>
 
-        document.querySelectorAll(
-          ".home-hints, .section-title, .pill"
-        ).forEach(el => el.classList.add("home-dim"));
+<script>
+  const hero = document.getElementById("hero");
+  const home = document.getElementById("home");
+  const startBtn = document.getElementById("start-blendz");
+  const searchInput = document.getElementById("search-input");
+  const searchBtn = document.getElementById("search-btn");
+  const interpretation = document.getElementById("search-interpretation");
+  const lengthSelection = document.getElementById("length-selection");
 
-        interpretation.style.display = "block";
-      }
-    });
-  </script>
+  function showHome(push = true) {
+    hero.style.display = "none";
+    home.style.display = "block";
+    window.scrollTo(0, 0);
+    searchInput.focus();
+    if (push) history.pushState({ view: "home" }, "");
+  }
+
+  function showHero() {
+    home.style.display = "none";
+    hero.style.display = "flex";
+  }
+
+  history.replaceState({ view: "hero" }, "");
+
+  window.addEventListener("popstate", e => {
+    e.state?.view === "home" ? showHome(false) : showHero();
+  });
+
+  startBtn.onclick = () => showHome();
+
+  function commitSearch() {
+    if (!searchInput.value.trim()) return;
+    searchInput.disabled = true;
+
+    interpretation.style.display = "block";
+    lengthSelection.style.display = "block";
+  }
+
+  searchBtn.onclick = commitSearch;
+  searchInput.onkeydown = e => e.key === "Enter" && commitSearch();
+</script>
 
 </body>
 </html>
