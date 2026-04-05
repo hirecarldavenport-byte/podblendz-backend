@@ -374,7 +374,7 @@ async function startTimeline() {
 
   let result;
   try {
-    const response = await fetch("/blend/preview", {
+    const response = await fetch("https://api.podblendz.com/blend/preview", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -382,7 +382,7 @@ async function startTimeline() {
         length: selectedLength
       })
     });
-    if (!response.ok) throw new Error("Backend failed");
+    if (!response.ok) throw new Error("Backend error");
     result = await response.json();
   } catch (err) {
     alert("There was a problem creating your Blendz.");
