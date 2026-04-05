@@ -10,6 +10,21 @@ import feedparser
 from fastapi import FastAPI, Query, HTTPException
 
 app = FastAPI()
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://www.podblendz.com",
+        "https://podblendz.com",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+
 
 
 # ---------------------------------------------------------------------
@@ -47,11 +62,9 @@ def extract_audio_url(entry: Dict) -> Optional[str]:
 # ---------------------------------------------------------------------
 
 @app.get("/health")
-@app.get("/health")
 def health():
     return {"status": "ok"}
 
-    return {"status": "ok"}
 
 
 # ---------------------------------------------------------------------
