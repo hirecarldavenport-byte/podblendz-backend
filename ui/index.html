@@ -9,7 +9,7 @@
     body {
       margin: 0;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #0f172a;
+      background: radial-gradient(circle at top, #0b1220, #020617);
       color: #e5e7eb;
     }
 
@@ -24,7 +24,7 @@
       margin-bottom: 0.25rem;
     }
 
-    p.subtitle {
+    .subtitle {
       color: #94a3b8;
       margin-bottom: 2rem;
     }
@@ -42,11 +42,12 @@
       margin-right: 0.5rem;
       margin-bottom: 0.5rem;
       padding: 0.5rem 1rem;
-      border-radius: 1rem;
+      border-radius: 999px;
       border: 1px solid #334155;
       background: transparent;
       color: #e5e7eb;
       cursor: pointer;
+      font-size: 0.9rem;
     }
 
     .length-buttons button.active {
@@ -57,15 +58,16 @@
     }
 
     .primary-btn {
+      display: inline-block;
+      margin-top: 1rem;
       background: linear-gradient(180deg, #ff9a42, #f97316);
       border: none;
-      padding: 0.75rem 1.75rem;
+      padding: 0.85rem 2rem;
       border-radius: 999px;
       font-size: 1rem;
       font-weight: 600;
       color: #000;
       cursor: pointer;
-      margin-top: 1rem;
     }
 
     .timeline {
@@ -74,16 +76,15 @@
     }
 
     .step {
-  margin: 0.5rem 0;
-  color: #cbd5e1;
-  opacity: 0.3;
-  transition: opacity 0.4s ease;
-}
+      margin: 0.5rem 0;
+      color: #cbd5e1;
+      opacity: 0.3;
+      transition: opacity 0.4s ease;
+    }
 
-.step.active {
-  opacity: 1;
-}
-
+    .step.active {
+      opacity: 1;
+    }
 
     .error {
       margin-top: 1.5rem;
@@ -112,77 +113,93 @@
     </button>
 
     <div class="timeline" id="timeline">
-      <p>• Collecting moments</p>
-      <p>• Shaping ideas</p>
-      <p>• Blending voices</p>
+      <p class="step">• Collecting moments</p>
+      <p class="step">• Shaping ideas</p>
+      <p class="step">• Blending voices</p>
     </div>
 
-    <div class="timeline" id="timeline">
-  <p class="step">• Collecting moments</p>
-  <p class="step">• Shaping ideas</p>
-  <p class="step">• Blending voices</p>
-</div>
+    <div class="error" id="errorBox">
+      There was a problem creating your Blendz.
+    </div>
+  </div>
 
   <script>
-    const queryInput = document.getElementById("queryInput");
-    const buttons = document.querySelectorAll(".length-buttons button");
-    const generateBtn = document.getElementById("generateBtn");
-    const timeline = document.getElementById("timeline");
-    const errorBox = document.getElementById("errorBox");
+    document.addEventListener("DOMContentLoaded", () => {
+      const queryInput = document.getElementById("queryInput");
+      const buttons = document.querySelectorAll(".length-buttons button");
+      const generateBtn = document.getElementById("generateBtn");
+      const timeline = document.getElementById("timeline");
+      const errorBox = document.getElementById("errorBox");
+      const steps = document.querySelectorAll(".step");
 
-    let selectedLength = "min";
+      let selectedLength = "min";
 
-    buttons.forEach(btn => {
-      btn.addEventListener("click", () => {
-        buttons.forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        selectedLength = btn.dataset.length;
-      });
-    });
-
-    generateBtn.addEventListener("click", async () => {
-      errorBox.style.display = "none";
-      timeline.style.display = "block";
-
-      const query = queryInput.value.trim();
-
-      if (!query) {
-        errorBox.textContent = "Please enter a topic.";
-        errorBox.style.display = "block";
-        timeline.style.display = "none";
-        return;
+      function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
       }
 
-      try {
-        const response = await fetch(
-          "https://api.podblendz.com/blend/preview",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              query,
-              length: selectedLength
-            })
-          }
-        );
+      function resetTimeline() {
+        steps.forEach(step => step.classList.remove("active"));
+      }
 
-        if (!response.ok) {
-          throw new Error("Backend error");
+      async function activateStep(index) {
+        steps[index].classList.add("active");
+        await sleep(700);
+      }
+
+      buttons.forEach(btn => {
+        btn.addEventListener("click", () => {
+          buttons.forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          selectedLength = btn.dataset.length;
+        });
+      });
+
+      generateBtn.addEventListener("click", async () => {
+        errorBox.style.display = "none";
+        timeline.style.display = "block";
+        resetTimeline();
+
+        const query = queryInput.value.trim();
+
+        if (!query) {
+          errorBox.textContent = "Please enter a topic.";
+          errorBox.style.display = "block";
+          timeline.style.display = "none";
+          return;
         }
 
-        const data = await response.json();
-        console.log("Blend preview:", data);
+        try {
+          await activateStep(0);
+          await activateStep(1);
 
-        // At this stage, preview works.
-        // Audio and deeper steps can hook in later.
+          const response = await fetch(
+            "https://api.podblendz.com/blend/preview",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                query,
+                length: selectedLength
+              })
+            }
+          );
 
-      } catch (err) {
-        console.error(err);
-        timeline.style.display = "none";
-        errorBox.style.display = "block";
-      }
+          if (!response.ok) {
+            throw new Error("Backend error");
+          }
+
+          await activateStep(2);
+
+          const data = await response.json();
+          console.log("Blend preview:", data);
+
+        } catch (err) {
+          console.error(err);
+          timeline.style.display = "none";
+          errorBox.style.display = "block";
+        }
+      });
     });
   </script>
 </body>
