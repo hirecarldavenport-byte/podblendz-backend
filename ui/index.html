@@ -1,285 +1,422 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>PodBlendz</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="UTF-8" />
+<title>PodBlendz</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <style>
-    * { box-sizing: border-box; }
+<style>
+/* ======================================================
+   BASE / RESET
+====================================================== */
+* { box-sizing: border-box; }
 
-    body {
-      margin: 0;
-      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      background: #0b0e14;
-      color: #ffffff;
-    }
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: #0b0e14;
+  color: #ffffff;
+  line-height: 1.55;
+  overflow-x: hidden;
+}
 
-    a { text-decoration: none; color: inherit; }
+h1, h2, h3, p { margin: 0 0 12px 0; }
 
-    /* ================= NAV ================= */
-    header {
-      position: fixed;
-      top: 0;
-      width: 100%;
-      z-index: 10;
-      background: rgba(15,17,24,0.75);
-      backdrop-filter: blur(8px);
-      padding: 0.8rem 2.2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+/* ======================================================
+   HEADER
+====================================================== */
+header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 20;
+  padding: 0.9rem 2.2rem;
+  background: rgba(15,17,24,0.75);
+  backdrop-filter: blur(8px);
+}
 
-    .logo {
-      font-weight: 700;
-      letter-spacing: 1px;
-      font-size: 0.95rem;
-    }
+.logo {
+  font-weight: 700;
+}
 
-    nav a {
-      margin-left: 1.75rem;
-      font-size: 0.85rem;
-      color: #e2e2e2;
-    }
+/* ======================================================
+   HERO
+====================================================== */
+#hero {
+  min-height: 100vh;
+  padding: 8rem 2.5rem 4rem;
+  display: flex;
+  align-items: center;
+  background-image:
+    linear-gradient(
+      to right,
+      rgba(5,7,12,0.95),
+      rgba(5,7,12,0.65),
+      rgba(5,7,12,0)
+    ),
+    url("/assets/black-lady-on-the-train.jpg");
+  background-size: cover;
+  background-position: 62% 38%;
+}
 
-    nav a.signup {
-      border: 1px solid rgba(255,255,255,0.35);
-      padding: 0.25rem 0.7rem;
-      border-radius: 6px;
-    }
+.hero-content { max-width: 640px; }
 
-    /* ================= HERO ================= */
-    .hero {
-      min-height: 100vh;
-      background:
-        linear-gradient(
-          to right,
-          rgba(5,7,12,0.95) 0%,
-          rgba(5,7,12,0.65) 40%,
-          rgba(5,7,12,0.0) 65%
-        ),
-        url("/assets/black-lady-on-the-train.jpg");
-      background-size: cover;
-      background-position: 62% 38%;
-      background-repeat: no-repeat;
-      padding: 7.5rem 2.5rem 3rem;
-      display: flex;
-      align-items: center;
-    }
+.hero h1 {
+  font-size: 2.9rem;
+  line-height: 1.15;
+}
+.hero h1 span { display: block; }
 
-    .hero-content {
-      max-width: 620px;
-    }
+.hero h2 {
+  font-style: italic;
+  font-weight: 400;
+  color: #c8c8c8;
+  margin-bottom: 1.75rem;
+}
 
-    .hero h1 {
-      font-size: 2.9rem;
-      line-height: 1.15;
-      margin-bottom: 0.5rem;
-    }
+.hero-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
 
-    .hero h1 span { display: block; }
+.btn-primary {
+  background: linear-gradient(180deg,#ff9a42,#f97316);
+  padding: 0.85rem 2.2rem;
+  border-radius: 999px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  
+color: #000000;                 /* standard */
+  -webkit-text-fill-color: #000000; /* iOS Safari override */
 
-    .hero h2 {
-      font-style: italic;
-      font-weight: 400;
-      font-size: 1.05rem;
-      color: #c8c8c8;
-      margin-bottom: 1.75rem;
-    }
+}
 
-    .hero-actions {
-      display: flex;
-      gap: 0.75rem;
-      margin-bottom: 1.5rem;
-    }
+.btn-outline {
+  padding: 0.85rem 2.2rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.35);
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+}
 
-    .btn {
-      padding: 0.55rem 1.25rem;
-      font-size: 0.85rem;
-      border-radius: 999px;
-      cursor: pointer;
-      background: transparent;
-      color: #fff;
-      border: 1px solid rgba(255,255,255,0.35);
-    }
+/* ======================================================
+   HOME
+====================================================== */
+#home {
+  display: none;
+  min-height: 100vh;
+  padding: 8rem 2rem 6rem;
+  position: relative;
+}
 
-    .btn-primary {
-      background: linear-gradient(180deg,#ff9a42,#f97316);
-      color: white;
-      padding: 0.85rem 2rem;
-      border-radius: 999px;
-      font-weight: 600;
-      border: none;
-      cursor: pointer;
-      box-shadow:
-        0 8px 24px rgba(0,0,0,0.8),
-        inset 0 1px 2px rgba(255,255,255,0.3);
-    }
+.home-bg {
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(
+      to left,
+      rgba(11,14,20,0.85),
+      rgba(11,14,20,1)
+    ),
+    url("/assets/black-lady-on-the-train.jpg");
+  background-size: cover;
+  background-position: center;
+  opacity: 0.35;
+  filter: blur(6px) grayscale(30%);
+  z-index: -1;
+  pointer-events: none;
+}
 
-    .hero-subtext {
-      font-size: 0.75rem;
-      color: #aaa;
-      margin-top: 0.4rem;
-    }
+.home-content {
+  max-width: 860px;
+  margin: 0 auto;
+}
 
-    /* ================= SECTIONS ================= */
-    .categories {
-      display: grid;
-      grid-template-columns: repeat(3,1fr);
-      gap: 1.2rem;
-      padding: 2.5rem;
-      background: linear-gradient(#0f1321,#0b0e14);
-    }
+/* ======================================================
+   SEARCH
+====================================================== */
+.home-search {
+  margin-top: 1.75rem;
+}
 
-    .category, .blend-card {
-      background: #181d2c;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05);
-      transition: transform .2s ease;
-    }
+.home-search input {
+  width: 100%;
+  padding: 1.35rem;
+  border-radius: 14px;
+  border: none;
+  background: #151924;
+  color: #fff;
+  font-size: 1.2rem;
+}
 
-    .category:hover,
-    .blend-card:hover {
-      transform: translateY(-3px);
-    }
+/* ======================================================
+   SUPPORTING UI
+====================================================== */
+.section-title {
+  margin-top: 2.25rem;
+  font-size: 0.85rem;
+  color: #c8c8c8;
+}
 
-    .category img,
-    .blend-card img {
-      width: 100%;
-      height: 120px;
-      object-fit: cover;
-    }
+.pill {
+  display: inline-block;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  background: #1b2030;
+  margin-right: 0.4rem;
+  margin-bottom: 0.4rem;
+  cursor: pointer;
+}
 
-    .category div,
-    .blend-card div {
-      padding: 1rem;
-    }
+.pill.selected {
+  background: #f97316;
+  color: #000;
+}
 
-    .latest {
-      padding: 2.5rem;
-    }
+/* ======================================================
+   FLOW SECTIONS
+====================================================== */
+#search-interpretation,
+#length-selection,
+#blendz-ack,
+#blendz-timeline,
+#blendz-player,
+#reset-blendz {
+  display: none;
+  margin-top: 20px;
+}
 
-    .latest h3 {
-      font-size: 1.2rem;
-      margin-bottom: 1.4rem;
-    }
+/* ======================================================
+   TIMELINE
+====================================================== */
+.timeline-step {
+  display: flex;
+  align-items: center;
+  margin-bottom: 14px;
+  opacity: 0.25;
+  transition: opacity 0.4s ease;
+}
+.timeline-step.active { opacity: 1; }
 
-    .latest-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill,minmax(220px,1fr));
-      gap: 1.4rem;
-    }
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #555;
+  margin-right: 12px;
+}
+.timeline-step.active .dot {
+  background: linear-gradient(180deg,#ff9a42,#f97316);
+}
 
-    @media (max-width: 768px) {
-      .hero {
-        background-position: 55% 32%;
-      }
-      .categories {
-        grid-template-columns: 1fr;
-      }
-    }
-  </style>
+/* ======================================================
+   PLAYER
+====================================================== */
+#blendz-player {
+  margin-top: 28px;
+  padding: 16px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 12px;
+}
+#audio {
+  width: 100%;
+}
+
+/* ======================================================
+   RESET BUTTON
+====================================================== */
+#reset-blendz button {
+  margin-top: 20px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.35);
+  padding: 0.8rem 2rem;
+  border-radius: 999px;
+  color: #fff;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .home-bg { display: none; }
+}
+</style>
 </head>
 
 <body>
 
 <header>
-  <div class="logo">pod blendz</div>
-  <nav>
-    Explore
-    My Blendz
-    Create
-    Sign Up
-  </nav>
+  <div class="logo">🎧 PodBlendz</div>
 </header>
 
-<section class="hero">
+<!-- ================= HERO ================= -->
+<section id="hero">
   <div class="hero-content">
-    <h1>
-      Your Podcasts.
-      <span>Your Blendz.</span>
-      <span>Your Way.</span>
-    </h1>
-
+    <h1>Your Podcasts.<span>Your Blendz.</span><span>Your Way.</span></h1>
     <h2>Listen Smarter. Share Deeper. Blend Ideas.</h2>
 
     <div class="hero-actions">
-      <button class="btn">Get Started</button>
-      <button class="btn">Watch Demo</button>
-    </div>
-
-    <button class="btn-primary">Generate Your Blendz</button>
-    <div class="hero-subtext">
-      Start mixing your favorite podcast moments
+      <button id="start-blendz" class="btn-primary">Generate Your Blendz</button>
+      <button class="btn-outline">Watch Demo</button>
     </div>
   </div>
 </section>
 
-<section class="categories">
-  <div class="category">
-    <img src="/assets/placeholder-category.jpg" />
-    <div>
-      <h3>Trending Blendz</h3>
-      <p>The hottest mixes right now</p>
-    </div>
-  </div>
+<!-- ================= HOME ================= -->
+<section id="home">
+<div class="home-bg"></div>
+<div class="home-content">
 
-  <div class="category">
-    <img src="/assets/placeholder-category.jpg" />
-    <div>
-      <h3>Quick Hits</h3>
-      <p>Short and impactful blends</p>
-    </div>
-  </div>
+<h2>Welcome.</h2>
+<p>What’s on your mind?</p>
 
-  <div class="category">
-    <img src="/assets/placeholder-category.jpg" />
-    <div>
-      <h3>Deep Dives</h3>
-      <p>Long‑form podcast ideas</p>
-    </div>
-  </div>
+<form id="search-form" class="home-search">
+  <input id="search-input" placeholder="Search by idea, topic, or show…" />
+</form>
+
+<div id="search-interpretation">
+  <p><strong>Interpreting this as:</strong> A topic-based exploration</p>
+</div>
+
+<div id="length-selection">
+  <p class="section-title">How long should this Blendz be?</p>
+  <div class="pill" data-length="5">5 min · Quick Lens</div>
+  <div class="pill" data-length="10">10 min · Full Thought</div>
+  <div class="pill" data-length="25">25 min · Deep Dive</div>
+</div>
+
+<div id="blendz-ack">Alright. Let’s <strong>Blendz</strong>.</div>
+
+<div id="blendz-timeline">
+  <div class="timeline-step"><span class="dot"></span><span>Collecting moments</span></div>
+  <div class="timeline-step"><span class="dot"></span><span>Shaping ideas</span></div>
+  <div class="timeline-step"><span class="dot"></span><span>Blending voices</span></div>
+  <div class="timeline-step"><span class="dot"></span><span>Your Blendz is ready</span></div>
+</div>
+
+<div id="blendz-player">
+  <p class="section-title">Your Blendz</p>
+  <audio id="audio" controls></audio>
+</div>
+
+<div id="reset-blendz">
+  <button>Create another Blendz</button>
+</div>
+
+<div class="section-title">Voices you might blend</div>
+<div class="pill">KevOnStage</div>
+
+<div class="section-title">Ideas people are exploring</div>
+<div class="pill">Faith</div>
+<div class="pill">Culture</div>
+<div class="pill">Power</div>
+
+</div>
 </section>
 
-<section class="latest">
-  <h3>Latest Blendz</h3>
+<script>
+const hero = document.getElementById("hero");
+const home = document.getElementById("home");
+const startBtn = document.getElementById("start-blendz");
 
-  <div class="latest-grid">
-    <div class="blend-card">
-      <img src="/assets/placeholder-blend.jpg" />
-      <div>
-        <h4>Tech Innovations Weekly</h4>
-        <span>Tech & Science</span>
-      </div>
-    </div>
+const searchForm = document.getElementById("search-form");
+const searchInput = document.getElementById("search-input");
+const interpretation = document.getElementById("search-interpretation");
+const lengthSelection = document.getElementById("length-selection");
+const ack = document.getElementById("blendz-ack");
 
-    <div class="blend-card">
-      <img src="/assets/placeholder-blend.jpg" />
-      <div>
-        <h4>Mindful Moments</h4>
-        <span>Health & Wellness</span>
-      </div>
-    </div>
+const timeline = document.getElementById("blendz-timeline");
+const steps = document.querySelectorAll(".timeline-step");
 
-    <div class="blend-card">
-      <img src="/assets/placeholder-blend.jpg" />
-      <div>
-        <h4>True Crime: Twisted Tales</h4>
-        <span>True Crime</span>
-      </div>
-    </div>
+const player = document.getElementById("blendz-player");
+const audioEl = document.getElementById("audio");
+const resetBtn = document.querySelector("#reset-blendz button");
 
-    <div class="blend-card">
-      <img src="/assets/placeholder-blend.jpg" />
-      <div>
-        <h4>Startup Success Stories</h4>
-        <span>Business & Startups</span>
-      </div>
-    </div>
-  </div>
-</section>
+let blendzStarted = false;
+let selectedLength = null;
+
+startBtn.onclick = () => {
+  hero.style.display = "none";
+  home.style.display = "block";
+  searchInput.focus();
+};
+
+searchForm.onsubmit = e => {
+  e.preventDefault();
+  if (!searchInput.value.trim()) return;
+  searchInput.disabled = true;
+  interpretation.style.display = "block";
+  lengthSelection.style.display = "block";
+};
+
+document.querySelectorAll("#length-selection .pill").forEach(pill => {
+  pill.onclick = () => {
+    document.querySelectorAll(".pill").forEach(p => p.classList.remove("selected"));
+    pill.classList.add("selected");
+    selectedLength = pill.dataset.length;
+    ack.style.display = "block";
+    setTimeout(startTimeline, 800);
+  };
+});
+
+async function startTimeline() {
+  if (blendzStarted) return;
+  blendzStarted = true;
+
+  timeline.style.display = "block";
+
+  steps[0].classList.add("active");
+  await sleep(800);
+  steps[1].classList.add("active");
+  await sleep(800);
+  steps[2].classList.add("active");
+
+  let result;
+  try {
+    const response = await fetch("https://api.podblendz.com/blend/preview", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        query: searchInput.value.trim(),
+        length: selectedLength
+      })
+    });
+    if (!response.ok) throw new Error("Backend error");
+    result = await response.json();
+  } catch (err) {
+    alert("There was a problem creating your Blendz.");
+    console.error(err);
+    return;
+  }
+
+  steps[3].classList.add("active");
+  audioEl.src = result.audio_file;
+  player.style.display = "block";
+  document.getElementById("reset-blendz").style.display = "block";
+}
+
+resetBtn.onclick = () => {
+  blendzStarted = false;
+  selectedLength = null;
+
+  searchInput.disabled = false;
+  searchInput.value = "";
+
+  interpretation.style.display = "none";
+  lengthSelection.style.display = "none";
+  ack.style.display = "none";
+  timeline.style.display = "none";
+  player.style.display = "none";
+  document.getElementById("reset-blendz").style.display = "none";
+
+  steps.forEach(step => step.classList.remove("active"));
+};
+
+function sleep(ms) {
+  return new Promise(r => setTimeout(r, ms));
+}
+</script>
 
 </body>
 </html>
