@@ -1,423 +1,181 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>PodBlendz</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PodBlendz</title>
 
-<style>
-/* ======================================================
-   BASE / RESET
-====================================================== */
-* { box-sizing: border-box; }
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+    }
 
-body {
-  margin: 0;
-  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  background: #0b0e14;
-  color: #ffffff;
-  line-height: 1.55;
-  overflow-x: hidden;
-}
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem;
+    }
 
-h1, h2, h3, p { margin: 0 0 12px 0; }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 0.25rem;
+    }
 
-/* ======================================================
-   HEADER
-====================================================== */
-header {
-  position: fixed;
-  top: 0;
-  width: 100%;
-  z-index: 20;
-  padding: 0.9rem 2.2rem;
-  background: rgba(15,17,24,0.75);
-  backdrop-filter: blur(8px);
-}
+    p.subtitle {
+      color: #94a3b8;
+      margin-bottom: 2rem;
+    }
 
-.logo {
-  font-weight: 700;
-}
+    input[type="text"] {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      border: none;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
 
-/* ======================================================
-   HERO
-====================================================== */
-#hero {
-  min-height: 100vh;
-  padding: 8rem 2.5rem 4rem;
-  display: flex;
-  align-items: center;
-  background-image:
-    linear-gradient(
-      to right,
-      rgba(5,7,12,0.95),
-      rgba(5,7,12,0.65),
-      rgba(5,7,12,0)
-    ),
-    url("/assets/black-lady-on-the-train.jpg");
-  background-size: cover;
-  background-position: 62% 38%;
-}
+    .length-buttons button {
+      margin-right: 0.5rem;
+      margin-bottom: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 1rem;
+      border: 1px solid #334155;
+      background: transparent;
+      color: #e5e7eb;
+      cursor: pointer;
+    }
 
-.hero-content { max-width: 640px; }
+    .length-buttons button.active {
+      background: #f97316;
+      color: #000;
+      border: none;
+      font-weight: 600;
+    }
 
-.hero h1 {
-  font-size: 2.9rem;
-  line-height: 1.15;
-}
-.hero h1 span { display: block; }
+    .primary-btn {
+      background: linear-gradient(180deg, #ff9a42, #f97316);
+      border: none;
+      padding: 0.75rem 1.75rem;
+      border-radius: 999px;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #000;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
 
-.hero h2 {
-  font-style: italic;
-  font-weight: 400;
-  color: #c8c8c8;
-  margin-bottom: 1.75rem;
-}
+    .timeline {
+      margin-top: 2rem;
+      display: none;
+    }
 
-.hero-actions {
-  display: flex;
-  gap: 0.75rem;
-  margin-top: 1.5rem;
-}
+    .timeline p {
+      margin: 0.5rem 0;
+      color: #cbd5e1;
+    }
 
-.btn-primary {
-  background: linear-gradient(180deg,#ff9a42,#f97316);
-  padding: 0.85rem 2.2rem;
-  border-radius: 999px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  
-color: #000000;                 /* standard */
-  -webkit-text-fill-color: #000000; /* iOS Safari override */
-
-}
-
-.btn-outline {
-  padding: 0.85rem 2.2rem;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.35);
-  background: transparent;
-  color: #fff;
-  cursor: pointer;
-}
-
-/* ======================================================
-   HOME
-====================================================== */
-#home {
-  display: none;
-  min-height: 100vh;
-  padding: 8rem 2rem 6rem;
-  position: relative;
-}
-
-.home-bg {
-  position: fixed;
-  inset: 0;
-  background-image:
-    linear-gradient(
-      to left,
-      rgba(11,14,20,0.85),
-      rgba(11,14,20,1)
-    ),
-    url("/assets/black-lady-on-the-train.jpg");
-  background-size: cover;
-  background-position: center;
-  opacity: 0.35;
-  filter: blur(6px) grayscale(30%);
-  z-index: -1;
-  pointer-events: none;
-}
-
-.home-content {
-  max-width: 860px;
-  margin: 0 auto;
-}
-
-/* ======================================================
-   SEARCH
-====================================================== */
-.home-search {
-  margin-top: 1.75rem;
-}
-
-.home-search input {
-  width: 100%;
-  padding: 1.35rem;
-  border-radius: 14px;
-  border: none;
-  background: #151924;
-  color: #fff;
-  font-size: 1.2rem;
-}
-
-/* ======================================================
-   SUPPORTING UI
-====================================================== */
-.section-title {
-  margin-top: 2.25rem;
-  font-size: 0.85rem;
-  color: #c8c8c8;
-}
-
-.pill {
-  display: inline-block;
-  padding: 0.55rem 1rem;
-  border-radius: 999px;
-  background: #1b2030;
-  margin-right: 0.4rem;
-  margin-bottom: 0.4rem;
-  cursor: pointer;
-}
-
-.pill.selected {
-  background: #f97316;
-  color: #000;
-}
-
-/* ======================================================
-   FLOW SECTIONS
-====================================================== */
-#search-interpretation,
-#length-selection,
-#blendz-ack,
-#blendz-timeline,
-#blendz-player,
-#reset-blendz {
-  display: none;
-  margin-top: 20px;
-}
-
-/* ======================================================
-   TIMELINE
-====================================================== */
-.timeline-step {
-  display: flex;
-  align-items: center;
-  margin-bottom: 14px;
-  opacity: 0.25;
-  transition: opacity 0.4s ease;
-}
-.timeline-step.active { opacity: 1; }
-
-.dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #555;
-  margin-right: 12px;
-}
-.timeline-step.active .dot {
-  background: linear-gradient(180deg,#ff9a42,#f97316);
-}
-
-/* ======================================================
-   PLAYER
-====================================================== */
-#blendz-player {
-  margin-top: 28px;
-  padding: 16px;
-  background: rgba(255,255,255,0.04);
-  border-radius: 12px;
-}
-#audio {
-  width: 100%;
-}
-
-/* ======================================================
-   RESET BUTTON
-====================================================== */
-#reset-blendz button {
-  margin-top: 20px;
-  background: transparent;
-  border: 1px solid rgba(255,255,255,0.35);
-  padding: 0.8rem 2rem;
-  border-radius: 999px;
-  color: #fff;
-  cursor: pointer;
-}
-
-@media (max-width: 768px) {
-  .home-bg { display: none; }
-}
-</style>
+    .error {
+      margin-top: 1.5rem;
+      color: #f87171;
+      display: none;
+    }
+  </style>
 </head>
 
 <body>
+  <div class="container">
+    <h1>Welcome.</h1>
+    <p class="subtitle">What’s on your mind?</p>
 
-<header>
-  <div class="logo">🎧 PodBlendz</div>
-</header>
+    <input id="queryInput" type="text" placeholder="Morehouse College" />
 
-<!-- ================= HERO ================= -->
-<section id="hero">
-  <div class="hero-content">
-    <h1>Your Podcasts.<span>Your Blendz.</span><span>Your Way.</span></h1>
-    <h2>Listen Smarter. Share Deeper. Blend Ideas.</h2>
+    <div class="length-buttons">
+      <button data-length="5">5 min</button>
+      <button data-length="min" class="active">10 min</button>
+      <button data-length="10">20 min</button>
+      <button data-length="25">Deep dive</button>
+    </div>
 
-    <div class="hero-actions">
-      <button id="start-blendz" class="btn-primary">Generate Your Blendz</button>
-      <button class="btn-outline">Watch Demo</button>
+    <button id="generateBtn" class="primary-btn">
+      Generate Your Blendz
+    </button>
+
+    <div class="timeline" id="timeline">
+      <p>• Collecting moments</p>
+      <p>• Shaping ideas</p>
+      <p>• Blending voices</p>
+    </div>
+
+    <div class="error" id="errorBox">
+      There was a problem creating your Blendz.
     </div>
   </div>
-</section>
 
-<!-- ================= HOME ================= -->
-<section id="home">
-<div class="home-bg"></div>
-<div class="home-content">
+  <script>
+    const queryInput = document.getElementById("queryInput");
+    const buttons = document.querySelectorAll(".length-buttons button");
+    const generateBtn = document.getElementById("generateBtn");
+    const timeline = document.getElementById("timeline");
+    const errorBox = document.getElementById("errorBox");
 
-<h2>Welcome.</h2>
-<p>What’s on your mind?</p>
+    let selectedLength = "min";
 
-<form id="search-form" class="home-search">
-  <input id="search-input" placeholder="Search by idea, topic, or show…" />
-</form>
-
-<div id="search-interpretation">
-  <p><strong>Interpreting this as:</strong> A topic-based exploration</p>
-</div>
-
-<div id="length-selection">
-  <p class="section-title">How long should this Blendz be?</p>
-  <div class="pill" data-length="5">5 min · Quick Lens</div>
-  <div class="pill" data-length="10">10 min · Full Thought</div>
-  <div class="pill" data-length="25">25 min · Deep Dive</div>
-</div>
-
-<div id="blendz-ack">Alright. Let’s <strong>Blendz</strong>.</div>
-
-<div id="blendz-timeline">
-  <div class="timeline-step"><span class="dot"></span><span>Collecting moments</span></div>
-  <div class="timeline-step"><span class="dot"></span><span>Shaping ideas</span></div>
-  <div class="timeline-step"><span class="dot"></span><span>Blending voices</span></div>
-  <div class="timeline-step"><span class="dot"></span><span>Your Blendz is ready</span></div>
-</div>
-
-<div id="blendz-player">
-  <p class="section-title">Your Blendz</p>
-  <audio id="audio" controls></audio>
-</div>
-
-<div id="reset-blendz">
-  <button>Create another Blendz</button>
-</div>
-
-<div class="section-title">Voices you might blend</div>
-<div class="pill">KevOnStage</div>
-
-<div class="section-title">Ideas people are exploring</div>
-<div class="pill">Faith</div>
-<div class="pill">Culture</div>
-<div class="pill">Power</div>
-
-</div>
-</section>
-
-<script>
-const hero = document.getElementById("hero");
-const home = document.getElementById("home");
-const startBtn = document.getElementById("start-blendz");
-
-const searchForm = document.getElementById("search-form");
-const searchInput = document.getElementById("search-input");
-const interpretation = document.getElementById("search-interpretation");
-const lengthSelection = document.getElementById("length-selection");
-const ack = document.getElementById("blendz-ack");
-
-const timeline = document.getElementById("blendz-timeline");
-const steps = document.querySelectorAll(".timeline-step");
-
-const player = document.getElementById("blendz-player");
-const audioEl = document.getElementById("audio");
-const resetBtn = document.querySelector("#reset-blendz button");
-
-let blendzStarted = false;
-let selectedLength = null;
-
-startBtn.onclick = () => {
-  hero.style.display = "none";
-  home.style.display = "block";
-  searchInput.focus();
-};
-
-searchForm.onsubmit = e => {
-  e.preventDefault();
-  if (!searchInput.value.trim()) return;
-  searchInput.disabled = true;
-  interpretation.style.display = "block";
-  lengthSelection.style.display = "block";
-};
-
-document.querySelectorAll("#length-selection .pill").forEach(pill => {
-  pill.onclick = () => {
-    document.querySelectorAll(".pill").forEach(p => p.classList.remove("selected"));
-    pill.classList.add("selected");
-    selectedLength = pill.dataset.length;
-    ack.style.display = "block";
-    setTimeout(startTimeline, 800);
-  };
-});
-
-async function startTimeline() {
-  if (blendzStarted) return;
-  blendzStarted = true;
-
-  timeline.style.display = "block";
-
-  steps[0].classList.add("active");
-  await sleep(800);
-  steps[1].classList.add("active");
-  await sleep(800);
-  steps[2].classList.add("active");
-
-  let result;
-  try {
-    const response = await fetch("https://api.podblendz.com/blend/preview", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        query: searchInput.value.trim(),
-        length: selectedLength
-      })
+    buttons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        buttons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        selectedLength = btn.dataset.length;
+      });
     });
-    if (!response.ok) throw new Error("Backend error");
-    result = await response.json();
-  } catch (err) {
-    alert("There was a problem creating your Blendz.");
-    console.error(err);
-    return;
-  }
 
-  steps[3].classList.add("active");
-  audioEl.src = result.audio_file;
-  player.style.display = "block";
-  document.getElementById("reset-blendz").style.display = "block";
-}
+    generateBtn.addEventListener("click", async () => {
+      errorBox.style.display = "none";
+      timeline.style.display = "block";
 
-resetBtn.onclick = () => {
-  blendzStarted = false;
-  selectedLength = null;
+      const query = queryInput.value.trim();
 
-  searchInput.disabled = false;
-  searchInput.value = "";
+      if (!query) {
+        errorBox.textContent = "Please enter a topic.";
+        errorBox.style.display = "block";
+        timeline.style.display = "none";
+        return;
+      }
 
-  interpretation.style.display = "none";
-  lengthSelection.style.display = "none";
-  ack.style.display = "none";
-  timeline.style.display = "none";
-  player.style.display = "none";
-  document.getElementById("reset-blendz").style.display = "none";
+      try {
+        const response = await fetch(
+          "https://api.podblendz.com/blend/preview",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              query,
+              length: selectedLength
+            })
+          }
+        );
 
-  steps.forEach(step => step.classList.remove("active"));
-};
+        if (!response.ok) {
+          throw new Error("Backend error");
+        }
 
-function sleep(ms) {
-  return new Promise(r => setTimeout(r, ms));
-}
-</script>
+        const data = await response.json();
+        console.log("Blend preview:", data);
 
+        // At this stage, preview works.
+        // Audio and deeper steps can hook in later.
+
+      } catch (err) {
+        console.error(err);
+        timeline.style.display = "none";
+        errorBox.style.display = "block";
+      }
+    });
+  </script>
 </body>
 </html>
-``
