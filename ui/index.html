@@ -73,10 +73,17 @@
       display: none;
     }
 
-    .timeline p {
-      margin: 0.5rem 0;
-      color: #cbd5e1;
-    }
+    .step {
+  margin: 0.5rem 0;
+  color: #cbd5e1;
+  opacity: 0.3;
+  transition: opacity 0.4s ease;
+}
+
+.step.active {
+  opacity: 1;
+}
+
 
     .error {
       margin-top: 1.5rem;
@@ -110,10 +117,11 @@
       <p>• Blending voices</p>
     </div>
 
-    <div class="error" id="errorBox">
-      There was a problem creating your Blendz.
-    </div>
-  </div>
+    <div class="timeline" id="timeline">
+  <p class="step">• Collecting moments</p>
+  <p class="step">• Shaping ideas</p>
+  <p class="step">• Blending voices</p>
+</div>
 
   <script>
     const queryInput = document.getElementById("queryInput");
