@@ -1,13 +1,13 @@
-"""
-api.py
-
-Main FastAPI application for PodBlendz.
-"""
-
 from typing import Optional, List, Dict
 import hashlib
 import feedparser
-from fastapi import FastAPI, Query, HTTPException
+
+from fastapi import FastAPI, Query, HTTPException, Response
+from fastapi.middleware.cors import CORSMiddleware
+
+# -----------------------------------------------------------------------------
+# App initialization
+# -----------------------------------------------------------------------------
 
 app = FastAPI()
 from fastapi.middleware.cors import CORSMiddleware
@@ -31,45 +31,37 @@ async def options_blend_preview():
 
 
 
+# -----------------------------------------------------------------------------
+# CORS middleware (MUST be immediately after app creation)
+# -----------------------------------------------------------------------------
 
-# ---------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://www.podblendz.com",
+        "https://podblendz.com",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-def make_id(value: str) -> str:
-    return hashlib.md5(value.encode("utf-8")).hexdigest()
-
-
-def parse_duration(entry: Dict) -> Optional[int]:
-    raw = entry.get("itunes_duration") or entry.get("duration")
-    if not raw:
-        return None
-
-    try:
-        parts = [int(p) for p in raw.split(":")]
-        seconds = 0
-        for p in parts:
-            seconds = seconds * 60 + p
-        return seconds
-    except Exception:
-        return None
+# -----------------------------------------------------------------------------
+# Explicit OPTIONS preflight handler (FIXES 404 OPTIONS)
+# -----------------------------------------------------------------------------
 
 
-def extract_audio_url(entry: Dict) -> Optional[str]:
-    for enclosure in entry.get("enclosures", []):
-        if enclosure.get("type", "").startswith("audio"):
-            return enclosure.get("url")
-    return None
 
+# -----------------------------------------------------------------------------
+# Health check
+# -----------------------------------------------------------------------------
 
-# ---------------------------------------------------------------------
-# Health
-# ---------------------------------------------------------------------
-
+@app.get("/health")
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
+    return {"status": "ok"}
 
 
 # ---------------------------------------------------------------------
