@@ -1,135 +1,71 @@
-from typing import Optional, List, Dict
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from starlette.middleware import Middleware
 import hashlib
-import feedparser
-
-from fastapi import FastAPI, Query, HTTPException, Response
-from fastapi.middleware.cors import CORSMiddleware
+import time
 
 # -----------------------------------------------------------------------------
-# App initialization
+# Create app WITH middleware (CRITICAL FIX)
 # -----------------------------------------------------------------------------
 
-app = FastAPI()
-from fastapi.middleware.cors import CORSMiddleware
+middleware = [
+    Middleware(
+        CORSMiddleware,
+        allow_origins=[
+            "https://www.podblendz.com",
+            "https://podblendz.com",
+        ],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+]
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "https://www.podblendz.com",
-        "https://podblendz.com",
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-from fastapi import Response
-
-@app.options("/blend/preview")
-async def options_blend_preview():
-    return Response(status_code=200)
-
-
-
-
-# -----------------------------------------------------------------------------
-# CORS middleware (MUST be immediately after app creation)
-# -----------------------------------------------------------------------------
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "https://www.podblendz.com",
-        "https://podblendz.com",
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+app = FastAPI(
+    title="PodBlendz API",
+    version="1.0.0",
+    middleware=middleware,
 )
 
 # -----------------------------------------------------------------------------
-# Explicit OPTIONS preflight handler (FIXES 404 OPTIONS)
+# Request schema
 # -----------------------------------------------------------------------------
 
-
+class BlendPreviewRequest(BaseModel):
+    query: str
+    length: str
 
 # -----------------------------------------------------------------------------
 # Health check
 # -----------------------------------------------------------------------------
 
 @app.get("/health")
-@app.get("/health")
-def health():
+async def health():
     return {"status": "ok"}
 
-    return {"status": "ok"}
+# -----------------------------------------------------------------------------
+# Blend preview endpoint
+# -----------------------------------------------------------------------------
 
+@app.post("/blend/preview")
+async def blend_preview(payload: BlendPreviewRequest):
+    query = payload.query.strip()
+    length = payload.length.strip()
 
-# ---------------------------------------------------------------------
-# /rss/search — Podcast discovery
-# ---------------------------------------------------------------------
-# ---------------------------------------------------------------------
-# /rss/search — Podcast discovery
-# ---------------------------------------------------------------------
+    if not query:
+        raise HTTPException(status_code=400, detail="Query cannot be empty")
 
-@app.get("/rss/search")
-def rss_search(q: str = Query(..., description="Search term")):
-    """
-    Temporary search implementation.
-    IMPORTANT: Includes `feed` so frontend can fetch episodes.
-    """
+    if length not in {"5", "min", "10", "25"}:
+        raise HTTPException(status_code=400, detail="Invalid length")
 
-    results = [
-        {
-            "id": make_id(q),
-            "id": make_id(q),
-            "title": f"Sample podcast result for '{q}'",
-            "source": "itunes",
+    blend_id = hashlib.sha256(
+        f"{query}-{length}-{time.time()}".encode("utf-8")
+    ).hexdigest()[:16]
 
-            # ✅ REAL RSS FEED URL (example; replace later with real search)
-            "feed": "https://feeds.simplecast.com/54nAGcIl",
-        }
-    ]
-
-    return {"results": results}
-
-
-# ---------------------------------------------------------------------
-# /rss/episodes — Episode listing
-# ---------------------------------------------------------------------
-
-@app.get("/rss/episodes")
-def rss_episodes(feed: str = Query(...)):
-    try:
-        parsed = feedparser.parse(feed)
-        entries = list(parsed.entries or [])
-
-        episodes: List[Dict] = []
-
-        for entry in entries:
-            raw_id = (
-                entry.get("id")
-                or entry.get("guid")
-                or entry.get("link")
-                or entry.get("title")
-                or "unknown"
-            )
-
-            episode_id = make_id(str(raw_id))
-
-            episodes.append({
-                "id": episode_id,
-                "title": entry.get("title", "Untitled episode"),
-                "published": entry.get("published", ""),
-                "summary": entry.get("summary", ""),
-                "duration": parse_duration(entry),
-                "audio_url": extract_audio_url(entry),
-                "popularity": None,
-            })
-
-        return {"episodes": episodes}
-
-    except Exception as exc:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Failed to parse RSS feed: {exc}"
-        )
+    return {
+        "blend_id": blend_id,
+        "query": query,
+        "length": length,
+        "status": "preview_ready",
+    }
