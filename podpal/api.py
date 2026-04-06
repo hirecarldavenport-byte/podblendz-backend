@@ -10,6 +10,21 @@ from fastapi.middleware.cors import CORSMiddleware
 # -----------------------------------------------------------------------------
 
 app = FastAPI()
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://www.podblendz.com",
+        "https://podblendz.com",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+
 
 # -----------------------------------------------------------------------------
 # CORS middleware (MUST be immediately after app creation)
@@ -37,24 +52,79 @@ app.add_middleware(
 # -----------------------------------------------------------------------------
 
 @app.get("/health")
-async def health():
+@app.get("/health")
+def health():
     return {"status": "ok"}
 
-# -----------------------------------------------------------------------------
-# Blend preview endpoint
-# -----------------------------------------------------------------------------
+    return {"status": "ok"}
 
-@app.post("/blend/preview")
-async def blend_preview(
-    query: str,
-    length: str = Query(..., regex="^(5|min|10|25)$")
-):
-    if not query.strip():
-        raise HTTPException(status_code=400, detail="Query cannot be empty")
 
-    blend_id = hashlib.sha256(f"{query}-{length}".encode()).hexdigest()
-    return {
-        "blend_id": blend_id,
-        "query": query,
-        "length": length
-    }
+# ---------------------------------------------------------------------
+# /rss/search — Podcast discovery
+# ---------------------------------------------------------------------
+# ---------------------------------------------------------------------
+# /rss/search — Podcast discovery
+# ---------------------------------------------------------------------
+
+@app.get("/rss/search")
+def rss_search(q: str = Query(..., description="Search term")):
+    """
+    Temporary search implementation.
+    IMPORTANT: Includes `feed` so frontend can fetch episodes.
+    """
+
+    results = [
+        {
+            "id": make_id(q),
+            "id": make_id(q),
+            "title": f"Sample podcast result for '{q}'",
+            "source": "itunes",
+
+            # ✅ REAL RSS FEED URL (example; replace later with real search)
+            "feed": "https://feeds.simplecast.com/54nAGcIl",
+        }
+    ]
+
+    return {"results": results}
+
+
+# ---------------------------------------------------------------------
+# /rss/episodes — Episode listing
+# ---------------------------------------------------------------------
+
+@app.get("/rss/episodes")
+def rss_episodes(feed: str = Query(...)):
+    try:
+        parsed = feedparser.parse(feed)
+        entries = list(parsed.entries or [])
+
+        episodes: List[Dict] = []
+
+        for entry in entries:
+            raw_id = (
+                entry.get("id")
+                or entry.get("guid")
+                or entry.get("link")
+                or entry.get("title")
+                or "unknown"
+            )
+
+            episode_id = make_id(str(raw_id))
+
+            episodes.append({
+                "id": episode_id,
+                "title": entry.get("title", "Untitled episode"),
+                "published": entry.get("published", ""),
+                "summary": entry.get("summary", ""),
+                "duration": parse_duration(entry),
+                "audio_url": extract_audio_url(entry),
+                "popularity": None,
+            })
+
+        return {"episodes": episodes}
+
+    except Exception as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to parse RSS feed: {exc}"
+        )
