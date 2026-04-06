@@ -1,14 +1,11 @@
 from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from starlette.middleware import Middleware
+from fastapi.middleware.cors import CORSMiddleware
 import hashlib
 import time
 
-# -----------------------------------------------------------------------------
-# Create app WITH middleware (CRITICAL FIX)
-# -----------------------------------------------------------------------------
-
+# ---- middleware FIRST ----
 middleware = [
     Middleware(
         CORSMiddleware,
@@ -16,56 +13,37 @@ middleware = [
             "https://www.podblendz.com",
             "https://podblendz.com",
         ],
-        allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
+        allow_credentials=True,
     )
 ]
 
-app = FastAPI(
-    title="PodBlendz API",
-    version="1.0.0",
-    middleware=middleware,
-)
+# ---- app creation WITH middleware ----
+app = FastAPI(middleware=middleware)
 
-# -----------------------------------------------------------------------------
-# Request schema
-# -----------------------------------------------------------------------------
-
+# ---- request schema ----
 class BlendPreviewRequest(BaseModel):
     query: str
     length: str
 
-# -----------------------------------------------------------------------------
-# Health check
-# -----------------------------------------------------------------------------
-
+# ---- health ----
 @app.get("/health")
 async def health():
     return {"status": "ok"}
 
-# -----------------------------------------------------------------------------
-# Blend preview endpoint
-# -----------------------------------------------------------------------------
-
+# ---- preview ----
 @app.post("/blend/preview")
 async def blend_preview(payload: BlendPreviewRequest):
-    query = payload.query.strip()
-    length = payload.length.strip()
+    if not payload.query.strip():
+        raise HTTPException(status_code=400, detail="Empty query")
 
-    if not query:
-        raise HTTPException(status_code=400, detail="Query cannot be empty")
-
-    if length not in {"5", "min", "10", "25"}:
+    if payload.length not in {"5", "min", "10", "25"}:
         raise HTTPException(status_code=400, detail="Invalid length")
 
-    blend_id = hashlib.sha256(
-        f"{query}-{length}-{time.time()}".encode("utf-8")
-    ).hexdigest()[:16]
-
     return {
-        "blend_id": blend_id,
-        "query": query,
-        "length": length,
+        "blend_id": hashlib.sha256(
+            f"{payload.query}-{payload.length}-{time.time()}".encode()
+        ).hexdigest()[:16],
         "status": "preview_ready",
     }
