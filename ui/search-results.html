@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PodBlendz – Results</title>
+  <title>PodBlendz – Blendz Preview</title>
 
   <style>
     body {
@@ -20,8 +20,8 @@
     }
 
     h1 {
-      font-size: 1.75rem;
-      margin-bottom: 1rem;
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
     }
 
     .meta {
@@ -29,19 +29,25 @@
       margin-bottom: 2rem;
     }
 
-    .result-box {
-      background: rgba(255,255,255,0.04);
-      border-radius: 0.75rem;
-      padding: 1.25rem;
-      margin-bottom: 1.25rem;
+    .status {
+      margin-top: 1rem;
+      color: #cbd5e1;
     }
 
     .error {
       color: #f87171;
       margin-top: 1rem;
+      font-weight: 500;
     }
 
-    .back-btn {
+    .success {
+      margin-top: 1.25rem;
+      padding: 1rem;
+      border-radius: 0.75rem;
+      background: rgba(255,255,255,0.05);
+    }
+
+    .cta {
       display: inline-block;
       margin-top: 2rem;
       background: linear-gradient(180deg, #ff9a42, #f97316);
@@ -60,13 +66,14 @@
 <body>
   <div class="container">
     <h1>Blendz Preview</h1>
+
     <div class="meta" id="meta"></div>
 
-    <div id="results"></div>
+    <div class="status" id="status">Preparing preview…</div>
+    <div class="success" id="success" style="display:none;"></div>
+    <div class="error" id="error" style="display:none;"></div>
 
-    <div class="error" id="error"></div>
-
-    <a href="/" class="back-btn">Create another Blendz</a>
+    <a href="/" class="cta">Create another Blendz</a>
   </div>
 
   <script>
@@ -76,11 +83,14 @@
       const length = params.get("len") || "min";
 
       const meta = document.getElementById("meta");
-      const results = document.getElementById("results");
+      const status = document.getElementById("status");
+      const successBox = document.getElementById("success");
       const errorBox = document.getElementById("error");
 
       if (!query) {
+        status.style.display = "none";
         errorBox.textContent = "Missing query.";
+        errorBox.style.display = "block";
         return;
       }
 
@@ -107,17 +117,18 @@
 
         const data = await response.json();
 
-        const box = document.createElement("div");
-        box.className = "result-box";
-        box.textContent = `Preview ready (ID: ${data.blend_id})`;
-
-        results.appendChild(box);
+        status.style.display = "none";
+        successBox.style.display = "block";
+        successBox.textContent = `✅ Preview ready (ID: ${data.blend_id})`;
 
       } catch (err) {
         console.error(err);
+        status.style.display = "none";
+        errorBox.style.display = "block";
         errorBox.textContent = "There was a problem generating this Blendz.";
       }
     });
   </script>
 </body>
 </html>
+``
