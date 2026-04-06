@@ -22,6 +22,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+from fastapi import Response
+
+@app.options("/blend/preview")
+async def options_blend_preview():
+    return Response(status_code=200)
 
 
 
