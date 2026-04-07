@@ -25,3 +25,13 @@ app.include_router(blend_router)
 
 # ✅ Safety check endpoint (optional, but useful)
 
+from fastapi.staticfiles import StaticFiles
+import os
+
+os.makedirs("audio", exist_ok=True)
+
+app.mount(
+    "/audio",
+    StaticFiles(directory="audio"),
+    name="audio",
+)
