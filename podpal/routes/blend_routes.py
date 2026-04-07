@@ -1,7 +1,7 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 import uuid
+import requests
 
-# Internal imports (keep, even if temporarily unused)
 from podpal.rss.ingest import parse_rss
 from podpal.services.narration import generate_blend_narration
 from podpal.audio.polly import synthesize_narration
@@ -14,39 +14,100 @@ router = APIRouter(
 
 
 @router.post("/preview")
-def preview_blend(query: str, length: str):
+def preview_blend(query: str):
     """
-    Preview what a blend would include without generating audio.
+    Preview a blend by validating the RSS feed URL.
+    """
 
-    Returns metadata only (no side effects).
-    """
+    try:
+        response = requests.get(query, timeout=10)
+        response.raise_for_status()
+    except requests.RequestException as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unable to fetch RSS feed: {exc}",
+        )
+
     return {
         "query": query,
-        "length": length,
-        "estimated_duration_seconds": 600,
-        "status": "preview"
+        "rss_bytes": len(response.content),
+        "status": "preview",
     }
 
 
 @router.post("")
-def create_blend(query: str, length: str):
+def create_blend(query: str):
     """
-    Create a full blend.
+    Create a full PodBlend from a real RSS feed URL.
 
-    End-to-end (future):
-    - Fetch RSS
-    - Parse RSS
-    - Generate narration text
-    - Generate Polly audio
-    - Save blend + return audio path
+    Pipeline:
+    1. Fetch RSS XML
+    2. Parse RSS
+    3. Normalize entries
+    4. Generate narration text
+    5. Synthesize audio
     """
 
     blend_id = str(uuid.uuid4())
 
-    # Placeholder for real orchestration logic
+    # ------------------------------------------------------------------
+    # 1. Fetch RSS XML
+    # ------------------------------------------------------------------
+    try:
+        response = requests.get(query, timeout=10)
+        response.raise_for_status()
+    except requests.RequestException as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unable to fetch RSS feed: {exc}",
+        )
+
+    xml_bytes = response.content
+
+    # ------------------------------------------------------------------
+    # 2. Parse RSS
+    # ------------------------------------------------------------------
+    feed = parse_rss(xml_bytes=xml_bytes)
+
+    # ------------------------------------------------------------------
+    # 3. Normalize entries
+    # ------------------------------------------------------------------
+    podcasts = []
+
+    for entry in getattr(feed, "entries", []):
+        podcasts.append(
+            {
+                "title": getattr(entry, "title", ""),
+                "summary": getattr(entry, "summary", ""),
+                "link": getattr(entry, "link", ""),
+            }
+        )
+
+    if not podcasts:
+        raise HTTPException(
+            status_code=400,
+            detail="RSS feed contained no usable entries",
+        )
+
+    # ------------------------------------------------------------------
+    # 4. Generate narration text
+    # ------------------------------------------------------------------
+    narration_text = generate_blend_narration(podcasts)
+
+    # ------------------------------------------------------------------
+    # 5. Generate audio
+    # ------------------------------------------------------------------
+    filename = f"{blend_id}.mp3"
+    audio_path = synthesize_narration(
+        text=narration_text,
+        filename=filename,
+    )
+
     return {
         "blend_id": blend_id,
         "query": query,
-        "length": length,
-        "status": "created (placeholder)"
+        "episode_count": len(podcasts),
+        "audio_file": filename,
+        "audio_path": audio_path,
+        "status": "created",
     }
