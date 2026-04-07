@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
 import uuid
 import requests
 
@@ -7,17 +8,34 @@ from podpal.services.narration import generate_blend_narration
 from podpal.audio.polly import synthesize_narration
 
 
+# -------------------------------------------------------------------
+# Request Models
+# -------------------------------------------------------------------
+
+class BlendRequest(BaseModel):
+    query: str
+
+
+# -------------------------------------------------------------------
+# Router
+# -------------------------------------------------------------------
+
 router = APIRouter(
     prefix="/blend",
     tags=["Blend"],
 )
 
 
+# -------------------------------------------------------------------
+# Preview Endpoint
+# -------------------------------------------------------------------
+
 @router.post("/preview")
-def preview_blend(query: str):
+def preview_blend(req: BlendRequest):
     """
-    Preview a blend by validating the RSS feed URL.
+    Validate that an RSS feed can be fetched.
     """
+    query = req.query
 
     try:
         response = requests.get(query, timeout=10)
@@ -35,8 +53,12 @@ def preview_blend(query: str):
     }
 
 
+# -------------------------------------------------------------------
+# Create Blend Endpoint
+# -------------------------------------------------------------------
+
 @router.post("")
-def create_blend(query: str):
+def create_blend(req: BlendRequest):
     """
     Create a full PodBlend from a real RSS feed URL.
 
@@ -48,11 +70,12 @@ def create_blend(query: str):
     5. Synthesize audio
     """
 
+    query = req.query
     blend_id = str(uuid.uuid4())
 
-    # ------------------------------------------------------------------
-    # 1. Fetch RSS XML
-    # ------------------------------------------------------------------
+    # ---------------------------------------------------------------
+    # 1. Fetch RSS
+    # ---------------------------------------------------------------
     try:
         response = requests.get(query, timeout=10)
         response.raise_for_status()
@@ -62,16 +85,14 @@ def create_blend(query: str):
             detail=f"Unable to fetch RSS feed: {exc}",
         )
 
-    xml_bytes = response.content
-
-    # ------------------------------------------------------------------
+    # ---------------------------------------------------------------
     # 2. Parse RSS
-    # ------------------------------------------------------------------
-    feed = parse_rss(xml_bytes=xml_bytes)
+    # ---------------------------------------------------------------
+    feed = parse_rss(xml_bytes=response.content)
 
-    # ------------------------------------------------------------------
-    # 3. Normalize entries
-    # ------------------------------------------------------------------
+    # ---------------------------------------------------------------
+    # 3. Normalize feed entries
+    # ---------------------------------------------------------------
     podcasts = []
 
     for entry in getattr(feed, "entries", []):
@@ -89,14 +110,14 @@ def create_blend(query: str):
             detail="RSS feed contained no usable entries",
         )
 
-    # ------------------------------------------------------------------
+    # ---------------------------------------------------------------
     # 4. Generate narration text
-    # ------------------------------------------------------------------
+    # ---------------------------------------------------------------
     narration_text = generate_blend_narration(podcasts)
 
-    # ------------------------------------------------------------------
+    # ---------------------------------------------------------------
     # 5. Generate audio
-    # ------------------------------------------------------------------
+    # ---------------------------------------------------------------
     filename = f"{blend_id}.mp3"
     audio_path = synthesize_narration(
         text=narration_text,
