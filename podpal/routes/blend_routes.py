@@ -2,23 +2,23 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 import uuid
 import requests
+import feedparser
 
-from podpal.rss.ingest import parse_rss
 from podpal.services.narration import generate_blend_narration
 from podpal.audio.polly import synthesize_narration
 
 
-# -------------------------------------------------------------------
+# -----------------------------
 # Request Models
-# -------------------------------------------------------------------
+# -----------------------------
 
 class BlendRequest(BaseModel):
     query: str
 
 
-# -------------------------------------------------------------------
+# -----------------------------
 # Router
-# -------------------------------------------------------------------
+# -----------------------------
 
 router = APIRouter(
     prefix="/blend",
@@ -26,15 +26,12 @@ router = APIRouter(
 )
 
 
-# -------------------------------------------------------------------
+# -----------------------------
 # Preview Endpoint
-# -------------------------------------------------------------------
+# -----------------------------
 
 @router.post("/preview")
 def preview_blend(req: BlendRequest):
-    """
-    Validate that an RSS feed can be fetched.
-    """
     query = req.query
 
     try:
@@ -46,36 +43,25 @@ def preview_blend(req: BlendRequest):
             detail=f"Unable to fetch RSS feed: {exc}",
         )
 
+    feed = feedparser.parse(response.content)
+
     return {
         "query": query,
-        "rss_bytes": len(response.content),
+        "entry_count": len(feed.entries),
         "status": "preview",
     }
 
 
-# -------------------------------------------------------------------
+# -----------------------------
 # Create Blend Endpoint
-# -------------------------------------------------------------------
+# -----------------------------
 
 @router.post("")
 def create_blend(req: BlendRequest):
-    """
-    Create a full PodBlend from a real RSS feed URL.
-
-    Pipeline:
-    1. Fetch RSS XML
-    2. Parse RSS
-    3. Normalize entries
-    4. Generate narration text
-    5. Synthesize audio
-    """
-
     query = req.query
     blend_id = str(uuid.uuid4())
 
-    # ---------------------------------------------------------------
-    # 1. Fetch RSS
-    # ---------------------------------------------------------------
+    # 1. Fetch RSS feed
     try:
         response = requests.get(query, timeout=10)
         response.raise_for_status()
@@ -85,17 +71,19 @@ def create_blend(req: BlendRequest):
             detail=f"Unable to fetch RSS feed: {exc}",
         )
 
-    # ---------------------------------------------------------------
-    # 2. Parse RSS
-    # ---------------------------------------------------------------
-    feed = parse_rss(xml_bytes=response.content)
+    # 2. Parse RSS using feedparser (NPR-compatible)
+    feed = feedparser.parse(response.content)
 
-    # ---------------------------------------------------------------
-    # 3. Normalize feed entries
-    # ---------------------------------------------------------------
+    if not feed.entries:
+        raise HTTPException(
+            status_code=400,
+            detail="RSS feed contained no entries",
+        )
+
+    # 3. Normalize entries
     podcasts = []
 
-    for entry in getattr(feed, "entries", []):
+    for entry in feed.entries:
         podcasts.append(
             {
                 "title": getattr(entry, "title", ""),
@@ -104,20 +92,10 @@ def create_blend(req: BlendRequest):
             }
         )
 
-    if not podcasts:
-        raise HTTPException(
-            status_code=400,
-            detail="RSS feed contained no usable entries",
-        )
-
-    # ---------------------------------------------------------------
     # 4. Generate narration text
-    # ---------------------------------------------------------------
     narration_text = generate_blend_narration(podcasts)
 
-    # ---------------------------------------------------------------
     # 5. Generate audio
-    # ---------------------------------------------------------------
     filename = f"{blend_id}.mp3"
     audio_path = synthesize_narration(
         text=narration_text,
