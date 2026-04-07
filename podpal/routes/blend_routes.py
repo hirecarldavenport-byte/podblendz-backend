@@ -12,8 +12,10 @@ router = APIRouter(
     tags=["Blend"],
 )
 
-@router.post("/preview")
-def preview_blend():
+
+@router.post("")
+def create_blend(query: str, length: str):
+    return {"status": "placeholder"}
     """
     End-to-end blend preview:
     - Fetch RSS
