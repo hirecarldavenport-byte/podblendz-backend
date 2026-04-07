@@ -24,6 +24,4 @@ app.include_router(blend_router)
 
 
 # ✅ Safety check endpoint (optional, but useful)
-@app.get("/")
-def root():
-    return {"status": "ok"}
+
