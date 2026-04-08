@@ -2,7 +2,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pathlib import Path
-import os
 
 # -------------------------------------------------
 # App setup
@@ -16,12 +15,11 @@ app = FastAPI(
 
 # -------------------------------------------------
 # CORS configuration
-# Allow frontend + media access
 # -------------------------------------------------
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Safe for now; lock down later if desired
+    allow_origins=["*"],  # Temporary: allows frontend + media
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -35,8 +33,7 @@ AUDIO_DIR = Path("audio")
 AUDIO_DIR.mkdir(exist_ok=True)
 
 # -------------------------------------------------
-# Serve audio with explicit MIME type
-# (This fixes 'NotSupportedError' and CORB issues)
+# Audio endpoint with explicit MIME type
 # -------------------------------------------------
 
 @app.get("/audio/{filename}", tags=["Audio"])
@@ -47,7 +44,7 @@ def get_audio(filename: str):
         return {"error": "Audio file not found"}
 
     return FileResponse(
-        audio_path,
+        path=audio_path,
         media_type="audio/mpeg",
         filename=filename,
     )
