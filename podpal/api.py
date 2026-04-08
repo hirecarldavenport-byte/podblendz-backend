@@ -1,6 +1,7 @@
 from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from pathlib import Path
 import os
 
 # -------------------------------------------------
@@ -15,37 +16,41 @@ app = FastAPI(
 
 # -------------------------------------------------
 # CORS configuration
-# (Required for frontend → backend requests)
+# Allow frontend + media access
 # -------------------------------------------------
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://www.podblendz.com",
-        "https://podblendz.com",
-        "http://localhost:3000",
-        "http://localhost:8000",
-    ],
-    allow_credentials=True,
+    allow_origins=["*"],  # Safe for now; lock down later if desired
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # -------------------------------------------------
-# Ensure directories exist
+# Audio directory
 # -------------------------------------------------
 
-os.makedirs("audio", exist_ok=True)
+AUDIO_DIR = Path("audio")
+AUDIO_DIR.mkdir(exist_ok=True)
 
 # -------------------------------------------------
-# Static file serving (audio output)
+# Serve audio with explicit MIME type
+# (This fixes 'NotSupportedError' and CORB issues)
 # -------------------------------------------------
 
-app.mount(
-    "/audio",
-    StaticFiles(directory="audio"),
-    name="audio",
-)
+@app.get("/audio/{filename}", tags=["Audio"])
+def get_audio(filename: str):
+    audio_path = AUDIO_DIR / filename
+
+    if not audio_path.exists():
+        return {"error": "Audio file not found"}
+
+    return FileResponse(
+        audio_path,
+        media_type="audio/mpeg",
+        filename=filename,
+    )
 
 # -------------------------------------------------
 # Import routers
@@ -64,7 +69,7 @@ app.include_router(search_router)
 app.include_router(blend_router)
 
 # -------------------------------------------------
-# Root endpoint (sanity / uptime check)
+# Root endpoint
 # -------------------------------------------------
 
 @app.get("/", tags=["System"])
