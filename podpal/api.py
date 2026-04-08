@@ -1,49 +1,59 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from starlette.middleware import Middleware
-from fastapi.middleware.cors import CORSMiddleware
-import hashlib
-import time
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+import os
 
-# ---- middleware FIRST ----
-middleware = [
-    Middleware(
-        CORSMiddleware,
-        allow_origins=[
-            "https://www.podblendz.com",
-            "https://podblendz.com",
-        ],
-        allow_methods=["*"],
-        allow_headers=["*"],
-        allow_credentials=True,
-    )
-]
+# -------------------------------------------------
+# App setup
+# -------------------------------------------------
 
-# ---- app creation WITH middleware ----
-app = FastAPI(middleware=middleware)
+app = FastAPI(
+    title="PodBlendz API",
+    version="0.1.0",
+    description="Backend API for search-driven podcast blending"
+)
 
-# ---- request schema ----
-class BlendPreviewRequest(BaseModel):
-    query: str
-    length: str
+# -------------------------------------------------
+# Ensure required directories exist
+# -------------------------------------------------
 
-# ---- health ----
-@app.get("/health")
-async def health():
-    return {"status": "ok"}
+os.makedirs("audio", exist_ok=True)
 
-# ---- preview ----
-@app.post("/blend/preview")
-async def blend_preview(payload: BlendPreviewRequest):
-    if not payload.query.strip():
-        raise HTTPException(status_code=400, detail="Empty query")
+# -------------------------------------------------
+# Static file serving (audio output)
+# -------------------------------------------------
 
-    if payload.length not in {"5", "min", "10", "25"}:
-        raise HTTPException(status_code=400, detail="Invalid length")
+app.mount(
+    "/audio",
+    StaticFiles(directory="audio"),
+    name="audio",
+)
 
+# -------------------------------------------------
+# Route imports
+# -------------------------------------------------
+
+from podpal.routes.health import router as health_router
+from podpal.routes.blend_routes import router as blend_router
+from podpal.routes.search_routes import router as search_router
+
+# -------------------------------------------------
+# Register routers
+# -------------------------------------------------
+
+app.include_router(health_router)
+app.include_router(search_router)
+app.include_router(blend_router)
+
+# -------------------------------------------------
+# Root endpoint (useful for sanity checks)
+# -------------------------------------------------
+
+@app.get("/", tags=["System"])
+def root():
+    """
+    Basic sanity endpoint.
+    """
     return {
-        "blend_id": hashlib.sha256(
-            f"{payload.query}-{payload.length}-{time.time()}".encode()
-        ).hexdigest()[:16],
-        "status": "preview_ready",
+        "status": "ok",
+        "service": "PodBlendz API"
     }
