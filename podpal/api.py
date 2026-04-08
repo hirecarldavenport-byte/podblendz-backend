@@ -4,6 +4,13 @@ from fastapi.responses import FileResponse
 from pathlib import Path
 
 # -------------------------------------------------
+# Resolve project root reliably (IMPORTANT)
+# -------------------------------------------------
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+AUDIO_DIR = BASE_DIR / "audio"
+
+# -------------------------------------------------
 # App setup
 # -------------------------------------------------
 
@@ -16,24 +23,18 @@ app = FastAPI(
 # -------------------------------------------------
 # CORS configuration
 # -------------------------------------------------
+# Allows frontend and media playback across domains
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Temporary: allows frontend + media
+    allow_origins=["*"],   # Safe for now; can restrict later
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # -------------------------------------------------
-# Audio directory
-# -------------------------------------------------
-
-AUDIO_DIR = Path("audio")
-AUDIO_DIR.mkdir(exist_ok=True)
-
-# -------------------------------------------------
-# Audio endpoint with explicit MIME type
+# Audio endpoint (explicit MIME type)
 # -------------------------------------------------
 
 @app.get("/audio/{filename}", tags=["Audio"])
