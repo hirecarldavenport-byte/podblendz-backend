@@ -79,8 +79,7 @@ def create_blend(request: BlendRequest):
     # -------------------------------------------------
     # 4. AUDIO OUTPUT (SAFE)
     # -------------------------------------------------
-    audio_filename = f"{blend_id}.mp3"
-    audio_path = synthesize_narration(narration_text, audio_filename)
+    audio_path = "/audio/demo.mp3"
 
     return {
         "blend_id": blend_id,
