@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 import os
 
 # -------------------------------------------------
@@ -9,11 +10,29 @@ import os
 app = FastAPI(
     title="PodBlendz API",
     version="0.1.0",
-    description="Backend API for search-driven podcast blending"
+    description="Backend API for search-driven podcast blending",
 )
 
 # -------------------------------------------------
-# Ensure required directories exist
+# CORS configuration
+# (Required for frontend → backend requests)
+# -------------------------------------------------
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://www.podblendz.com",
+        "https://podblendz.com",
+        "http://localhost:3000",
+        "http://localhost:8000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# -------------------------------------------------
+# Ensure directories exist
 # -------------------------------------------------
 
 os.makedirs("audio", exist_ok=True)
@@ -29,12 +48,12 @@ app.mount(
 )
 
 # -------------------------------------------------
-# Route imports
+# Import routers
 # -------------------------------------------------
 
 from podpal.routes.health import router as health_router
-from podpal.routes.blend_routes import router as blend_router
 from podpal.routes.search_routes import router as search_router
+from podpal.routes.blend_routes import router as blend_router
 
 # -------------------------------------------------
 # Register routers
@@ -45,15 +64,13 @@ app.include_router(search_router)
 app.include_router(blend_router)
 
 # -------------------------------------------------
-# Root endpoint (useful for sanity checks)
+# Root endpoint (sanity / uptime check)
 # -------------------------------------------------
 
 @app.get("/", tags=["System"])
 def root():
-    """
-    Basic sanity endpoint.
-    """
     return {
         "status": "ok",
-        "service": "PodBlendz API"
+        "service": "PodBlendz API",
+        "description": "Blends multiple podcasts into one audio story by topic",
     }
