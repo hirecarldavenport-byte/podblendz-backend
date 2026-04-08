@@ -59,7 +59,7 @@
 
 <body>
 
-  <!-- Product copy (from PRODUCT.md) -->
+  <!-- Product copy (aligned with PRODUCT.md) -->
   <h1>PodBlendz</h1>
 
   <p>
@@ -72,7 +72,7 @@
     combines perspectives, and turns them into one listenable blend.
   </p>
 
-  <!-- Search -->
+  <!-- Search input -->
   <input
     id="queryInput"
     type="text"
@@ -85,10 +85,14 @@
 
   <div id="status"></div>
 
-  <!-- Audio -->
-  <audio id="audioPlayer" controls crossorigin="anonymous"></audio>
+  <!-- Audio player -->
+  <audio
+    id="audioPlayer"
+    controls
+    crossorigin="anonymous">
+  </audio>
 
-  <!-- Debug output (optional, remove later) -->
+  <!-- Debug output (keep for now; remove later if you want) -->
   <pre id="debug"></pre>
 
 <script>
@@ -101,8 +105,12 @@
     const debug = document.getElementById("debug");
 
     status.textContent = "";
-    audio.src = "";
     debug.textContent = "";
+
+    // FULL AUDIO RESET (important)
+    audio.pause();
+    audio.removeAttribute("src");
+    audio.load();
 
     if (!query) {
       status.textContent = "Please enter a topic.";
@@ -128,18 +136,34 @@
       }
 
       const data = await response.json();
-
       debug.textContent = JSON.stringify(data, null, 2);
 
-      if (data.audio_path) {
-        audio.src = BACKEND_BASE + data.audio_path;
-        await audio.play();
-        status.textContent = "Blend ready.";
-      } else {
-        status.textContent = "Blend created, but no audio returned.";
+      if (!data.audio_path) {
+        status.textContent = "Blend created, but no audio was returned.";
+        return;
       }
 
+      // FORCE CLEAN AUDIO LOAD
+      const audioUrl = BACKEND_BASE + data.audio_path;
+
+      audio.pause();
+      audio.removeAttribute("src");
+      audio.load();
+
+      audio.src = audioUrl;
+      audio.load();
+
+      audio.play()
+        .then(() => {
+          status.textContent = "Blend ready.";
+        })
+        .catch(err => {
+          console.error("Audio play failed:", err);
+          status.textContent = "Audio blocked by browser.";
+        });
+
     } catch (err) {
+      console.error("Network error:", err);
       status.textContent = "Network error.";
       debug.textContent = String(err);
     }
@@ -148,3 +172,4 @@
 
 </body>
 </html>
+
