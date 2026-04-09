@@ -58,7 +58,78 @@
 </head>
 
 <body>
+<!-- HERO SECTION -->
+<section
+  style="
+    position: relative;
+    min-height: 70vh;
+    background-image: url('https://podblendz-ui-346871994277-us-east-1-an.s3.us-east-1.amazonaws.com/assets/black-lady-on-the-train.jpg');
+    background-size: cover;
+    background-position: center;
+    color: white;
+  "
+>
+  <!-- Dark overlay -->
+  <div
+    style="
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+    "
+  ></div>
 
+  <!-- Hero content -->
+  <div
+    style="
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      padding: 80px 40px;
+    "
+  >
+    <div style="font-size: 1.1rem; opacity: 0.9; margin-bottom: 12px;">
+      pod blendz
+    </div>
+
+    <h1 style="font-size: 3rem; margin-bottom: 16px;">
+      Your Podcasts. Your Blendz. Your Way.
+    </h1>
+
+    <p style="font-size: 1.3rem; max-width: 600px; margin-bottom: 24px;">
+      Listen Smarter. Share Deeper. Blend Ideas.
+    </p>
+
+    <div style="margin-bottom: 24px;">
+      <button
+        style="padding: 12px 24px; margin-right: 12px; font-size: 1rem;"
+        onclick="document.getElementById('queryInput').focus();"
+      >
+        Get Started
+      </button>
+
+      <button
+        style="padding: 12px 24px; font-size: 1rem;"
+        onclick="alert('Demo coming next');"
+      >
+        Watch Demo
+      </button>
+    </div>
+
+    <button
+      style="
+        padding: 14px 32px;
+        font-size: 1.1rem;
+        font-weight: bold;
+        background: linear-gradient(90deg, #ff7a18, #ffb347);
+        border: none;
+        cursor: pointer;
+      "
+      onclick="document.getElementById('queryInput').scrollIntoView({ behavior: 'smooth' });"
+    >
+      Generate Your Blendz
+    </button>
+  </div>
+</section>
   <!-- Product copy (aligned with PRODUCT.md) -->
   <h1>PodBlendz</h1>
 
