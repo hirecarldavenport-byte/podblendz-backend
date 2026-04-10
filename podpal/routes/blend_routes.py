@@ -6,8 +6,10 @@ from podpal.scoring import (
     score_episode,
     compute_blend_relevance_percent,
 )
-from podpal.routes.podcast_sources import resolve_podcast_feeds
-from podpal.routes.episodes import fetch_episodes
+
+from podpal.search.resolve import resolve_search_term
+from podpal.rss.resolver import resolve_podcast_source
+from podpal.services.rss_test import fetch_rss_feed
 
 
 router = APIRouter()
@@ -17,10 +19,25 @@ router = APIRouter()
 def preview_blend(query: str = Body(..., embed=True)) -> Dict[str, Any]:
     """
     Preview a Blend search.
-    Returns the top 3 podcasts with their most relevant episode.
+
+    Flow:
+    - search term → sources
+    - sources → podcast feeds
+    - feeds → episodes
+    - episodes → scoring
+    - return top 3 podcast + episode pairs
     """
 
-    feeds = resolve_podcast_feeds(query)
+    # -------------------------------------------------
+    # 1. Resolve search term into candidate sources
+    # -------------------------------------------------
+    sources = resolve_search_term(query)
+
+    feeds = []
+    for source in sources:
+        feed = resolve_podcast_source(source)
+        if feed:
+            feeds.append(feed)
 
     if not feeds:
         return {
@@ -33,13 +50,20 @@ def preview_blend(query: str = Body(..., embed=True)) -> Dict[str, Any]:
             "results": [],
         }
 
+    # -------------------------------------------------
+    # 2. Score podcast context
+    # -------------------------------------------------
     podcast_scores: Dict[str, float] = {}
     episodes_by_feed: Dict[str, List[Any]] = {}
 
     for feed in feeds:
         podcast_scores[feed.feed_url] = score_podcast_context(feed, query)
-        episodes_by_feed[feed.feed_url] = fetch_episodes(feed)
+        rss_data = fetch_rss_feed(feed.feed_url)
+        episodes_by_feed[feed.feed_url] = rss_data.get("items", []) if rss_data else []
 
+    # -------------------------------------------------
+    # 3. Score episodes per podcast
+    # -------------------------------------------------
     results: List[Dict[str, Any]] = []
 
     for feed in feeds:
@@ -50,22 +74,22 @@ def preview_blend(query: str = Body(..., embed=True)) -> Dict[str, Any]:
         if feed_score <= 0 or not episodes:
             continue
 
-        scored = []
+        scored_episodes = []
 
         for episode in episodes:
-            score = score_episode(
+            ep_score = score_episode(
                 episode=episode,
                 query=query,
                 podcast_score=feed_score,
             )
-            if score > 0:
-                scored.append((score, episode))
+            if ep_score > 0:
+                scored_episodes.append((ep_score, episode))
 
-        if not scored:
+        if not scored_episodes:
             continue
 
-        scored.sort(key=lambda x: x[0], reverse=True)
-        best_score, best_episode = scored[0]
+        scored_episodes.sort(key=lambda x: x[0], reverse=True)
+        best_score, best_episode = scored_episodes[0]
 
         results.append({
             "feed_url": feed_url,
@@ -77,6 +101,20 @@ def preview_blend(query: str = Body(..., embed=True)) -> Dict[str, Any]:
             "episode_score": best_score,
         })
 
+    if not results:
+        return {
+            "query": query,
+            "relevance_percent": 0,
+            "guidance": (
+                "Results were too broad to score meaningfully. "
+                "Try refining your search."
+            ),
+            "results": [],
+        }
+
+    # -------------------------------------------------
+    # 4. Top 3 podcasts by combined score
+    # -------------------------------------------------
     results.sort(
         key=lambda r: r["podcast_score"] + r["episode_score"],
         reverse=True,
@@ -84,20 +122,26 @@ def preview_blend(query: str = Body(..., embed=True)) -> Dict[str, Any]:
 
     top_three = results[:3]
 
+    # -------------------------------------------------
+    # 5. Overall relevance percentage
+    # -------------------------------------------------
     relevance_percent = compute_blend_relevance_percent(
         podcast_scores={r["feed_url"]: r["podcast_score"] for r in top_three},
         episode_scores=[r["episode_score"] for r in top_three],
     )
 
+    # -------------------------------------------------
+    # 6. Guidance messaging
+    # -------------------------------------------------
     if relevance_percent < 55:
         guidance = (
             "This topic is very broad. "
-            "Try refining your learning question."
+            "Try a clearer learning question."
         )
     elif relevance_percent < 70:
         guidance = (
-            "These results are broad because the topic is broad. "
-            "Try a more specific phrase."
+            "These results are broad. "
+            "More specific phrasing will improve relevance."
         )
     else:
         guidance = None
