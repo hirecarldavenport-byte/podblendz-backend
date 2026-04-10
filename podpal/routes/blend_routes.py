@@ -1,93 +1,154 @@
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-import feedparser
-import uuid
+"""
+Blend Routes
 
-from podpal.search.resolve import resolve_search_term
-from podpal.services.narration import generate_blend_narration
-from podpal.audio.polly import synthesize_narration
+This module provides the /blend endpoint in PREVIEW mode.
+Instead of auto-generating audio, it returns the Top 3
+podcasts (with their best episode) based on relevance scoring.
 
+Safe for inspection and iteration.
+"""
 
-router = APIRouter(
-    prefix="/blend",
-    tags=["Blend"],
+from fastapi import APIRouter, Body
+from typing import List, Dict, Any
+
+from podpal.scoring import (
+    score_podcast_context,
+    score_episode,
+    compute_blend_relevance_percent,
 )
 
+# These utilities are assumed to exist in your project
+# (you already have equivalent logic today)
+from .podcast_sources import resolve_podcast_feeds
+from .episodes import fetch_episodes
 
-class BlendRequest(BaseModel):
-    query: str
+
+router = APIRouter()
 
 
-@router.post("/")
-def create_blend(request: BlendRequest):
+@router.post("/blend")
+def preview_blend(
+    query: str = Body(..., embed=True)
+) -> Dict[str, Any]:
     """
-    Create an audio blend from a natural-language search phrase.
+    Preview a Blend search.
 
-    Pipeline:
-    1) Resolve search query -> RSS feed URLs
-    2) Fetch + parse podcast feeds
-    3) Normalize episodes
-    4) Generate narration text
-    5) Produce audio (demo-safe)
+    Returns:
+    - Top 3 podcasts
+    - Best-matching episode per podcast
+    - Relevance percentage
+    - Guidance message if the query is broad
     """
 
-    query = request.query.strip()
-    blend_id = str(uuid.uuid4())
+    # -------------------------------------------------
+    # 1️⃣ Resolve podcast feeds for the query
+    # -------------------------------------------------
+    feeds = resolve_podcast_feeds(query)
 
-    if not query:
-        raise HTTPException(status_code=400, detail="Search query cannot be empty")
+    if not feeds:
+        return {
+            "query": query,
+            "relevance_percent": 0,
+            "guidance": "No podcasts matched this query. Try a different or more specific phrase.",
+            "results": []
+        }
+
+    podcast_scores: Dict[str, float] = {}
+    episodes_by_feed: Dict[str, List[Any]] = {}
 
     # -------------------------------------------------
-    # 1. SEARCH RESOLUTION (THE FIX)
+    # 2️⃣ Score each podcast (context level)
     # -------------------------------------------------
-    feed_urls = resolve_search_term(query)
+    for feed in feeds:
+        score = score_podcast_context(feed, query)
+        podcast_scores[feed.feed_url] = score
 
-    if not feed_urls:
-        raise HTTPException(
-            status_code=400,
-            detail="No podcast feeds matched the search query",
-        )
+        # Fetch episodes for this feed
+        episodes_by_feed[feed.feed_url] = fetch_episodes(feed)
 
     # -------------------------------------------------
-    # 2. FETCH + PARSE FEEDS
+    # 3️⃣ Score episodes within each podcast
     # -------------------------------------------------
-    episodes = []
+    podcast_results: List[Dict[str, Any]] = []
 
-    for feed_url in feed_urls:
-        feed = feedparser.parse(feed_url)
+    for feed in feeds:
+        feed_url = feed.feed_url
+        feed_score = podcast_scores.get(feed_url, 0)
+        episodes = episodes_by_feed.get(feed_url, [])
 
-        for entry in feed.entries[:5]:  # limit per feed for safety
-            episodes.append(
-                {
-                    "title": entry.get("title", ""),
-                    "summary": entry.get("summary", ""),
-                    "link": entry.get("link", ""),
-                }
+        # Skip podcasts with no meaningful context or no episodes
+        if feed_score <= 0 or not episodes:
+            continue
+
+        scored_episodes = []
+
+        for episode in episodes:
+            episode_score = score_episode(
+                episode=episode,
+                query=query,
+                podcast_score=feed_score
             )
 
-    if not episodes:
-        raise HTTPException(
-            status_code=400,
-            detail="No episodes found for resolved feeds",
+            if episode_score > 0:
+                scored_episodes.append((episode_score, episode))
+
+        if not scored_episodes:
+            continue
+
+        # Pick the single best episode for this podcast
+        scored_episodes.sort(key=lambda x: x[0], reverse=True)
+        top_episode_score, top_episode = scored_episodes[0]
+
+        podcast_results.append({
+            "feed_url": feed_url,
+            "podcast_title": feed.title,
+            "podcast_image": feed.image_url,
+            "podcast_score": feed_score,
+            "episode_title": top_episode.title,
+            "episode_link": top_episode.link,
+            "episode_score": top_episode_score,
+        })
+
+    # -------------------------------------------------
+    # 4️⃣ Sort podcasts by combined relevance
+    # -------------------------------------------------
+    podcast_results.sort(
+        key=lambda r: r["podcast_score"] + r["episode_score"],
+        reverse=True
+    )
+
+    top_three = podcast_results[:3]
+
+    # -------------------------------------------------
+    # 5️⃣ Compute overall relevance percentage
+    # -------------------------------------------------
+    relevance_percent = compute_blend_relevance_percent(
+        podcast_scores={r["feed_url"]: r["podcast_score"] for r in top_three},
+        episode_scores=[r["episode_score"] for r in top_three],
+    )
+
+    # -------------------------------------------------
+    # 6️⃣ Decision-tree guidance for broad queries
+    # -------------------------------------------------
+    guidance = None
+
+    if relevance_percent < 55:
+        guidance = (
+            "The topic is very broad. Try a clearer learning question "
+            "to get stronger Blendz results."
+        )
+    elif relevance_percent < 70:
+        guidance = (
+            "These results are broad because the topic is broad. "
+            "Try a more specific learning phrase for deeper Blendz."
         )
 
     # -------------------------------------------------
-    # 3. NARRATION
+    # ✅ Return search preview payload
     # -------------------------------------------------
-    narration_text = generate_blend_narration(episodes)
-
-    # -------------------------------------------------
-    # 4. AUDIO OUTPUT (SAFE)
-    # -------------------------------------------------
-    audio_filename = f"{blend_id}.mp3"
-    audio_path = synthesize_narration(narration_text, audio_filename)
-
     return {
-        "blend_id": blend_id,
         "query": query,
-        "feed_count": len(feed_urls),
-        "episode_count": len(episodes),
-        "audio_path": audio_path,
-        "status": "created",
+        "relevance_percent": relevance_percent,
+        "guidance": guidance,
+        "results": top_three
     }
-
