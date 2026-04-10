@@ -2,86 +2,55 @@ from typing import Dict, List, Any
 
 
 # -------------------------------------------------
-# Associated term expansion (Phase 1)
+# Topic-level alias mapping
+# -------------------------------------------------
+# Used to enforce semantic cohesion instead of
+# single-keyword coincidence.
 # -------------------------------------------------
 
 ASSOCIATED_TERMS: Dict[str, List[str]] = {
-    "science": [
-        "research",
-        "experiment",
-        "biology",
-        "chemistry",
-        "physics",
-        "neuroscience",
-        "laboratory",
-    ],
-    "genetics": [
-        "dna",
-        "genome",
-        "mutation",
-        "inheritance",
-        "sequencing",
-        "crispr",
-        "chromosome",
-    ],
-    "learning": [
-        "memory",
-        "retention",
-        "neuroplasticity",
-        "auditory",
-        "cognition",
-        "brain",
-        "education",
-    ],
+    "neuroscience": ["brain", "neural", "neuro", "psychology"],
+    "research": ["study", "studies", "scientific"],
+    "experiment": ["trial", "testing", "research"],
+    "learning": ["education", "memory", "cognition"],
+    "biology": ["life", "genetics", "evolution"],
+    "health": ["medicine", "disease", "wellness"],
 }
 
 
 # -------------------------------------------------
-# Podcast context scoring
+# Podcast-level context scoring
 # -------------------------------------------------
 
 def score_podcast_context(feed: Any, query: str) -> float:
     """
-    Score podcast-level relevance.
+    Score relevance at the podcast (feed) level.
 
-    Safe for:
-    - Partial feed objects
-    - ResolveResult / URL-like objects
-    - Future enriched podcast models
+    Safe against partial feed objects and missing
+    metadata.
     """
 
-    score: float = 0.0
+    score = 0.0
     q = query.lower()
 
-    # Safe attribute access
     title = getattr(feed, "title", "") or ""
     description = getattr(feed, "description", "") or ""
-    categories = getattr(feed, "categories", []) or []
 
     title = title.lower()
     description = description.lower()
-    categories_text = " ".join(categories).lower()
 
-    # Direct keyword relevance
-    if q in title:
-        score += 3.0
-    if q in description:
-        score += 3.0
-
-    # Associated concept boosting
-    for term in ASSOCIATED_TERMS.get(q, []):
-        if term in description:
+    # Direct topic presence boosts context confidence
+    for topic in ASSOCIATED_TERMS.keys():
+        if topic in title:
             score += 1.5
-        elif term in title:
-            score += 1.0
-        elif term in categories_text:
+        elif topic in description:
             score += 1.0
 
     return score
 
 
 # -------------------------------------------------
-# Episode relevance scoring (RSS item level)
+# Episode-level relevance scoring
 # -------------------------------------------------
 
 def score_episode(
@@ -92,32 +61,62 @@ def score_episode(
     """
     Score episode relevance.
 
-    episode is expected to be a dict from RSS (items)
+    REQUIREMENT:
+    - At least TWO distinct topic-level matches
+      (direct or alias) must be present to surface.
     """
 
-    score: float = 0.0
     q = query.lower()
 
     title = (episode.get("title") or "").lower()
     description = (episode.get("description") or "").lower()
+    full_text = f"{title} {description}"
 
-    # Direct relevance
-    if q in title:
-        score += 3.0
-    if q in description:
-        score += 2.0
+    # ---------------------------------------------
+    # 1. Identify topic-level matches
+    # ---------------------------------------------
+    query_tokens = [
+        token for token in q.split()
+        if len(token) > 2
+    ]
 
-    # Contextual signals
-    if any(word in description for word in ["how", "why", "explain", "explained"]):
-        score += 1.0
+    matched_topics = set()
 
-    # Cross-term relevance
-    for term in ASSOCIATED_TERMS.get(q, []):
-        if term in description:
-            score += 0.75
+    for token in query_tokens:
+        # Direct topic match
+        if token in full_text:
+            matched_topics.add(token)
+            continue
 
-    # Podcast-level bias
-    score += podcast_score * 0.5
+        # Alias-based semantic match
+        for alias in ASSOCIATED_TERMS.get(token, []):
+            if alias in full_text:
+                matched_topics.add(token)
+                break
+
+    # ---------------------------------------------
+    # 2. Enforce minimum topic cohesion
+    # ---------------------------------------------
+    if len(matched_topics) < 2:
+        return 0.0
+
+    # ---------------------------------------------
+    # 3. Score strength
+    # ---------------------------------------------
+    score = 0.0
+
+    for topic in matched_topics:
+        if topic in title:
+            score += 2.0
+        elif topic in description:
+            score += 1.0
+
+    # Bonus for explanatory framing
+    if any(word in description for word in ["how", "why", "explains"]):
+        score += 0.5
+
+    # Small podcast-level bias
+    score += podcast_score * 0.25
 
     return score
 
@@ -131,14 +130,14 @@ def compute_blend_relevance_percent(
     episode_scores: List[float],
 ) -> int:
     """
-    Produce a user-facing relevance percentage (0–100).
-
-    This is a confidence signal, not absolute truth.
+    Compute a user-facing relevance percentage.
+    Conservative by design.
     """
 
     raw_score = sum(podcast_scores.values()) + sum(episode_scores)
 
-    MAX_REASONABLE_SCORE = 40.0  # tuning constant for Phase 1
+    # Tunable upper bound for Phase 1
+    MAX_REASONABLE_SCORE = 20.0
 
     percent = int(min((raw_score / MAX_REASONABLE_SCORE) * 100, 100))
 
