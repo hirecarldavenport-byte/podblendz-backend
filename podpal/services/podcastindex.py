@@ -33,11 +33,8 @@ def _auth_headers() -> dict:
 
     epoch = str(int(time.time()))
 
-    digest = hmac.new(
-        PODCASTINDEX_API_SECRET.encode("utf-8"),
-        epoch.encode("utf-8"),
-        hashlib.sha1,
-    ).hexdigest()
+    auth_string = PODCASTINDEX_API_KEY + PODCASTINDEX_API_SECRET + epoch
+    digest = hashlib.sha1(auth_string.encode("utf-8")).hexdigest()
 
     return {
         "X-Auth-Date": epoch,
