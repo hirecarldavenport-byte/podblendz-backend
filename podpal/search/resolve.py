@@ -1,12 +1,14 @@
 """
-Search term resolution for PodBlendz.
+Search-term resolution for PodBlendz.
 
-This module translates a user query into a list of candidate
-podcast RSS feed URLs using PodcastIndex, plus a safe fallback.
+This module converts a user query into a set of candidate
+podcast RSS feed URLs using PodcastIndex, before scoring.
 """
 
-from podpal.services.podcastindex import search_podcasts
-
+from podpal.services.podcastindex import (
+    search_podcasts,
+    search_podcasts_by_title,
+)
 
 # -------------------------------------------------
 # Configuration
@@ -27,9 +29,11 @@ TOPIC_ALIASES = {
     "health": ["medicine", "wellness", "disease"],
 }
 
+MAX_FEEDS = 25  # safety cap for Phase 1
+
 
 # -------------------------------------------------
-# Core resolver
+# Resolver
 # -------------------------------------------------
 
 def resolve_search_term(query: str) -> list:
@@ -37,40 +41,51 @@ def resolve_search_term(query: str) -> list:
     Resolve a user query into candidate podcast RSS feed URLs.
 
     Strategy:
-    1. Full-phrase PodcastIndex search
-    2. Token-level searches
-    3. Topic alias expansion
-    4. Deduplicate and cap results
-    5. Fallback to default feed if empty
+    1. Title-only PodcastIndex search (highest precision)
+    2. Full-term PodcastIndex search
+    3. Token-level searches
+    4. Alias expansion
+    5. Deduplicate + cap feeds
+    6. Fallback if empty
     """
 
     if not query:
         return [DEFAULT_FEED]
 
     query = query.strip().lower()
-
     print(f"[SEARCH] Incoming query: '{query}'")
 
-    # Tokenize and remove stop words
+    feeds = set()
+
+    # -------------------------------------------------
+    # 1. Title-only search (precision pass)
+    # -------------------------------------------------
+    try:
+        for url in search_podcasts_by_title(query, limit=10):
+            feeds.add(url)
+    except Exception as e:
+        print(f"[SEARCH] Title search failed: {e}")
+
+    # -------------------------------------------------
+    # 2. Full-term search (recall pass)
+    # -------------------------------------------------
+    try:
+        for url in search_podcasts(query, limit=10):
+            feeds.add(url)
+    except Exception as e:
+        print(f"[SEARCH] Term search failed: {e}")
+
+    # -------------------------------------------------
+    # Tokenization
+    # -------------------------------------------------
     tokens = [
         token
         for token in query.split()
         if token not in STOP_WORDS and len(token) > 1
     ]
 
-    feeds = set()
-
     # -------------------------------------------------
-    # 1. Full query search (high precision)
-    # -------------------------------------------------
-    try:
-        for url in search_podcasts(query, limit=10):
-            feeds.add(url)
-    except Exception as e:
-        print(f"[SEARCH] Full-query search failed: {e}")
-
-    # -------------------------------------------------
-    # 2. Token-level search (recall boost)
+    # 3. Token-level + alias search
     # -------------------------------------------------
     for token in tokens:
         try:
@@ -79,9 +94,6 @@ def resolve_search_term(query: str) -> list:
         except Exception as e:
             print(f"[SEARCH] Token search failed for '{token}': {e}")
 
-        # -------------------------------------------------
-        # 3. Alias expansion (semantic bridge)
-        # -------------------------------------------------
         for alias in TOPIC_ALIASES.get(token, []):
             try:
                 for url in search_podcasts(alias, limit=3):
@@ -90,11 +102,12 @@ def resolve_search_term(query: str) -> list:
                 print(f"[SEARCH] Alias search failed for '{alias}': {e}")
 
     # -------------------------------------------------
-    # Finalize results
+    # Finalize
     # -------------------------------------------------
     if feeds:
-        print(f"[SEARCH] PodcastIndex returned {len(feeds)} feeds")
-        return list(feeds)
+        feed_list = list(feeds)[:MAX_FEEDS]
+        print(f"[SEARCH] PodcastIndex returned {len(feed_list)} feeds")
+        return feed_list
 
     print("[SEARCH] No PodcastIndex matches — falling back to default feed")
     return [DEFAULT_FEED]
