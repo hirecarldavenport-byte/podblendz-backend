@@ -146,6 +146,16 @@ def preview_blend(
     # -------------------------------------------------
     # ✅ Return search preview payload
     # -------------------------------------------------
+<<<<<<< HEAD
+=======
+    narration_text = generate_blend_narration(episodes)
+
+    # -------------------------------------------------
+    # 4. AUDIO OUTPUT (SAFE)
+    # -------------------------------------------------
+    audio_path = "/audio/demo.mp3"
+
+>>>>>>> 4d01660f372e289ebeb374a82c55d723026a8495
     return {
         "query": query,
         "relevance_percent": relevance_percent,
