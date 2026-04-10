@@ -20,46 +20,59 @@ def preview_blend(query: str = Body(..., embed=True)) -> Dict[str, Any]:
     """
     Preview a Blend search.
 
-    Flow:
-    - search term → sources
-    - sources → podcast feeds
-    - feeds → episodes
-    - episodes → scoring
-    - return top 3 podcast + episode pairs
+    Pipeline:
+    query -> PodcastIndex search -> RSS feeds -> episodes -> scoring
     """
 
     # -------------------------------------------------
-    # 1. Resolve search term into candidate sources
+    # 1. Resolve query into candidate feeds
     # -------------------------------------------------
-    sources = resolve_search_term(query)
+    feed_urls = resolve_search_term(query)
 
     feeds = []
-    for source in sources:
-        feed = resolve_podcast_source(source)
-        if feed:
-            feeds.append(feed)
+    for url in feed_urls:
+        try:
+            feed = resolve_podcast_source(url)
+            if feed:
+                feeds.append(feed)
+        except Exception as e:
+            print(f"⚠️ Feed resolution failed for {url}: {e}")
 
     if not feeds:
         return {
             "query": query,
             "relevance_percent": 0,
             "guidance": (
-                "No podcasts matched this query. "
-                "Try a more specific learning phrase."
+                "No podcasts could be resolved for this query. "
+                "Try a more specific phrase."
             ),
             "results": [],
         }
 
+    # Hard safety cap
+    feeds = feeds[:25]
+
     # -------------------------------------------------
-    # 2. Score podcast context
+    # 2. Score podcast context + fetch RSS data
     # -------------------------------------------------
     podcast_scores: Dict[str, float] = {}
     episodes_by_feed: Dict[str, List[Any]] = {}
 
     for feed in feeds:
-        podcast_scores[feed.feed_url] = score_podcast_context(feed, query)
-        rss_data = fetch_rss_feed(feed.feed_url)
-        episodes_by_feed[feed.feed_url] = rss_data.get("items", []) if rss_data else []
+        feed_url = feed.feed_url
+
+        # Podcast-level scoring (safe even with partial metadata)
+        podcast_scores[feed_url] = score_podcast_context(feed, query)
+
+        # RSS fetch with SSL-safe handling
+        try:
+            rss_data = fetch_rss_feed(feed_url)
+            episodes_by_feed[feed_url] = (
+                rss_data.get("items", []) if rss_data else []
+            )
+        except Exception as e:
+            print(f"⚠️ RSS feed issue for {feed_url}: {e}")
+            episodes_by_feed[feed_url] = []
 
     # -------------------------------------------------
     # 3. Score episodes per podcast
@@ -68,22 +81,25 @@ def preview_blend(query: str = Body(..., embed=True)) -> Dict[str, Any]:
 
     for feed in feeds:
         feed_url = feed.feed_url
-        feed_score = podcast_scores.get(feed_url, 0)
+        feed_score = podcast_scores.get(feed_url, 0.0)
         episodes = episodes_by_feed.get(feed_url, [])
 
-        if feed_score <= 0 or not episodes:
+        if not episodes:
             continue
 
         scored_episodes = []
 
         for episode in episodes:
-            ep_score = score_episode(
-                episode=episode,
-                query=query,
-                podcast_score=feed_score,
-            )
-            if ep_score > 0:
-                scored_episodes.append((ep_score, episode))
+            try:
+                ep_score = score_episode(
+                    episode=episode,
+                    query=query,
+                    podcast_score=feed_score,
+                )
+                if ep_score > 0:
+                    scored_episodes.append((ep_score, episode))
+            except Exception as e:
+                print(f"⚠️ Episode scoring failed for {feed_url}: {e}")
 
         if not scored_episodes:
             continue
@@ -93,14 +109,17 @@ def preview_blend(query: str = Body(..., embed=True)) -> Dict[str, Any]:
 
         results.append({
             "feed_url": feed_url,
-            "podcast_title": feed.title,
+            "podcast_title": getattr(feed, "title", None),
             "podcast_image": getattr(feed, "image_url", None),
-            "episode_title": best_episode.title,
-            "episode_link": best_episode.link,
+            "episode_title": best_episode.get("title"),
+            "episode_link": best_episode.get("link"),
             "podcast_score": feed_score,
             "episode_score": best_score,
         })
 
+    # -------------------------------------------------
+    # 4. Final selection + relevance
+    # -------------------------------------------------
     if not results:
         return {
             "query": query,
@@ -112,9 +131,6 @@ def preview_blend(query: str = Body(..., embed=True)) -> Dict[str, Any]:
             "results": [],
         }
 
-    # -------------------------------------------------
-    # 4. Top 3 podcasts by combined score
-    # -------------------------------------------------
     results.sort(
         key=lambda r: r["podcast_score"] + r["episode_score"],
         reverse=True,
@@ -122,29 +138,20 @@ def preview_blend(query: str = Body(..., embed=True)) -> Dict[str, Any]:
 
     top_three = results[:3]
 
-    # -------------------------------------------------
-    # 5. Overall relevance percentage
-    # -------------------------------------------------
     relevance_percent = compute_blend_relevance_percent(
         podcast_scores={r["feed_url"]: r["podcast_score"] for r in top_three},
         episode_scores=[r["episode_score"] for r in top_three],
     )
 
     # -------------------------------------------------
-    # 6. Guidance messaging
+    # 5. Guidance messaging
     # -------------------------------------------------
+    guidance = None
     if relevance_percent < 55:
         guidance = (
-            "This topic is very broad. "
-            "Try a clearer learning question."
-        )
-    elif relevance_percent < 70:
-        guidance = (
-            "These results are broad. "
+            "Results were weak due to topic breadth. "
             "More specific phrasing will improve relevance."
         )
-    else:
-        guidance = None
 
     return {
         "query": query,
