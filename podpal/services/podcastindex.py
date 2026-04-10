@@ -71,3 +71,27 @@ def search_podcasts(query: str, limit: int = 20) -> list:
     feeds = data.get("feeds", [])
 
     return [f["url"] for f in feeds if isinstance(f, dict) and "url" in f]
+def search_podcasts_by_title(query: str, limit: int = 10) -> list:
+    """
+    Search PodcastIndex by podcast TITLE only and return RSS feed URLs.
+    High-precision, low-noise search.
+    """
+    url = f"{BASE_URL}/search/bytitle"
+    params = {
+        "q": query,
+        "max": limit,
+        "clean": True,
+    }
+
+    response = requests.get(
+        url,
+        headers=_auth_headers(),
+        params=params,
+        timeout=10,
+    )
+    response.raise_for_status()
+
+    data = response.json()
+    feeds = data.get("feeds", [])
+
+    return [f["url"] for f in feeds if isinstance(f, dict) and "url" in f]
