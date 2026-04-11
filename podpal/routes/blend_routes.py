@@ -105,7 +105,7 @@ def preview_blend(query: str = Body(..., embed=True)) -> Dict[str, Any]:
             continue
 
         scored_episodes.sort(key=lambda x: x[0], reverse=True)
-        best_score, best_episode = scored_episodes[0]
+        best_score, best_episode, best_metadata = scored_episodes[0]
 
         results.append({
             "feed_url": feed_url,
