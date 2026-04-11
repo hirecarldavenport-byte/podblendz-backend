@@ -2,7 +2,7 @@ from typing import Dict, List, Any, Set, Tuple
 
 
 # =================================================
-# 1. MASTER TOPICS (Semantic Umbrella)
+# 1. MASTER TOPICS (Semantic Umbrellas)
 # =================================================
 
 MASTER_TOPICS: Dict[str, Dict[str, List[str]]] = {
@@ -20,11 +20,11 @@ MASTER_TOPICS: Dict[str, Dict[str, List[str]]] = {
     },
     "parenting": {
         "core": ["parenting", "child development", "family"],
-        "aliases": ["children", "adolescence", "behavior", "education"],
+        "aliases": ["children", "adolescence", "behavior"],
     },
     "health_fitness": {
-        "core": ["health", "fitness", "exercise", "wellness"],
-        "aliases": ["nutrition", "sleep", "mental health", "training"],
+        "core": ["health", "fitness", "exercise", "wellness", "weight loss"],
+        "aliases": ["nutrition", "sleep", "mental health", "training", "diet"],
     },
     "finance": {
         "core": ["finance", "investing", "economics", "money"],
@@ -40,7 +40,7 @@ MASTER_TOPICS: Dict[str, Dict[str, List[str]]] = {
     },
     "education_learning": {
         "core": ["education", "learning", "teaching"],
-        "aliases": ["memory", "cognition", "pedagogy", "learning science"],
+        "aliases": ["memory", "cognition", "pedagogy"],
     },
     "politics": {
         "core": ["politics", "government", "policy"],
@@ -54,7 +54,7 @@ MASTER_TOPICS: Dict[str, Dict[str, List[str]]] = {
 
 
 # =================================================
-# 2. GENERIC SUPPORT TERMS (Never sufficient alone)
+# 2. GENERIC TERMS (Never sufficient alone)
 # =================================================
 
 GENERIC_TERMS: Set[str] = {
@@ -67,21 +67,45 @@ GENERIC_TERMS: Set[str] = {
 
 
 # =================================================
-# 3. PODCAST‑LEVEL CONTEXT SCORING
+# 3. QUERY → MASTER TOPIC DETECTION
+# =================================================
+
+def detect_query_master_topics(query: str) -> Set[str]:
+    """
+    Determine which master topics the query intends to invoke.
+    THIS scopes all episode matching.
+    """
+    q = query.lower()
+    detected: Set[str] = set()
+
+    for master, topic in MASTER_TOPICS.items():
+        for term in topic["core"] + topic["aliases"]:
+            if term in q:
+                detected.add(master)
+                break
+
+    return detected
+
+
+# =================================================
+# 4. PODCAST-LEVEL CONTEXT SCORING
 # =================================================
 
 def score_podcast_context(feed: Any, query: str) -> float:
     """
-    Light podcast-level bias.
-    Used only as a small lift, never as a gate.
+    Light contextual bias based on query topics only.
     """
-
     score = 0.0
+    query_topics = detect_query_master_topics(query)
 
     title = (getattr(feed, "title", "") or "").lower()
     description = (getattr(feed, "description", "") or "").lower()
 
-    for topic in MASTER_TOPICS.values():
+    for master in query_topics:
+        topic = MASTER_TOPICS.get(master)
+        if not topic:
+            continue
+
         for core_term in topic["core"]:
             if core_term in title:
                 score += 1.5
@@ -92,7 +116,7 @@ def score_podcast_context(feed: Any, query: str) -> float:
 
 
 # =================================================
-# 4. EPISODE‑LEVEL SCORING + METADATA CAPTURE
+# 5. EPISODE-LEVEL SCORING + METADATA
 # =================================================
 
 def score_episode(
@@ -101,12 +125,12 @@ def score_episode(
     podcast_score: float,
 ) -> Tuple[float, Dict[str, Any]]:
     """
-    Score episode relevance and capture semantic metadata.
-
-    Enforces:
-    - ≥ 1 master topic core match
-    - ≥ 2 total topic matches
+    Score episode relevance WITH query-scoped master topics.
     """
+
+    query_topics = detect_query_master_topics(query)
+    if not query_topics:
+        return 0.0, {}
 
     title = (episode.get("title") or "").lower()
     description = (episode.get("description") or "").lower()
@@ -116,18 +140,21 @@ def score_episode(
     matched_terms: Set[str] = set()
     match_sources: Dict[str, str] = {}
 
-    # ---------------------------------------------
-    # Topic matching
-    # ---------------------------------------------
+    # -------------------------------------------------
+    # ONLY evaluate topics the QUERY asked for
+    # -------------------------------------------------
+    for master in query_topics:
+        topic = MASTER_TOPICS.get(master)
+        if not topic:
+            continue
 
-    for master_name, topic in MASTER_TOPICS.items():
         for core in topic["core"]:
             if core in title:
-                matched_master_topics.add(master_name)
+                matched_master_topics.add(master)
                 matched_terms.add(core)
                 match_sources[core] = "title"
             elif core in description:
-                matched_master_topics.add(master_name)
+                matched_master_topics.add(master)
                 matched_terms.add(core)
                 match_sources[core] = "description"
 
@@ -139,20 +166,18 @@ def score_episode(
                 matched_terms.add(alias)
                 match_sources[alias] = "description"
 
-    # ---------------------------------------------
-    # Semantic gates
-    # ---------------------------------------------
-
+    # -------------------------------------------------
+    # QUALITY GATES
+    # -------------------------------------------------
     if not matched_master_topics:
         return 0.0, {}
 
     if len(matched_terms) < 2:
         return 0.0, {}
 
-    # ---------------------------------------------
-    # Scoring
-    # ---------------------------------------------
-
+    # -------------------------------------------------
+    # SCORING
+    # -------------------------------------------------
     score = 0.0
 
     for term, source in match_sources.items():
@@ -168,21 +193,16 @@ def score_episode(
 
     score += podcast_score * 0.25
 
-    # ---------------------------------------------
-    # Metadata bundle
-    # ---------------------------------------------
-
     metadata = {
         "matched_master_topics": sorted(matched_master_topics),
         "matched_terms": sorted(matched_terms),
-        "match_sources": match_sources,
     }
 
     return score, metadata
 
 
 # =================================================
-# 5. BLEND‑LEVEL RELEVANCE AGGREGATION
+# 6. BLEND-LEVEL RELEVANCE METRIC
 # =================================================
 
 def compute_blend_relevance_percent(
@@ -190,9 +210,8 @@ def compute_blend_relevance_percent(
     episode_scores: List[float],
 ) -> int:
     """
-    Conservative relevance percentage.
+    Conservative, explainable relevance metric.
     """
-
     raw_score = sum(podcast_scores.values()) + sum(episode_scores)
     MAX_REASONABLE_SCORE = 20.0
 
