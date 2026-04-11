@@ -1,13 +1,12 @@
 from fastapi import APIRouter, Body
 from typing import Dict, Any, List
 
+from podpal.search.resolve import resolve_search_term
 from podpal.scoring import (
     score_podcast_context,
     score_episode,
     compute_blend_relevance_percent,
 )
-
-from podpal.search.resolve import resolve_search_term
 from podpal.rss.resolver import resolve_podcast_source
 from podpal.services.rss_test import fetch_rss_feed
 
@@ -16,16 +15,15 @@ router = APIRouter()
 
 
 @router.post("/blend")
-def preview_blend(query: str = Body(..., embed=True)) -> Dict[str, Any]:
+def preview_blend(
+    query: str = Body(..., embed=True)
+) -> Dict[str, Any]:
     """
-    Preview a Blend search.
-
-    Pipeline:
-    query -> PodcastIndex search -> RSS feeds -> episodes -> scoring
+    Preview podcast blend results for a query.
     """
 
     # -------------------------------------------------
-    # 1. Resolve query into candidate feeds
+    # 1. Resolve search → feed URLs
     # -------------------------------------------------
     feed_urls = resolve_search_term(query)
 
@@ -42,18 +40,14 @@ def preview_blend(query: str = Body(..., embed=True)) -> Dict[str, Any]:
         return {
             "query": query,
             "relevance_percent": 0,
-            "guidance": (
-                "No podcasts could be resolved for this query. "
-                "Try a more specific phrase."
-            ),
+            "guidance": "No feeds could be resolved for this query.",
             "results": [],
         }
 
-    # Hard safety cap
-    feeds = feeds[:25]
+    feeds = feeds[:25]  # safety cap
 
     # -------------------------------------------------
-    # 2. Score podcast context + fetch RSS data
+    # 2. Podcast-level scoring + RSS fetch
     # -------------------------------------------------
     podcast_scores: Dict[str, float] = {}
     episodes_by_feed: Dict[str, List[Any]] = {}
@@ -61,10 +55,8 @@ def preview_blend(query: str = Body(..., embed=True)) -> Dict[str, Any]:
     for feed in feeds:
         feed_url = feed.feed_url
 
-        # Podcast-level scoring (safe even with partial metadata)
         podcast_scores[feed_url] = score_podcast_context(feed, query)
 
-        # RSS fetch with SSL-safe handling
         try:
             rss_data = fetch_rss_feed(feed_url)
             episodes_by_feed[feed_url] = (
@@ -75,7 +67,7 @@ def preview_blend(query: str = Body(..., embed=True)) -> Dict[str, Any]:
             episodes_by_feed[feed_url] = []
 
     # -------------------------------------------------
-    # 3. Score episodes per podcast
+    # 3. Episode scoring (STRICT tuple shape)
     # -------------------------------------------------
     results: List[Dict[str, Any]] = []
 
@@ -87,7 +79,7 @@ def preview_blend(query: str = Body(..., embed=True)) -> Dict[str, Any]:
         if not episodes:
             continue
 
-        scored_episodes = []
+        scored_episodes: List[tuple] = []
 
         for episode in episodes:
             try:
@@ -96,13 +88,21 @@ def preview_blend(query: str = Body(..., embed=True)) -> Dict[str, Any]:
                     query=query,
                     podcast_score=feed_score,
                 )
+
                 if ep_score > 0:
-                    scored_episodes.append((ep_score, episode))
+                    # 👇 ONLY allowed append shape
+                    scored_episodes.append(
+                        (ep_score, episode, ep_metadata)
+                    )
+
             except Exception as e:
                 print(f"⚠️ Episode scoring failed for {feed_url}: {e}")
 
         if not scored_episodes:
             continue
+
+        # Defensive sanity check
+        assert all(len(t) == 3 for t in scored_episodes)
 
         scored_episodes.sort(key=lambda x: x[0], reverse=True)
         best_score, best_episode, best_metadata = scored_episodes[0]
@@ -115,13 +115,14 @@ def preview_blend(query: str = Body(..., embed=True)) -> Dict[str, Any]:
             "episode_link": best_episode.get("link"),
             "podcast_score": feed_score,
             "episode_score": best_score,
-            "matched_master_topics": best_metadata.get("matched_master_topics", []),
+            "matched_master_topics": best_metadata.get(
+                "matched_master_topics", []
+            ),
             "matched_terms": best_metadata.get("matched_terms", []),
-
         })
 
     # -------------------------------------------------
-    # 4. Final selection + relevance
+    # 4. Final relevance + response
     # -------------------------------------------------
     if not results:
         return {
@@ -142,23 +143,21 @@ def preview_blend(query: str = Body(..., embed=True)) -> Dict[str, Any]:
     top_three = results[:3]
 
     relevance_percent = compute_blend_relevance_percent(
-        podcast_scores={r["feed_url"]: r["podcast_score"] for r in top_three},
-        episode_scores=[r["episode_score"] for r in top_three],
+        podcast_scores={
+            r["feed_url"]: r["podcast_score"]
+            for r in top_three
+        },
+        episode_scores=[
+            r["episode_score"] for r in top_three
+        ],
     )
-
-    # -------------------------------------------------
-    # 5. Guidance messaging
-    # -------------------------------------------------
-    guidance = None
-    if relevance_percent < 55:
-        guidance = (
-            "Results were weak due to topic breadth. "
-            "More specific phrasing will improve relevance."
-        )
 
     return {
         "query": query,
         "relevance_percent": relevance_percent,
-        "guidance": guidance,
+        "guidance": None if relevance_percent >= 55 else (
+            "Results were weak due to topic breadth. "
+            "More specific phrasing will improve relevance."
+        ),
         "results": top_three,
     }
