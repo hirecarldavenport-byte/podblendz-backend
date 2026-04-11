@@ -115,6 +115,9 @@ def preview_blend(query: str = Body(..., embed=True)) -> Dict[str, Any]:
             "episode_link": best_episode.get("link"),
             "podcast_score": feed_score,
             "episode_score": best_score,
+            "matched_master_topics": best_metadata.get("matched_master_topics", []),
+            "matched_terms": best_metadata.get("matched_terms", []),
+
         })
 
     # -------------------------------------------------
