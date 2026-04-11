@@ -1,4 +1,4 @@
-from typing import Dict, List, Any, Set
+from typing import Dict, List, Any, Set, Tuple
 
 
 # =================================================
@@ -54,10 +54,10 @@ MASTER_TOPICS: Dict[str, Dict[str, List[str]]] = {
 
 
 # =================================================
-# 2. GENERIC (SUPPORTING) TERMS
+# 2. GENERIC SUPPORT TERMS (Never sufficient alone)
 # =================================================
 
-GENERIC_TOPICS: Set[str] = {
+GENERIC_TERMS: Set[str] = {
     "research",
     "experiment",
     "study",
@@ -67,23 +67,19 @@ GENERIC_TOPICS: Set[str] = {
 
 
 # =================================================
-# 3. PODCAST-LEVEL CONTEXT SCORING
+# 3. PODCAST‑LEVEL CONTEXT SCORING
 # =================================================
 
 def score_podcast_context(feed: Any, query: str) -> float:
     """
-    Light contextual bias at the podcast level.
-    Never acts as a gate.
+    Light podcast-level bias.
+    Used only as a small lift, never as a gate.
     """
 
     score = 0.0
-    q = query.lower()
 
-    title = getattr(feed, "title", "") or ""
-    description = getattr(feed, "description", "") or ""
-
-    title = title.lower()
-    description = description.lower()
+    title = (getattr(feed, "title", "") or "").lower()
+    description = (getattr(feed, "description", "") or "").lower()
 
     for topic in MASTER_TOPICS.values():
         for core_term in topic["core"]:
@@ -96,90 +92,97 @@ def score_podcast_context(feed: Any, query: str) -> float:
 
 
 # =================================================
-# 4. EPISODE-LEVEL SCORING (CORE LOGIC)
+# 4. EPISODE‑LEVEL SCORING + METADATA CAPTURE
 # =================================================
 
 def score_episode(
     episode: Dict[str, Any],
     query: str,
     podcast_score: float,
-) -> float:
+) -> Tuple[float, Dict[str, Any]]:
     """
-    Episode relevance scoring enforcing:
-    - At least ONE master-topic core match
-    - At least TWO total topic matches
-    - Title-weighted scoring
-    - Generic-term down-weighting
+    Score episode relevance and capture semantic metadata.
+
+    Enforces:
+    - ≥ 1 master topic core match
+    - ≥ 2 total topic matches
     """
 
-    q = query.lower()
     title = (episode.get("title") or "").lower()
     description = (episode.get("description") or "").lower()
     full_text = f"{title} {description}"
 
     matched_master_topics: Set[str] = set()
     matched_terms: Set[str] = set()
+    match_sources: Dict[str, str] = {}
 
-    # -------------------------------------------------
+    # ---------------------------------------------
     # Topic matching
-    # -------------------------------------------------
+    # ---------------------------------------------
 
     for master_name, topic in MASTER_TOPICS.items():
-        # Core matches
-        for core_term in topic["core"]:
-            if core_term in full_text:
+        for core in topic["core"]:
+            if core in title:
                 matched_master_topics.add(master_name)
-                matched_terms.add(core_term)
+                matched_terms.add(core)
+                match_sources[core] = "title"
+            elif core in description:
+                matched_master_topics.add(master_name)
+                matched_terms.add(core)
+                match_sources[core] = "description"
 
-        # Alias matches
         for alias in topic["aliases"]:
-            if alias in full_text:
+            if alias in title:
                 matched_terms.add(alias)
+                match_sources[alias] = "title"
+            elif alias in description:
+                matched_terms.add(alias)
+                match_sources[alias] = "description"
 
-    # -------------------------------------------------
-    # Enforcement: semantic quality gates
-    # -------------------------------------------------
+    # ---------------------------------------------
+    # Semantic gates
+    # ---------------------------------------------
 
-    # Require at least ONE master-topic hit
     if not matched_master_topics:
-        return 0.0
+        return 0.0, {}
 
-    # Require at least TWO matched terms total
     if len(matched_terms) < 2:
-        return 0.0
+        return 0.0, {}
 
-    # -------------------------------------------------
+    # ---------------------------------------------
     # Scoring
-    # -------------------------------------------------
+    # ---------------------------------------------
 
     score = 0.0
 
-    for term in matched_terms:
-        is_generic = term in GENERIC_TOPICS
+    for term, source in match_sources.items():
+        is_generic = term in GENERIC_TERMS
 
-        if term in title:
-            if is_generic:
-                score += 0.75
-            else:
-                score += 3.0
-        elif term in description:
-            if is_generic:
-                score += 0.5
-            else:
-                score += 2.0
+        if source == "title":
+            score += 0.75 if is_generic else 3.0
+        else:
+            score += 0.5 if is_generic else 2.0
 
-    # Bonus for explanatory / teaching language
     if any(word in description for word in ["how", "why", "explains", "application"]):
         score += 0.5
 
-    # Light podcast-level bias
     score += podcast_score * 0.25
 
-    return score
+    # ---------------------------------------------
+    # Metadata bundle
+    # ---------------------------------------------
+
+    metadata = {
+        "matched_master_topics": sorted(matched_master_topics),
+        "matched_terms": sorted(matched_terms),
+        "match_sources": match_sources,
+    }
+
+    return score, metadata
 
 
 # =================================================
-# 5. BLEND-LEVEL RELEVANCE AGGREGATION
+# 5. BLEND‑LEVEL RELEVANCE AGGREGATION
 # =================================================
 
 def compute_blend_relevance_percent(
@@ -187,7 +190,7 @@ def compute_blend_relevance_percent(
     episode_scores: List[float],
 ) -> int:
     """
-    Conservative, explainable relevance metric.
+    Conservative relevance percentage.
     """
 
     raw_score = sum(podcast_scores.values()) + sum(episode_scores)
