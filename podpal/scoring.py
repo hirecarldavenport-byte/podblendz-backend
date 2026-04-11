@@ -10,42 +10,88 @@ MASTER_TOPICS: Dict[str, Dict[str, List[str]]] = {
         "core": ["genetics", "genome", "dna", "genomics", "epigenetics"],
         "aliases": ["gene", "genes", "chromosome", "crispr", "mutation"],
     },
+
     "ai_tech": {
         "core": ["artificial intelligence", "ai", "machine learning", "technology"],
         "aliases": ["neural network", "llm", "automation", "software", "computing"],
     },
+
     "food_travel": {
         "core": ["food", "travel", "cuisine", "tourism"],
         "aliases": ["chef", "restaurant", "culture", "destination"],
     },
+
     "parenting": {
         "core": ["parenting", "child development", "family"],
         "aliases": ["children", "adolescence", "behavior"],
     },
+
     "health_fitness": {
         "core": ["health", "fitness", "exercise", "wellness", "weight loss"],
         "aliases": ["nutrition", "sleep", "mental health", "training", "diet"],
     },
+
     "finance": {
         "core": ["finance", "investing", "economics", "money"],
         "aliases": ["markets", "stocks", "wealth", "budgeting"],
     },
+
     "literature_culture": {
         "core": ["literature", "culture", "writing", "art"],
         "aliases": ["storytelling", "books", "philosophy", "history"],
     },
+
     "entrepreneurship": {
         "core": ["entrepreneurship", "startup", "business"],
         "aliases": ["founder", "innovation", "strategy", "growth"],
     },
+
     "education_learning": {
         "core": ["education", "learning", "teaching"],
         "aliases": ["memory", "cognition", "pedagogy"],
     },
+
+    # 🔴 UPDATED POLITICS (Structured + Safe)
     "politics": {
-        "core": ["politics", "government", "policy"],
-        "aliases": ["democracy", "elections", "law", "governance"],
+        # Identity / intent
+        "core": [
+            "politics",
+            "government",
+            "public policy",
+            "geopolitics",
+            "international relations",
+        ],
+        # Institutional / civic
+        "aliases": [
+            "democracy",
+            "elections",
+            "law",
+            "governance",
+            "foreign policy",
+            "diplomacy",
+        ],
+        # High‑signal geopolitical events
+        "events": [
+            "war",
+            "conflict",
+            "sanctions",
+            "military",
+            "invasion",
+            "ceasefire",
+        ],
+        # Contextual actors / regions (never standalone)
+        "context": [
+            "oil",
+            "energy",
+            "gas",
+            "middle east",
+            "iran",
+            "russia",
+            "china",
+            "ukraine",
+        ],
     },
+
     "science_general": {
         "core": ["science", "scientific"],
         "aliases": ["research", "study", "experiment"],
@@ -54,7 +100,7 @@ MASTER_TOPICS: Dict[str, Dict[str, List[str]]] = {
 
 
 # =================================================
-# 2. GENERIC TERMS (Never sufficient alone)
+# 2. GENERIC SUPPORT TERMS (Never sufficient alone)
 # =================================================
 
 GENERIC_TERMS: Set[str] = {
@@ -67,34 +113,46 @@ GENERIC_TERMS: Set[str] = {
 
 
 # =================================================
-# 3. QUERY → MASTER TOPIC DETECTION
+# 3. QUERY → MASTER TOPIC DETECTION (INTENT)
 # =================================================
 
 def detect_query_master_topics(query: str) -> Set[str]:
     """
-    Determine which master topics the query intends to invoke.
-    THIS scopes all episode matching.
+    Determine which master topics the QUERY intends to invoke.
+    This scopes all episode evaluation.
     """
+
     q = query.lower()
     detected: Set[str] = set()
 
     for master, topic in MASTER_TOPICS.items():
-        for term in topic["core"] + topic["aliases"]:
+        # Standard core + alias detection
+        for term in topic.get("core", []) + topic.get("aliases", []):
             if term in q:
                 detected.add(master)
                 break
+
+        # Special handling for geopolitics:
+        # event + context → politics
+        if master == "politics":
+            has_event = any(evt in q for evt in topic.get("events", []))
+            has_context = any(ctx in q for ctx in topic.get("context", []))
+            if has_event and has_context:
+                detected.add("politics")
 
     return detected
 
 
 # =================================================
-# 4. PODCAST-LEVEL CONTEXT SCORING
+# 4. PODCAST‑LEVEL CONTEXT SCORING
 # =================================================
 
 def score_podcast_context(feed: Any, query: str) -> float:
     """
-    Light contextual bias based on query topics only.
+    Light contextual bias scoped to QUERY master topics.
+    Never acts as a gate.
     """
+
     score = 0.0
     query_topics = detect_query_master_topics(query)
 
@@ -106,7 +164,7 @@ def score_podcast_context(feed: Any, query: str) -> float:
         if not topic:
             continue
 
-        for core_term in topic["core"]:
+        for core_term in topic.get("core", []):
             if core_term in title:
                 score += 1.5
             elif core_term in description:
@@ -116,7 +174,7 @@ def score_podcast_context(feed: Any, query: str) -> float:
 
 
 # =================================================
-# 5. EPISODE-LEVEL SCORING + METADATA
+# 5. EPISODE‑LEVEL SCORING + METADATA
 # =================================================
 
 def score_episode(
@@ -141,14 +199,15 @@ def score_episode(
     match_sources: Dict[str, str] = {}
 
     # -------------------------------------------------
-    # ONLY evaluate topics the QUERY asked for
+    # Evaluate ONLY topics the QUERY invoked
     # -------------------------------------------------
     for master in query_topics:
         topic = MASTER_TOPICS.get(master)
         if not topic:
             continue
 
-        for core in topic["core"]:
+        # Core terms
+        for core in topic.get("core", []):
             if core in title:
                 matched_master_topics.add(master)
                 matched_terms.add(core)
@@ -158,16 +217,19 @@ def score_episode(
                 matched_terms.add(core)
                 match_sources[core] = "description"
 
-        for alias in topic["aliases"]:
+        # Aliases
+        for alias in topic.get("aliases", []):
             if alias in title:
+                matched_master_topics.add(master)
                 matched_terms.add(alias)
                 match_sources[alias] = "title"
             elif alias in description:
+                matched_master_topics.add(master)
                 matched_terms.add(alias)
                 match_sources[alias] = "description"
 
     # -------------------------------------------------
-    # QUALITY GATES
+    # Semantic quality gates
     # -------------------------------------------------
     if not matched_master_topics:
         return 0.0, {}
@@ -176,7 +238,7 @@ def score_episode(
         return 0.0, {}
 
     # -------------------------------------------------
-    # SCORING
+    # Scoring
     # -------------------------------------------------
     score = 0.0
 
@@ -202,7 +264,7 @@ def score_episode(
 
 
 # =================================================
-# 6. BLEND-LEVEL RELEVANCE METRIC
+# 6. BLEND‑LEVEL RELEVANCE METRIC
 # =================================================
 
 def compute_blend_relevance_percent(
@@ -212,6 +274,7 @@ def compute_blend_relevance_percent(
     """
     Conservative, explainable relevance metric.
     """
+
     raw_score = sum(podcast_scores.values()) + sum(episode_scores)
     MAX_REASONABLE_SCORE = 20.0
 
