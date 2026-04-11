@@ -2,56 +2,78 @@ from typing import Dict, List, Any, Set, Tuple
 
 
 # =================================================
-# 1. MASTER TOPICS (Semantic Umbrellas)
+# 1. MASTER TOPICS (SEMANTIC UMBRELLAS)
 # =================================================
 
 MASTER_TOPICS: Dict[str, Dict[str, List[str]]] = {
+
+    # ---------------- Genetics ----------------
     "genetics": {
         "core": ["genetics", "genome", "dna", "genomics", "epigenetics"],
         "aliases": ["gene", "genes", "chromosome", "crispr", "mutation"],
     },
 
+    # ---------------- AI / Tech ----------------
     "ai_tech": {
-        "core": ["artificial intelligence", "ai", "machine learning", "technology"],
-        "aliases": ["neural network", "llm", "automation", "software", "computing"],
+        "core": [
+            "artificial intelligence", "ai",
+            "machine learning", "technology"
+        ],
+        "aliases": [
+            "neural network", "llm", "automation",
+            "software", "computing"
+        ],
     },
 
+    # ---------------- Food & Travel ----------------
     "food_travel": {
         "core": ["food", "travel", "cuisine", "tourism"],
         "aliases": ["chef", "restaurant", "culture", "destination"],
     },
 
+    # ---------------- Parenting ----------------
     "parenting": {
         "core": ["parenting", "child development", "family"],
         "aliases": ["children", "adolescence", "behavior"],
     },
 
+    # ---------------- Health & Fitness ----------------
     "health_fitness": {
-        "core": ["health", "fitness", "exercise", "wellness", "weight loss"],
-        "aliases": ["nutrition", "sleep", "mental health", "training", "diet"],
+        "core": [
+            "health", "fitness", "exercise",
+            "wellness", "weight loss"
+        ],
+        "aliases": [
+            "nutrition", "sleep",
+            "mental health", "training", "diet"
+        ],
     },
 
+    # ---------------- Finance ----------------
     "finance": {
         "core": ["finance", "investing", "economics", "money"],
         "aliases": ["markets", "stocks", "wealth", "budgeting"],
     },
 
+    # ---------------- Literature & Culture ----------------
     "literature_culture": {
         "core": ["literature", "culture", "writing", "art"],
         "aliases": ["storytelling", "books", "philosophy", "history"],
     },
 
+    # ---------------- Entrepreneurship ----------------
     "entrepreneurship": {
         "core": ["entrepreneurship", "startup", "business"],
         "aliases": ["founder", "innovation", "strategy", "growth"],
     },
 
+    # ---------------- Education & Learning ----------------
     "education_learning": {
         "core": ["education", "learning", "teaching"],
         "aliases": ["memory", "cognition", "pedagogy"],
     },
 
-    # 🔴 UPDATED POLITICS (Structured + Safe)
+    # ---------------- Politics (UPDATED & SAFE) ----------------
     "politics": {
         # Identity / intent
         "core": [
@@ -61,7 +83,7 @@ MASTER_TOPICS: Dict[str, Dict[str, List[str]]] = {
             "geopolitics",
             "international relations",
         ],
-        # Institutional / civic
+        # Institutional signals
         "aliases": [
             "democracy",
             "elections",
@@ -70,7 +92,7 @@ MASTER_TOPICS: Dict[str, Dict[str, List[str]]] = {
             "foreign policy",
             "diplomacy",
         ],
-        # High‑signal geopolitical events
+        # High‑signal events
         "events": [
             "war",
             "conflict",
@@ -79,7 +101,7 @@ MASTER_TOPICS: Dict[str, Dict[str, List[str]]] = {
             "invasion",
             "ceasefire",
         ],
-        # Contextual actors / regions (never standalone)
+        # Regions / resources (context only)
         "context": [
             "oil",
             "energy",
@@ -92,6 +114,86 @@ MASTER_TOPICS: Dict[str, Dict[str, List[str]]] = {
         ],
     },
 
+    # ---------------- Movies & Media ----------------
+    "movies_media": {
+        "core": [
+            "movie", "film", "cinema",
+            "animated film", "animation",
+            "pixar", "disney",
+            "studio ghibli", "stop motion"
+        ],
+        "aliases": [
+            "character", "plot", "story",
+            "scene", "director",
+            "symbolism", "themes", "ending"
+        ],
+        "theory": [
+            "theory", "conspiracy",
+            "hidden meaning", "fan theory",
+            "easter egg", "dark theory"
+        ],
+    },
+
+    # ---------------- Music (incl. K‑Pop) ----------------
+    "music": {
+        "core": [
+            "music", "song", "album",
+            "artist", "band", "musician",
+            "producer", "concert"
+        ],
+        "aliases": [
+            "pop", "hip hop", "rock",
+            "indie", "electronic",
+            "soundtrack", "genre"
+        ],
+        "kpop": [
+            "k-pop", "korean pop",
+            "idol", "girl group",
+            "boy group", "comeback",
+            "fandom", "trainee"
+        ],
+    },
+
+    # ---------------- True Crime ----------------
+    "true_crime": {
+        "core": [
+            "true crime",
+            "cold case",
+            "serial killer",
+            "unsolved murder",
+            "homicide",
+            "murder mystery",
+            "missing person",
+        ],
+        "aliases": [
+            "investigation",
+            "detective",
+            "evidence",
+            "forensics",
+            "interrogation",
+            "trial",
+            "court case",
+            "suspect",
+        ],
+        "psychology": [
+            "criminal psychology",
+            "profiling",
+            "motive",
+            "behavioral analysis",
+            "psychopathy",
+            "narcissism",
+            "mental illness",
+        ],
+        "media": [
+            "documentary",
+            "podcast series",
+            "true story",
+            "case files",
+            "based on real events",
+        ],
+    },
+
+    # ---------------- General Science ----------------
     "science_general": {
         "core": ["science", "scientific"],
         "aliases": ["research", "study", "experiment"],
@@ -100,7 +202,7 @@ MASTER_TOPICS: Dict[str, Dict[str, List[str]]] = {
 
 
 # =================================================
-# 2. GENERIC SUPPORT TERMS (Never sufficient alone)
+# 2. GENERIC SUPPORT TERMS (NEVER SUFFICIENT ALONE)
 # =================================================
 
 GENERIC_TERMS: Set[str] = {
@@ -113,30 +215,29 @@ GENERIC_TERMS: Set[str] = {
 
 
 # =================================================
-# 3. QUERY → MASTER TOPIC DETECTION (INTENT)
+# 3. QUERY → MASTER TOPIC DETECTION
 # =================================================
 
 def detect_query_master_topics(query: str) -> Set[str]:
     """
     Determine which master topics the QUERY intends to invoke.
-    This scopes all episode evaluation.
     """
 
     q = query.lower()
     detected: Set[str] = set()
 
     for master, topic in MASTER_TOPICS.items():
-        # Standard core + alias detection
-        for term in topic.get("core", []) + topic.get("aliases", []):
-            if term in q:
-                detected.add(master)
-                break
+        # Core + alias detection
+        for term_group in topic.values():
+            for term in term_group:
+                if term in q:
+                    detected.add(master)
+                    break
 
-        # Special handling for geopolitics:
-        # event + context → politics
+        # Special geopolitics rule: event + context
         if master == "politics":
-            has_event = any(evt in q for evt in topic.get("events", []))
-            has_context = any(ctx in q for ctx in topic.get("context", []))
+            has_event = any(e in q for e in topic.get("events", []))
+            has_context = any(c in q for c in topic.get("context", []))
             if has_event and has_context:
                 detected.add("politics")
 
@@ -149,8 +250,7 @@ def detect_query_master_topics(query: str) -> Set[str]:
 
 def score_podcast_context(feed: Any, query: str) -> float:
     """
-    Light contextual bias scoped to QUERY master topics.
-    Never acts as a gate.
+    Small contextual bias only.
     """
 
     score = 0.0
@@ -160,10 +260,7 @@ def score_podcast_context(feed: Any, query: str) -> float:
     description = (getattr(feed, "description", "") or "").lower()
 
     for master in query_topics:
-        topic = MASTER_TOPICS.get(master)
-        if not topic:
-            continue
-
+        topic = MASTER_TOPICS.get(master, {})
         for core_term in topic.get("core", []):
             if core_term in title:
                 score += 1.5
@@ -183,7 +280,7 @@ def score_episode(
     podcast_score: float,
 ) -> Tuple[float, Dict[str, Any]]:
     """
-    Score episode relevance WITH query-scoped master topics.
+    Score episode relevance scoped to QUERY master topics.
     """
 
     query_topics = detect_query_master_topics(query)
@@ -192,66 +289,32 @@ def score_episode(
 
     title = (episode.get("title") or "").lower()
     description = (episode.get("description") or "").lower()
-    full_text = f"{title} {description}"
 
     matched_master_topics: Set[str] = set()
     matched_terms: Set[str] = set()
-    match_sources: Dict[str, str] = {}
 
-    # -------------------------------------------------
-    # Evaluate ONLY topics the QUERY invoked
-    # -------------------------------------------------
     for master in query_topics:
-        topic = MASTER_TOPICS.get(master)
-        if not topic:
-            continue
+        topic = MASTER_TOPICS.get(master, {})
 
-        # Core terms
-        for core in topic.get("core", []):
-            if core in title:
-                matched_master_topics.add(master)
-                matched_terms.add(core)
-                match_sources[core] = "title"
-            elif core in description:
-                matched_master_topics.add(master)
-                matched_terms.add(core)
-                match_sources[core] = "description"
+        for term_group in topic.values():
+            for term in term_group:
+                if term in title or term in description:
+                    matched_master_topics.add(master)
+                    matched_terms.add(term)
 
-        # Aliases
-        for alias in topic.get("aliases", []):
-            if alias in title:
-                matched_master_topics.add(master)
-                matched_terms.add(alias)
-                match_sources[alias] = "title"
-            elif alias in description:
-                matched_master_topics.add(master)
-                matched_terms.add(alias)
-                match_sources[alias] = "description"
-
-    # -------------------------------------------------
-    # Semantic quality gates
-    # -------------------------------------------------
     if not matched_master_topics:
         return 0.0, {}
 
     if len(matched_terms) < 2:
         return 0.0, {}
 
-    # -------------------------------------------------
-    # Scoring
-    # -------------------------------------------------
     score = 0.0
-
-    for term, source in match_sources.items():
+    for term in matched_terms:
         is_generic = term in GENERIC_TERMS
-
-        if source == "title":
+        if term in title:
             score += 0.75 if is_generic else 3.0
         else:
             score += 0.5 if is_generic else 2.0
-
-    if any(word in description for word in ["how", "why", "explains", "application"]):
-        score += 0.5
 
     score += podcast_score * 0.25
 
