@@ -91,7 +91,7 @@ def preview_blend(query: str = Body(..., embed=True)) -> Dict[str, Any]:
 
         for episode in episodes:
             try:
-                ep_score = score_episode(
+                ep_score, ep_metadata = score_episode(
                     episode=episode,
                     query=query,
                     podcast_score=feed_score,
