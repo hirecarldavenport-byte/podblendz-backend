@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 from fastapi import FastAPI
 from podpal.routes.health import router as health_router
 from podpal.routes.s3_routes import router as s3_router
