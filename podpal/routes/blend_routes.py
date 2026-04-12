@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Body
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 
 from podpal.search.resolve import resolve_search_term
 from podpal.scoring import (
@@ -9,6 +9,7 @@ from podpal.scoring import (
 )
 from podpal.rss.resolver import resolve_podcast_source
 from podpal.services.rss_test import fetch_rss_feed
+from podpal.retrieval.podcasters import fetch_podcaster_episodes
 
 
 router = APIRouter()
@@ -16,11 +17,60 @@ router = APIRouter()
 
 @router.post("/blend")
 def preview_blend(
-    query: str = Body(..., embed=True)
+    query: Optional[str] = Body(default=None),
+    podcaster_feed: Optional[str] = Body(default=None),
 ) -> Dict[str, Any]:
     """
-    Preview podcast blend results for a query.
+    Generate either:
+    - a SUBJECT blend (semantic, scored)
+    - a PODCASTER blend (direct, no scoring)
+
+    Podcaster mode is triggered when `podcaster_feed` is provided.
     """
+
+    # =================================================
+    # PODCASTER MODE (Direct, No Scoring)
+    # =================================================
+    if podcaster_feed:
+        episodes = fetch_podcaster_episodes(podcaster_feed)
+
+        if not episodes:
+            return {
+                "mode": "podcaster",
+                "podcaster_feed": podcaster_feed,
+                "guidance": (
+                    "No recent episodes with transcripts were available "
+                    "for this podcaster."
+                ),
+                "results": [],
+            }
+
+        return {
+            "mode": "podcaster",
+            "podcaster_feed": podcaster_feed,
+            "vibe": {
+                "type": "creator",
+                "description": (
+                    "Latest episodes from this creator, "
+                    "presented in order of release."
+                ),
+            },
+            "episode_count": len(episodes),
+            "results": episodes,
+        }
+
+    # =================================================
+    # SUBJECT MODE (Semantic Scoring + Blending)
+    # =================================================
+    if not query:
+        return {
+            "mode": "subject",
+            "guidance": (
+                "Provide either a query (subject blend) "
+                "or a podcaster_feed (creator mode)."
+            ),
+            "results": [],
+        }
 
     # -------------------------------------------------
     # 1. Resolve search → feed URLs
@@ -38,9 +88,10 @@ def preview_blend(
 
     if not feeds:
         return {
+            "mode": "subject",
             "query": query,
             "relevance_percent": 0,
-            "guidance": "No feeds could be resolved for this query.",
+            "guidance": "No podcasts could be resolved for this topic.",
             "results": [],
         }
 
@@ -54,7 +105,6 @@ def preview_blend(
 
     for feed in feeds:
         feed_url = feed.feed_url
-
         podcast_scores[feed_url] = score_podcast_context(feed, query)
 
         try:
@@ -67,7 +117,7 @@ def preview_blend(
             episodes_by_feed[feed_url] = []
 
     # -------------------------------------------------
-    # 3. Episode scoring (STRICT tuple shape)
+    # 3. Episode scoring
     # -------------------------------------------------
     results: List[Dict[str, Any]] = []
 
@@ -90,7 +140,7 @@ def preview_blend(
                 )
 
                 if ep_score > 0:
-                    # 👇 ONLY allowed append shape
+                    # STRICT tuple shape: (score, episode, metadata)
                     scored_episodes.append(
                         (ep_score, episode, ep_metadata)
                     )
@@ -101,7 +151,7 @@ def preview_blend(
         if not scored_episodes:
             continue
 
-        # Defensive sanity check
+        # Defensive check (prevents silent tuple-shape bugs)
         assert all(len(t) == 3 for t in scored_episodes)
 
         scored_episodes.sort(key=lambda x: x[0], reverse=True)
@@ -118,7 +168,9 @@ def preview_blend(
             "matched_master_topics": best_metadata.get(
                 "matched_master_topics", []
             ),
-            "matched_terms": best_metadata.get("matched_terms", []),
+            "matched_terms": best_metadata.get(
+                "matched_terms", []
+            ),
         })
 
     # -------------------------------------------------
@@ -126,6 +178,7 @@ def preview_blend(
     # -------------------------------------------------
     if not results:
         return {
+            "mode": "subject",
             "query": query,
             "relevance_percent": 0,
             "guidance": (
@@ -153,6 +206,7 @@ def preview_blend(
     )
 
     return {
+        "mode": "subject",
         "query": query,
         "relevance_percent": relevance_percent,
         "guidance": None if relevance_percent >= 55 else (
