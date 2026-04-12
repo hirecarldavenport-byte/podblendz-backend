@@ -1,81 +1,113 @@
-from typing import List
+"""
+Search-term resolution for PodBlendz.
 
+This module converts a user query into a set of candidate
+podcast RSS feed URLs using PodcastIndex, before scoring.
+"""
 
-# --------------------------------------------------------------------
-# Curated search index
-#
-# This maps HUMAN SEARCH INTENT → REAL PODCAST RSS FEEDS.
-# This is deterministic, demo-safe, and explainable.
-# --------------------------------------------------------------------
+from podpal.services.podcastindex import (
+    search_podcasts,
+    search_podcasts_by_title,
+)
 
-SEARCH_INDEX = {
-    "news": [
-        "https://feeds.npr.org/510289/podcast.xml",  # NPR News Now
-        "https://feeds.npr.org/510310/podcast.xml",  # Up First
-    ],
-    "politics": [
-        "https://feeds.npr.org/510298/podcast.xml",  # NPR Politics
-        "https://feeds.npr.org/510310/podcast.xml",
-    ],
-    "technology": [
-        "https://feeds.npr.org/510312/podcast.xml",  # Life Kit: Tech
-    ],
-    "health": [
-        "https://feeds.npr.org/510324/podcast.xml",  # Short Wave
-    ],
+# -------------------------------------------------
+# Configuration
+# -------------------------------------------------
+
+DEFAULT_FEED = "https://feeds.npr.org/510289/podcast.xml"
+
+STOP_WORDS = {
+    "and", "or", "the", "of", "in", "on", "for", "to", "with"
 }
 
+TOPIC_ALIASES = {
+    "neuroscience": ["brain", "neuro", "psychology"],
+    "biology": ["life", "genetics", "evolution"],
+    "experiment": ["research", "study", "science"],
+    "learning": ["memory", "education", "cognition"],
+    "space": ["astronomy", "nasa", "astrophysics"],
+    "health": ["medicine", "wellness", "disease"],
+}
 
-# --------------------------------------------------------------------
-# Public search API (used by /blend)
-# --------------------------------------------------------------------
+MAX_FEEDS = 25  # safety cap for Phase 1
 
-def resolve_search_term(query: str) -> List[str]:
+
+# -------------------------------------------------
+# Resolver
+# -------------------------------------------------
+
+def resolve_search_term(query: str) -> list:
     """
-    Resolve a natural-language search query into one or more
-    podcast RSS feed URLs.
+    Resolve a user query into candidate podcast RSS feed URLs.
 
-    This function:
-    - Logs every decision (so search is visible)
-    - Guarantees at least one feed (fallback)
-    - Keeps search logic independent of blending
+    Strategy:
+    1. Title-only PodcastIndex search (highest precision)
+    2. Full-term PodcastIndex search
+    3. Token-level searches
+    4. Alias expansion
+    5. Deduplicate + cap feeds
+    6. Fallback if empty
     """
 
-    print("[SEARCH] ----------------------------------------")
+    if not query:
+        return [DEFAULT_FEED]
+
+    query = query.strip().lower()
     print(f"[SEARCH] Incoming query: '{query}'")
 
-    if not query or not query.strip():
-        print("[SEARCH] Empty query received, using fallback feed")
-        return ["https://feeds.npr.org/510289/podcast.xml"]
+    feeds = set()
 
-    normalized_query = query.lower()
+    # -------------------------------------------------
+    # 1. Title-only search (precision pass)
+    # -------------------------------------------------
+    try:
+        for url in search_podcasts_by_title(query, limit=10):
+            feeds.add(url)
+    except Exception as e:
+        print(f"[SEARCH] Title search failed: {e}")
 
-    matched_feeds: List[str] = []
+    # -------------------------------------------------
+    # 2. Full-term search (recall pass)
+    # -------------------------------------------------
+    try:
+        for url in search_podcasts(query, limit=10):
+            feeds.add(url)
+    except Exception as e:
+        print(f"[SEARCH] Term search failed: {e}")
 
-    # --------------------------------------------------------------
-    # Keyword matching
-    # --------------------------------------------------------------
-    for keyword, feeds in SEARCH_INDEX.items():
-        if keyword in normalized_query:
-            print(f"[SEARCH] Matched keyword: '{keyword}'")
-            matched_feeds.extend(feeds)
+    # -------------------------------------------------
+    # Tokenization
+    # -------------------------------------------------
+    tokens = [
+        token
+        for token in query.split()
+        if token not in STOP_WORDS and len(token) > 1
+    ]
 
-    # --------------------------------------------------------------
-    # Fallback behavior (CRITICAL FOR STABILITY)
-    # --------------------------------------------------------------
-    if not matched_feeds:
-        print("[SEARCH] No keywords matched — falling back to default feed")
-        matched_feeds.append("https://feeds.npr.org/510289/podcast.xml")
+    # -------------------------------------------------
+    # 3. Token-level + alias search
+    # -------------------------------------------------
+    for token in tokens:
+        try:
+            for url in search_podcasts(token, limit=5):
+                feeds.add(url)
+        except Exception as e:
+            print(f"[SEARCH] Token search failed for '{token}': {e}")
 
-    # --------------------------------------------------------------
-    # Deduplicate while preserving order
-    # --------------------------------------------------------------
-    unique_feeds = list(dict.fromkeys(matched_feeds))
+        for alias in TOPIC_ALIASES.get(token, []):
+            try:
+                for url in search_podcasts(alias, limit=3):
+                    feeds.add(url)
+            except Exception as e:
+                print(f"[SEARCH] Alias search failed for '{alias}': {e}")
 
-    print(f"[SEARCH] Resolved feeds ({len(unique_feeds)}):")
-    for feed in unique_feeds:
-        print(f"[SEARCH]   • {feed}")
+    # -------------------------------------------------
+    # Finalize
+    # -------------------------------------------------
+    if feeds:
+        feed_list = list(feeds)[:MAX_FEEDS]
+        print(f"[SEARCH] PodcastIndex returned {len(feed_list)} feeds")
+        return feed_list
 
-    print("[SEARCH] ----------------------------------------")
-
-    return unique_feeds
+    print("[SEARCH] No PodcastIndex matches — falling back to default feed")
+    return [DEFAULT_FEED]
