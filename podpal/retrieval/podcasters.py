@@ -1,25 +1,85 @@
 from typing import List, Dict, Any
-from datetime import datetime
 
 from podpal.services.rss_test import fetch_rss_feed
 
 
 # =================================================
-# Configuration
+# CONFIG
 # =================================================
 
 DEFAULT_EPISODE_LIMIT = 3
 
 
 # =================================================
-# Transcript availability check
+# FEATURED PODCASTERS
+# (Verified RSS feeds, mapped to master topics)
+# =================================================
+
+FEATURED_PODCASTERS: Dict[str, List[Dict[str, str]]] = {
+    "true_crime": [
+        {
+            "name": "Serial",
+            "feed_url": "https://rss.art19.com/serial-podcast",
+        },
+        {
+            "name": "Casefile",
+            "feed_url": "https://casefilepodcast.com/feed/podcast",
+        },
+        {
+            "name": "Crime Junkie",
+            "feed_url": "https://feeds.simplecast.com/qm_9xx0g",
+        },
+    ],
+    "politics": [
+        {
+            "name": "The Daily",
+            "feed_url": "https://rss.art19.com/the-daily",
+        },
+        {
+            "name": "Pod Save the World",
+            "feed_url": "https://feeds.megaphone.fm/PSW2335431032",
+        },
+    ],
+    "education_learning": [
+        {
+            "name": "Stuff You Should Know",
+            "feed_url": "https://feeds.megaphone.fm/stuffyoushouldknow",
+        },
+    ],
+    "genetics": [
+        {
+            "name": "Radiolab",
+            "feed_url": "https://feeds.simplecast.com/EmVW7VGp",
+        },
+    ],
+    "ai_tech": [
+        {
+            "name": "Lex Fridman Podcast",
+            "feed_url": "https://lexfridman.com/feed/podcast",
+        },
+    ],
+    "movies_media": [
+        {
+            "name": "Film Theory",
+            "feed_url": "https://feeds.simplecast.com/8xUHbV3r",
+        },
+    ],
+    "music": [
+        {
+            "name": "Switched on Pop",
+            "feed_url": "https://feeds.megaphone.fm/VMP5705694068",
+        },
+    ],
+}
+
+
+# =================================================
+# TRANSCRIPT AVAILABILITY CHECK
 # =================================================
 
 def has_transcript(episode: Dict[str, Any]) -> bool:
     """
-    Determine whether an episode has a usable transcript.
-
-    This is intentionally conservative and pluggable.
+    Conservative check for transcript availability.
     """
     return bool(
         episode.get("transcript")
@@ -29,7 +89,7 @@ def has_transcript(episode: Dict[str, Any]) -> bool:
 
 
 # =================================================
-# Podcaster retrieval (NO scoring)
+# PODCASTER EPISODE RETRIEVAL (NO SCORING)
 # =================================================
 
 def fetch_podcaster_episodes(
@@ -37,14 +97,13 @@ def fetch_podcaster_episodes(
     limit: int = DEFAULT_EPISODE_LIMIT,
 ) -> List[Dict[str, Any]]:
     """
-    Fetch the latest episodes for a specific podcaster.
+    Fetch latest episodes for a specific podcaster.
 
     Rules:
-    - Pull from RSS
-    - Sort newest → oldest
-    - Include only episodes with transcripts
-    - Return up to `limit` episodes
-    - ALWAYS return a list (never None)
+    - Direct retrieval (no relevance scoring)
+    - Requires transcript availability
+    - Chronological, newest first
+    - Always returns a list
     """
 
     try:
@@ -60,7 +119,6 @@ def fetch_podcaster_episodes(
     if not items:
         return []
 
-    # Sort newest first (defensive)
     items_sorted = sorted(
         items,
         key=lambda e: e.get("published", ""),
@@ -74,8 +132,8 @@ def fetch_podcaster_episodes(
             continue
 
         results.append({
-            "podcaster_feed": feed_url,
             "podcast_title": rss_data.get("title"),
+            "podcaster_feed": feed_url,
             "episode_title": episode.get("title"),
             "episode_link": episode.get("link"),
             "published": episode.get("published"),
@@ -90,3 +148,23 @@ def fetch_podcaster_episodes(
             break
 
     return results
+
+
+# =================================================
+# FEATURED PODCASTER HELPERS
+# =================================================
+
+def get_featured_podcasters() -> Dict[str, List[Dict[str, str]]]:
+    """
+    Return all featured podcasters grouped by master topic.
+    """
+    return FEATURED_PODCASTERS
+
+
+def get_featured_podcasters_for_topic(
+    master_topic: str,
+) -> List[Dict[str, str]]:
+    """
+    Return featured podcasters for a specific master topic.
+    """
+    return FEATURED_PODCASTERS.get(master_topic, [])
