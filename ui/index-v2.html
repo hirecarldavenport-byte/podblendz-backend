@@ -7,9 +7,9 @@
   <style>
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      max-width: 720px;
-      margin: 40px auto;
-      padding: 0 20px;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 20px 60px;
     }
 
     h1 {
@@ -20,6 +20,36 @@
     p {
       font-size: 1.1rem;
       line-height: 1.5;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      background: white;
+    }
+
+    .card:hover {
+      background: #f7f7f7;
+    }
+
+    .meta {
+      font-size: 0.8rem;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    .vibe {
+      font-size: 0.9rem;
+      margin-top: 8px;
+      color: #444;
     }
 
     input {
@@ -58,6 +88,7 @@
 </head>
 
 <body>
+
 <!-- HERO SECTION -->
 <section
   style="
@@ -67,110 +98,116 @@
     background-size: cover;
     background-position: center;
     color: white;
+    margin-bottom: 40px;
   "
 >
-  <!-- Dark overlay -->
-  <div
-    style="
-      position: absolute;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.55);
-    "
-  ></div>
+  <div style="position:absolute; inset:0; background:rgba(0,0,0,.55);"></div>
 
-  <!-- Hero content -->
-  <div
-    style="
-      position: relative;
-      z-index: 1;
-      max-width: 900px;
-      padding: 80px 40px;
-    "
-  >
-    <div style="font-size: 1.1rem; opacity: 0.9; margin-bottom: 12px;">
-      pod blendz
-    </div>
+  <div style="position:relative; z-index:1; max-width:900px; padding:80px 40px;">
+    <div style="opacity:.85; margin-bottom:12px;">pod blendz</div>
 
-    <h1 style="font-size: 3rem; margin-bottom: 16px;">
-      Your Podcasts. Your Blendz. Your Way.
-    </h1>
+    <h1>Your Podcasts. Your Blendz. Your Way.</h1>
 
-    <p style="font-size: 1.3rem; max-width: 600px; margin-bottom: 24px;">
-      Listen Smarter. Share Deeper. Blend Ideas.
+    <p style="font-size:1.3rem; max-width:600px;">
+      Listen smarter. Blend ideas across podcasts and creators.
     </p>
 
-    <div style="margin-bottom: 24px;">
-      <button
-        style="padding: 12px 24px; margin-right: 12px; font-size: 1rem;"
-        onclick="document.getElementById('queryInput').focus();"
-      >
-        Get Started
-      </button>
-
-      <button
-        style="padding: 12px 24px; font-size: 1rem;"
-        onclick="alert('Demo coming next');"
-      >
-        Watch Demo
-      </button>
-    </div>
-
     <button
-      style="
-        padding: 14px 32px;
-        font-size: 1.1rem;
-        font-weight: bold;
-        background: linear-gradient(90deg, #ff7a18, #ffb347);
-        border: none;
-        cursor: pointer;
-      "
-      onclick="document.getElementById('queryInput').scrollIntoView({ behavior: 'smooth' });"
-    >
-      Generate Your Blendz
+      style="margin-top:20px; padding:14px 32px; font-size:1.1rem; font-weight:bold;"
+      onclick="document.getElementById('cards').scrollIntoView({ behavior: 'smooth' })">
+      Explore Blendz
     </button>
   </div>
 </section>
-  <!-- Product copy (aligned with PRODUCT.md) -->
-  <h1>PodBlendz</h1>
 
-  <p>
-    PodBlendz blends multiple podcasts into a single audio story
-    on the topic you choose.
-  </p>
+<!-- CARDS -->
+<section id="cards">
 
-  <p>
-    Search by topic, and PodBlendz finds relevant podcasts,
-    combines perspectives, and turns them into one listenable blend.
-  </p>
+  <h2>Explore by Topic</h2>
+  <div id="subjectCards" class="grid"></div>
 
-  <!-- Search input -->
+  <h2 style="margin-top:48px;">Featured Voices</h2>
+  <div id="podcasterCards"></div>
+
+</section>
+
+<!-- MANUAL SEARCH (OPTIONAL / ADVANCED) -->
+<section style="margin-top:60px;">
+  <h2>Or create a custom blend</h2>
+
   <input
     id="queryInput"
     type="text"
     placeholder="What do you want to listen to?"
   />
 
-  <br />
-
   <button onclick="createBlend()">Create Blend</button>
+</section>
 
-  <div id="status"></div>
+<div id="status"></div>
 
-  <!-- Audio player -->
-  <audio
-    id="audioPlayer"
-    controls
-    crossorigin="anonymous">
-  </audio>
-
-  <!-- Debug output (keep for now; remove later if you want) -->
-  <pre id="debug"></pre>
+<audio id="audioPlayer" controls crossorigin="anonymous"></audio>
+<pre id="debug"></pre>
 
 <script>
   const BACKEND_BASE = "https://podblendz-backend.onrender.com";
 
-  async function createBlend() {
-    const query = document.getElementById("queryInput").value.trim();
+  /* ---------------------------------------------
+     LOAD CARDS (HOME / HERO)
+  --------------------------------------------- */
+  async function loadCards() {
+    const res = await fetch(`${BACKEND_BASE}/cards`);
+    const data = await res.json();
+
+    const subjectContainer = document.getElementById("subjectCards");
+    const podcasterContainer = document.getElementById("podcasterCards");
+
+    // Subject cards
+    data.subject_cards.forEach(card => {
+      const el = document.createElement("div");
+      el.className = "card";
+      el.innerHTML = `
+        <strong>${card.title}</strong>
+        <div class="meta">${card.master_topic.replace("_"," ")}</div>
+        <div class="vibe">${card.vibe || ""}</div>
+      `;
+      el.onclick = () => runSubjectBlend(card.query);
+      subjectContainer.appendChild(el);
+    });
+
+    // Podcaster cards
+    Object.entries(data.podcaster_cards).forEach(([topic, pods]) => {
+      const section = document.createElement("div");
+      section.innerHTML = `<h3 style="margin-top:24px;">${topic.replace("_"," ")}</h3>`;
+      const grid = document.createElement("div");
+      grid.className = "grid";
+
+      pods.forEach(pod => {
+        const el = document.createElement("div");
+        el.className = "card";
+        el.innerHTML = `
+          <strong>${pod.name}</strong>
+          <div class="meta">podcaster</div>
+        `;
+        el.onclick = () => runPodcasterBlend(pod.feed_url);
+        grid.appendChild(el);
+      });
+
+      section.appendChild(grid);
+      podcasterContainer.appendChild(section);
+    });
+  }
+
+  /* ---------------------------------------------
+     SUBJECT BLEND
+  --------------------------------------------- */
+  async function runSubjectBlend(query) {
+    document.getElementById("queryInput").value = query;
+    createBlend(query);
+  }
+
+  async function createBlend(forcedQuery) {
+    const query = forcedQuery || document.getElementById("queryInput").value.trim();
     const status = document.getElementById("status");
     const audio = document.getElementById("audioPlayer");
     const debug = document.getElementById("debug");
@@ -178,7 +215,6 @@
     status.textContent = "";
     debug.textContent = "";
 
-    // FULL AUDIO RESET (important)
     audio.pause();
     audio.removeAttribute("src");
     audio.load();
@@ -190,55 +226,47 @@
 
     status.textContent = "Creating blend…";
 
-    try {
-      const response = await fetch(`${BACKEND_BASE}/blend/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ query })
-      });
+    const response = await fetch(`${BACKEND_BASE}/blend`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query })
+    });
 
-      if (!response.ok) {
-        const text = await response.text();
-        status.textContent = "Error creating blend.";
-        debug.textContent = text;
-        return;
-      }
+    const data = await response.json();
+    debug.textContent = JSON.stringify(data, null, 2);
 
-      const data = await response.json();
-      debug.textContent = JSON.stringify(data, null, 2);
-
-      if (!data.audio_path) {
-        status.textContent = "Blend created, but no audio was returned.";
-        return;
-      }
-
-      // FORCE CLEAN AUDIO LOAD
-      const audioUrl = BACKEND_BASE + data.audio_path;
-
-      audio.pause();
-      audio.removeAttribute("src");
-      audio.load();
-
-      audio.src = audioUrl;
-      audio.load();
-
-      audio.play()
-        .then(() => {
-          status.textContent = "Blend ready.";
-        })
-        .catch(err => {
-          console.error("Audio play failed:", err);
-          status.textContent = "Audio blocked by browser.";
-        });
-
-    } catch (err) {
-      console.error("Network error:", err);
-      status.textContent = "Network error.";
-      debug.textContent = String(err);
+    if (!data.audio_path) {
+      status.textContent = "Blend created, but no audio returned.";
+      return;
     }
+
+    audio.src = BACKEND_BASE + data.audio_path;
+    audio.load();
+    audio.play().then(() => status.textContent = "Blend ready.");
   }
+
+  /* ---------------------------------------------
+     PODCASTER BLEND
+  --------------------------------------------- */
+  async function runPodcasterBlend(feedUrl) {
+    const status = document.getElementById("status");
+    const debug = document.getElementById("debug");
+
+    status.textContent = "Loading episodes…";
+
+    const response = await fetch(`${BACKEND_BASE}/blend`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ podcaster_feed: feedUrl })
+    });
+
+    const data = await response.json();
+    debug.textContent = JSON.stringify(data, null, 2);
+
+    status.textContent = "Episodes loaded (see console / next step: narration).";
+  }
+
+  loadCards();
 </script>
 
 </body>
