@@ -15,6 +15,74 @@ from podpal.retrieval.podcasters import fetch_podcaster_episodes
 router = APIRouter()
 
 
+# =================================================
+# FEED GATING RULES (v1 – MOVIES / MEDIA)
+# =================================================
+
+ANALYSIS_KEYWORDS = {
+    "theory", "theories", "meaning", "explained", "analysis",
+    "symbolism", "dark", "themes", "essay"
+}
+
+NEWS_KEYWORDS = {
+    "news", "update", "latest", "breaking", "release", "trailer"
+}
+
+def is_news_like(title: str) -> bool:
+    lowered = title.lower()
+    return any(word in lowered for word in NEWS_KEYWORDS)
+
+def is_analysis_intent(query: str) -> bool:
+    lowered = query.lower()
+    return any(word in lowered for word in ANALYSIS_KEYWORDS)
+
+
+def gate_feeds(
+    feeds: List[Any],
+    master_topic: str,
+    query: str,
+) -> List[Any]:
+    """
+    Gate feeds BEFORE episode scoring.
+    Currently tuned for movies/media only.
+    """
+
+    if master_topic != "movies_media":
+        return feeds  # no gating yet for other topics
+
+    analysis_intent = is_analysis_intent(query)
+
+    gated: List[Any] = []
+
+    for feed in feeds:
+        title = (getattr(feed, "title", "") or "").lower()
+        description = (getattr(feed, "description", "") or "").lower()
+        combined = f"{title} {description}"
+
+        # Hard exclude obvious news/update feeds for analysis intent
+        if analysis_intent and is_news_like(combined):
+            continue
+
+        # Allow film/movie-specific feeds
+        if any(term in combined for term in ["film", "cinema", "movie", "movies", "animation"]):
+            gated.append(feed)
+            continue
+
+        # Allow culture analysis feeds if intent matches
+        if analysis_intent and any(term in combined for term in ["culture", "media", "story"]):
+            gated.append(feed)
+            continue
+
+        # Otherwise: exclude silently
+        # (better to return fewer results than low‑trust ones)
+
+    return gated
+
+
+# =================================================
+# BLEND ROUTE
+# =================================================
+
 @router.post("/blend")
 def preview_blend(
     query: Optional[str] = Body(default=None),
@@ -24,8 +92,6 @@ def preview_blend(
     Generate either:
     - a SUBJECT blend (semantic, scored)
     - a PODCASTER blend (direct, no scoring)
-
-    Podcaster mode is triggered when `podcaster_feed` is provided.
     """
 
     # =================================================
@@ -60,7 +126,7 @@ def preview_blend(
         }
 
     # =================================================
-    # SUBJECT MODE (Semantic Scoring + Blending)
+    # SUBJECT MODE
     # =================================================
     if not query:
         return {
@@ -83,8 +149,8 @@ def preview_blend(
             feed = resolve_podcast_source(url)
             if feed:
                 feeds.append(feed)
-        except Exception as e:
-            print(f"⚠️ Feed resolution failed for {url}: {e}")
+        except Exception:
+            continue
 
     if not feeds:
         return {
@@ -95,10 +161,42 @@ def preview_blend(
             "results": [],
         }
 
-    feeds = feeds[:25]  # safety cap
+    feeds = feeds[:25]
 
     # -------------------------------------------------
-    # 2. Podcast-level scoring + RSS fetch
+    # 2. Detect master topic from first scoring pass
+    # -------------------------------------------------
+    # We use podcast‑level scoring to infer dominant topic
+    topic_scores: Dict[str, float] = {}
+    for feed in feeds:
+        score = score_podcast_context(feed, query)
+        if score > 0:
+            topic_scores[feed.feed_url] = score
+
+    # Heuristic: movies/media if query has movie keywords
+    master_topic = "movies_media" if any(
+        word in query.lower() for word in ["movie", "film", "cinema"]
+    ) else "general"
+
+    # -------------------------------------------------
+    # 3. APPLY FEED GATING (CRITICAL)
+    # -------------------------------------------------
+    feeds = gate_feeds(feeds, master_topic, query)
+
+    if not feeds:
+        return {
+            "mode": "subject",
+            "query": query,
+            "relevance_percent": 0,
+            "guidance": (
+                "We couldn’t find strong analytical podcast matches "
+                "for this topic yet."
+            ),
+            "results": [],
+        }
+
+    # -------------------------------------------------
+    # 4. Podcast‑level scoring + RSS fetch
     # -------------------------------------------------
     podcast_scores: Dict[str, float] = {}
     episodes_by_feed: Dict[str, List[Any]] = {}
@@ -112,12 +210,11 @@ def preview_blend(
             episodes_by_feed[feed_url] = (
                 rss_data.get("items", []) if rss_data else []
             )
-        except Exception as e:
-            print(f"⚠️ RSS feed issue for {feed_url}: {e}")
+        except Exception:
             episodes_by_feed[feed_url] = []
 
     # -------------------------------------------------
-    # 3. Episode scoring
+    # 5. Episode scoring (TRANSCRIPT STILL REQUIRED)
     # -------------------------------------------------
     results: List[Dict[str, Any]] = []
 
@@ -125,9 +222,6 @@ def preview_blend(
         feed_url = feed.feed_url
         feed_score = podcast_scores.get(feed_url, 0.0)
         episodes = episodes_by_feed.get(feed_url, [])
-
-        if not episodes:
-            continue
 
         scored_episodes: List[tuple] = []
 
@@ -140,19 +234,15 @@ def preview_blend(
                 )
 
                 if ep_score > 0:
-                    # STRICT tuple shape: (score, episode, metadata)
                     scored_episodes.append(
                         (ep_score, episode, ep_metadata)
                     )
 
-            except Exception as e:
-                print(f"⚠️ Episode scoring failed for {feed_url}: {e}")
+            except Exception:
+                continue
 
         if not scored_episodes:
             continue
-
-        # Defensive check (prevents silent tuple-shape bugs)
-        assert all(len(t) == 3 for t in scored_episodes)
 
         scored_episodes.sort(key=lambda x: x[0], reverse=True)
         best_score, best_episode, best_metadata = scored_episodes[0]
@@ -174,7 +264,7 @@ def preview_blend(
         })
 
     # -------------------------------------------------
-    # 4. Final relevance + response
+    # 6. Final relevance + response
     # -------------------------------------------------
     if not results:
         return {
@@ -182,8 +272,8 @@ def preview_blend(
             "query": query,
             "relevance_percent": 0,
             "guidance": (
-                "Results were too broad to score meaningfully. "
-                "Try refining your search."
+                "Results were weak after applying quality filters. "
+                "Try refining your phrasing."
             ),
             "results": [],
         }
