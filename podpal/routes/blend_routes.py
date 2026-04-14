@@ -4,10 +4,7 @@ from collections import Counter
 import re
 
 from podpal.search.resolve import resolve_search_term
-from podpal.scoring import (
-    score_podcast_context,
-    score_episode,
-)
+from podpal.scoring import score_podcast_context, score_episode
 from podpal.rss.resolver import resolve_podcast_source
 from podpal.services.rss_test import fetch_rss_feed
 from podpal.retrieval.podcasters import fetch_podcaster_episodes
@@ -16,7 +13,7 @@ from podpal.retrieval.podcasters import fetch_podcaster_episodes
 router = APIRouter()
 
 # =================================================
-# COMMENTARY ANCHOR (MOVIES – CONTROLLED CONTRAST)
+# COMMENTARY ANCHOR (Movies – controlled bootstrap)
 # =================================================
 
 MOVIES_COMMENTARY_ANCHORS = [
@@ -24,7 +21,7 @@ MOVIES_COMMENTARY_ANCHORS = [
 ]
 
 # =================================================
-# ARCHETYPE LANGUAGE SETS (FEED-LEVEL)
+# FEED-LEVEL ARCHETYPE SIGNALS
 # =================================================
 
 NEWS_TERMS = {
@@ -54,50 +51,35 @@ RECENCY_TERMS = {
 }
 
 
-def is_explainer_episode(title: str) -> bool:
+def is_explainer_episode(title: Optional[str]) -> bool:
     """
-    Episode-level explainer detector.
-    Looks for evergreen, thesis-style framing.
+    Detects whether an episode behaves like an explainer.
     """
-
     if not title:
         return False
 
-    title_lower = title.lower()
+    t = title.lower()
 
-    # Reject obvious recency-driven episodes
-    if any(term in title_lower for term in RECENCY_TERMS):
+    # Reject recency-driven content
+    if any(term in t for term in RECENCY_TERMS):
         return False
 
-    # Look for explainer language
-    if any(term in title_lower for term in EXPLAINER_EPISODE_TERMS):
+    # Explicit explanatory language
+    if any(term in t for term in EXPLAINER_EPISODE_TERMS):
         return True
 
-    # Named work + conceptual framing (heuristic)
-    # e.g. "The 10th Victim — Italy’s 1965 Pop Art Dystopia"
-    if re.search(r"\—|\:", title_lower) and len(title_lower.split()) >= 6:
+    # Thesis-style framing (Apple-style titles)
+    if re.search(r"[–—:]", t) and len(t.split()) >= 6:
         return True
 
     return False
 
 
-# =================================================
-# FEED-LEVEL ARCHETYPE CLASSIFICATION
-# =================================================
-
-def classify_feed_archetype(
-    feed: Any,
-    episodes: List[Dict[str, Any]],
-) -> str:
+def classify_feed_archetype(feed: Any, episodes: List[Dict[str, Any]]) -> str:
     """
-    Feed-level narrative archetype (behavioral).
+    Feed-level narrative archetype based on episode behavior.
     """
-
-    titles = [
-        (ep.get("title", "") or "").lower()
-        for ep in episodes[:25]
-    ]
-
+    titles = [(ep.get("title") or "").lower() for ep in episodes[:25]]
     text = " ".join(titles)
     counts = Counter()
 
@@ -107,7 +89,6 @@ def classify_feed_archetype(
     for term in COMMENTARY_STRUCTURAL_TERMS:
         counts["commentary"] += text.count(term)
 
-    # Precedence
     if counts["news"] >= 2:
         return "news"
 
@@ -142,12 +123,11 @@ def preview_blend(
             "results": [],
         }
 
-    # ------------ DISCOVERY CANDIDATES -------------
+    # ------------ DISCOVERY PHASE -------------------
     feed_urls = resolve_search_term(query)
 
-    # Inject commentary anchor for movie queries
-    q = query.lower()
-    if "movie" in q or "film" in q:
+    query_lower = query.lower()
+    if "movie" in query_lower or "film" in query_lower:
         for anchor in MOVIES_COMMENTARY_ANCHORS:
             if anchor not in feed_urls:
                 feed_urls.append(anchor)
@@ -162,8 +142,8 @@ def preview_blend(
             if not feed:
                 continue
 
-            rss_data = fetch_rss_feed(feed.feed_url)
-            episodes = rss_data.get("items", []) if rss_data else []
+            rss = fetch_rss_feed(feed.feed_url)
+            episodes = rss.get("items", []) if rss else []
 
             archetype = classify_feed_archetype(feed, episodes)
 
@@ -176,13 +156,13 @@ def preview_blend(
         except Exception:
             continue
 
-    # ------------- PODCAST SCORING -----------------
+    # ------------ SCORING PHASE -------------------
     podcast_scores: Dict[str, float] = {
         feed.feed_url: score_podcast_context(feed, query)
         for feed in feeds
     }
 
-    # ------------- EPISODE SCORING -----------------
+    # ------------ EPISODE SELECTION ----------------
     results: List[Dict[str, Any]] = []
 
     for feed in feeds:
@@ -193,36 +173,48 @@ def preview_blend(
 
         scored = []
 
-        for episode in episodes:
-            title = episode.get("title")
+        for ep in episodes:
+            title = ep.get("title")
             explainer = is_explainer_episode(title)
 
             try:
                 ep_score, _ = score_episode(
-                    episode=episode,
+                    episode=ep,
                     query=query,
                     podcast_score=feed_score,
                 )
+
                 if ep_score > 0:
-                    scored.append((ep_score, episode, explainer))
+                    scored.append({
+                        "episode": ep,
+                        "episode_score": ep_score,
+                        "episode_explainer": explainer,
+                    })
+
             except Exception:
                 continue
 
         if not scored:
             continue
 
-        best = max(scored, key=lambda x: x[0])
-
-        if best[2]:
-            print(f"[EXPLAINER EPISODE] {best[1].get('title')}")
+        # ✅ FINAL RANKING LOGIC:
+        # Explainer beats non-explainer, then relevance score
+        best = sorted(
+            scored,
+            key=lambda s: (
+                1 if s["episode_explainer"] else 0,
+                s["episode_score"],
+            ),
+            reverse=True,
+        )[0]
 
         results.append({
             "feed_url": feed_url,
-            "episode_title": best[1].get("title"),
-            "episode_link": best[1].get("link"),
+            "episode_title": best["episode"].get("title"),
+            "episode_link": best["episode"].get("link"),
             "archetype": archetype,
-            "episode_explainer": best[2],
-            "episode_score": best[0],
+            "episode_explainer": best["episode_explainer"],
+            "episode_score": best["episode_score"],
         })
 
     return {
