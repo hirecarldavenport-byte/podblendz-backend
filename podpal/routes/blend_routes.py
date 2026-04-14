@@ -16,67 +16,54 @@ router = APIRouter()
 
 
 # =================================================
-# FEED GATING RULES (v1 – MOVIES / MEDIA)
+# FEED PENALTY & INTENT HEURISTICS (v2)
 # =================================================
 
-ANALYSIS_KEYWORDS = {
-    "theory", "theories", "meaning", "explained", "analysis",
-    "symbolism", "dark", "themes", "essay"
+ANALYSIS_INTENT_KEYWORDS = {
+    "theory", "theories", "analysis", "explained",
+    "symbolism", "meaning", "themes", "dark",
+    "breakdown", "essay", "deep dive"
 }
 
 NEWS_KEYWORDS = {
-    "news", "update", "latest", "breaking", "release", "trailer"
+    "news", "update", "latest", "breaking",
+    "release", "trailer", "box office"
 }
 
-def is_news_like(title: str) -> bool:
-    lowered = title.lower()
-    return any(word in lowered for word in NEWS_KEYWORDS)
-
-def is_analysis_intent(query: str) -> bool:
-    lowered = query.lower()
-    return any(word in lowered for word in ANALYSIS_KEYWORDS)
+CULTURE_MEDIA_KEYWORDS = {
+    "film", "movie", "movies", "cinema",
+    "culture", "media", "story", "storytelling",
+    "fandom", "animation", "comics", "tv", "series"
+}
 
 
-def gate_feeds(
-    feeds: List[Any],
-    master_topic: str,
-    query: str,
-) -> List[Any]:
+def detect_analysis_intent(query: str) -> bool:
+    q = query.lower()
+    return any(term in q for term in ANALYSIS_INTENT_KEYWORDS)
+
+
+def compute_feed_penalty(feed: Any, query: str) -> float:
     """
-    Gate feeds BEFORE episode scoring.
-    Currently tuned for movies/media only.
+    Soft‑gate feeds by applying a penalty multiplier.
+    1.0 = high confidence feed
+    <1.0 = allowed but de‑prioritized
     """
 
-    if master_topic != "movies_media":
-        return feeds  # no gating yet for other topics
+    title = (getattr(feed, "title", "") or "").lower()
+    description = (getattr(feed, "description", "") or "").lower()
+    text = f"{title} {description}"
 
-    analysis_intent = is_analysis_intent(query)
+    analysis_intent = detect_analysis_intent(query)
 
-    gated: List[Any] = []
+    # Heavy penalty for news/update feeds under analysis intent
+    if analysis_intent and any(k in text for k in NEWS_KEYWORDS):
+        return 0.35
 
-    for feed in feeds:
-        title = (getattr(feed, "title", "") or "").lower()
-        description = (getattr(feed, "description", "") or "").lower()
-        combined = f"{title} {description}"
+    # Mild penalty for feeds without clear culture/media framing
+    if not any(k in text for k in CULTURE_MEDIA_KEYWORDS):
+        return 0.6
 
-        # Hard exclude obvious news/update feeds for analysis intent
-        if analysis_intent and is_news_like(combined):
-            continue
-
-        # Allow film/movie-specific feeds
-        if any(term in combined for term in ["film", "cinema", "movie", "movies", "animation"]):
-            gated.append(feed)
-            continue
-
-        # Allow culture analysis feeds if intent matches
-        if analysis_intent and any(term in combined for term in ["culture", "media", "story"]):
-            gated.append(feed)
-            continue
-
-        # Otherwise: exclude silently
-        # (better to return fewer results than low‑trust ones)
-
-    return gated
+    return 1.0
 
 
 # =================================================
@@ -90,12 +77,12 @@ def preview_blend(
 ) -> Dict[str, Any]:
     """
     Generate either:
-    - a SUBJECT blend (semantic, scored)
-    - a PODCASTER blend (direct, no scoring)
+    - SUBJECT blend (semantic, scored, curated)
+    - PODCASTER blend (direct, no scoring)
     """
 
     # =================================================
-    # PODCASTER MODE (Direct, No Scoring)
+    # PODCASTER MODE (DIRECT)
     # =================================================
     if podcaster_feed:
         episodes = fetch_podcaster_episodes(podcaster_feed)
@@ -139,11 +126,11 @@ def preview_blend(
         }
 
     # -------------------------------------------------
-    # 1. Resolve search → feed URLs
+    # 1. Resolve candidate feeds
     # -------------------------------------------------
     feed_urls = resolve_search_term(query)
 
-    feeds = []
+    feeds: List[Any] = []
     for url in feed_urls:
         try:
             feed = resolve_podcast_source(url)
@@ -161,60 +148,39 @@ def preview_blend(
             "results": [],
         }
 
-    feeds = feeds[:25]
+    feeds = feeds[:25]  # safety cap
 
     # -------------------------------------------------
-    # 2. Detect master topic from first scoring pass
+    # 2. Compute feed penalties (SOFT GATING)
     # -------------------------------------------------
-    # We use podcast‑level scoring to infer dominant topic
-    topic_scores: Dict[str, float] = {}
+    feed_penalties: Dict[str, float] = {}
     for feed in feeds:
-        score = score_podcast_context(feed, query)
-        if score > 0:
-            topic_scores[feed.feed_url] = score
-
-    # Heuristic: movies/media if query has movie keywords
-    master_topic = "movies_media" if any(
-        word in query.lower() for word in ["movie", "film", "cinema"]
-    ) else "general"
+        feed_penalties[feed.feed_url] = compute_feed_penalty(
+            feed, query
+        )
 
     # -------------------------------------------------
-    # 3. APPLY FEED GATING (CRITICAL)
-    # -------------------------------------------------
-    feeds = gate_feeds(feeds, master_topic, query)
-
-    if not feeds:
-        return {
-            "mode": "subject",
-            "query": query,
-            "relevance_percent": 0,
-            "guidance": (
-                "We couldn’t find strong analytical podcast matches "
-                "for this topic yet."
-            ),
-            "results": [],
-        }
-
-    # -------------------------------------------------
-    # 4. Podcast‑level scoring + RSS fetch
+    # 3. Podcast‑level scoring + RSS fetch
     # -------------------------------------------------
     podcast_scores: Dict[str, float] = {}
     episodes_by_feed: Dict[str, List[Any]] = {}
 
     for feed in feeds:
-        feed_url = feed.feed_url
-        podcast_scores[feed_url] = score_podcast_context(feed, query)
+        base_score = score_podcast_context(feed, query)
+        penalty = feed_penalties.get(feed.feed_url, 1.0)
+
+        podcast_scores[feed.feed_url] = base_score * penalty
 
         try:
-            rss_data = fetch_rss_feed(feed_url)
-            episodes_by_feed[feed_url] = (
+            rss_data = fetch_rss_feed(feed.feed_url)
+            episodes_by_feed[feed.feed_url] = (
                 rss_data.get("items", []) if rss_data else []
             )
         except Exception:
-            episodes_by_feed[feed_url] = []
+            episodes_by_feed[feed.feed_url] = []
 
     # -------------------------------------------------
-    # 5. Episode scoring (TRANSCRIPT STILL REQUIRED)
+    # 4. Episode scoring (transcript still required)
     # -------------------------------------------------
     results: List[Dict[str, Any]] = []
 
@@ -264,7 +230,7 @@ def preview_blend(
         })
 
     # -------------------------------------------------
-    # 6. Final relevance + response
+    # 5. Final ranking + guidance
     # -------------------------------------------------
     if not results:
         return {
@@ -272,8 +238,8 @@ def preview_blend(
             "query": query,
             "relevance_percent": 0,
             "guidance": (
-                "Results were weak after applying quality filters. "
-                "Try refining your phrasing."
+                "We couldn’t find strong analytical podcast matches "
+                "for this topic yet."
             ),
             "results": [],
         }
@@ -295,13 +261,19 @@ def preview_blend(
         ],
     )
 
+    # Partial vs strong blend messaging
+    if relevance_percent < 55:
+        guidance = (
+            "We found related podcast discussions, but not deep "
+            "analysis yet. These are adjacent perspectives."
+        )
+    else:
+        guidance = None
+
     return {
         "mode": "subject",
         "query": query,
         "relevance_percent": relevance_percent,
-        "guidance": None if relevance_percent >= 55 else (
-            "Results were weak due to topic breadth. "
-            "More specific phrasing will improve relevance."
-        ),
+        "guidance": guidance,
         "results": top_three,
     }
