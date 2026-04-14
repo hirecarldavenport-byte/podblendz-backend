@@ -2,26 +2,36 @@ from fastapi import APIRouter, Body
 from typing import Dict, Any, List, Optional
 from collections import Counter
 import re
+import feedparser
+from datetime import datetime
 
 from podpal.search.resolve import resolve_search_term
 from podpal.scoring import score_podcast_context, score_episode
 from podpal.rss.resolver import resolve_podcast_source
-from podpal.services.rss_test import fetch_rss_feed
 from podpal.retrieval.podcasters import fetch_podcaster_episodes
 
 
 router = APIRouter()
 
+
 # =================================================
-# COMMENTARY ANCHOR (Movies – controlled bootstrap)
+# CONFIG: SAFE EPISODE WINDOW
+# =================================================
+
+MAX_EPISODES_PER_FEED = 100   # safe upper bound
+
+
+# =================================================
+# COMMENTARY ANCHOR (Movies)
 # =================================================
 
 MOVIES_COMMENTARY_ANCHORS = [
     "https://feeds.megaphone.fm/the-big-picture"
 ]
 
+
 # =================================================
-# FEED-LEVEL ARCHETYPE SIGNALS
+# ARCHETYPE & EXPLAINER SIGNALS
 # =================================================
 
 NEWS_TERMS = {
@@ -29,18 +39,14 @@ NEWS_TERMS = {
     "trailer", "box office", "this week", "today"
 }
 
-COMMENTARY_STRUCTURAL_TERMS = {
+COMMENTARY_TERMS = {
     "top", "best", "worst", "rank", "ranking",
     "favorite", "least favorite",
     "was it worth", "did it work", "does it work",
     "with", "featuring", "guest"
 }
 
-# =================================================
-# EPISODE-LEVEL EXPLAINER DETECTION
-# =================================================
-
-EXPLAINER_EPISODE_TERMS = {
+EXPLAINER_TERMS = {
     "explained", "meaning", "symbolism", "theory",
     "analysis", "themes", "dystopia", "allegory",
     "history of", "origins of"
@@ -51,42 +57,44 @@ RECENCY_TERMS = {
 }
 
 
+# =================================================
+# UTILITIES
+# =================================================
+
+def parse_pubdate(entry) -> Optional[datetime]:
+    if hasattr(entry, "published_parsed") and entry.published_parsed:
+        return datetime(*entry.published_parsed[:6])
+    return None
+
+
 def is_explainer_episode(title: Optional[str]) -> bool:
-    """
-    Detects whether an episode behaves like an explainer.
-    """
     if not title:
         return False
 
     t = title.lower()
 
-    # Reject recency-driven content
     if any(term in t for term in RECENCY_TERMS):
         return False
 
-    # Explicit explanatory language
-    if any(term in t for term in EXPLAINER_EPISODE_TERMS):
+    if any(term in t for term in EXPLAINER_TERMS):
         return True
 
-    # Thesis-style framing (Apple-style titles)
+    # Thesis-style long framing (Apple-style titles)
     if re.search(r"[–—:]", t) and len(t.split()) >= 6:
         return True
 
     return False
 
 
-def classify_feed_archetype(feed: Any, episodes: List[Dict[str, Any]]) -> str:
-    """
-    Feed-level narrative archetype based on episode behavior.
-    """
-    titles = [(ep.get("title") or "").lower() for ep in episodes[:25]]
+def classify_feed_archetype(episodes: List[Dict[str, Any]]) -> str:
+    titles = [(e.get("title") or "").lower() for e in episodes]
     text = " ".join(titles)
     counts = Counter()
 
     for term in NEWS_TERMS:
         counts["news"] += text.count(term)
 
-    for term in COMMENTARY_STRUCTURAL_TERMS:
+    for term in COMMENTARY_TERMS:
         counts["commentary"] += text.count(term)
 
     if counts["news"] >= 2:
@@ -96,6 +104,27 @@ def classify_feed_archetype(feed: Any, episodes: List[Dict[str, Any]]) -> str:
         return "commentary"
 
     return "generalist"
+
+
+def fetch_episode_window(feed_url: str) -> List[Dict[str, Any]]:
+    parsed = feedparser.parse(feed_url)
+    entries = parsed.entries or []
+
+    enriched = []
+    for entry in entries:
+        enriched.append({
+            "title": entry.get("title"),
+            "link": entry.get("link"),
+            "published": parse_pubdate(entry)
+        })
+
+    # Sort newest → oldest
+    enriched.sort(
+        key=lambda e: e["published"] or datetime.min,
+        reverse=True
+    )
+
+    return enriched[:MAX_EPISODES_PER_FEED]
 
 
 # =================================================
@@ -123,59 +152,32 @@ def preview_blend(
             "results": [],
         }
 
-    # ------------ DISCOVERY PHASE -------------------
+    # ---------------- DISCOVERY ---------------------
     feed_urls = resolve_search_term(query)
 
-    query_lower = query.lower()
-    if "movie" in query_lower or "film" in query_lower:
+    q = query.lower()
+    if "movie" in q or "film" in q:
         for anchor in MOVIES_COMMENTARY_ANCHORS:
             if anchor not in feed_urls:
                 feed_urls.append(anchor)
 
-    feeds: List[Any] = []
-    episodes_by_feed: Dict[str, List[Any]] = {}
-    feed_archetypes: Dict[str, str] = {}
-
-    for url in feed_urls:
-        try:
-            feed = resolve_podcast_source(url)
-            if not feed:
-                continue
-
-            rss = fetch_rss_feed(feed.feed_url)
-            episodes = rss.get("items", []) if rss else []
-
-            archetype = classify_feed_archetype(feed, episodes)
-
-            feeds.append(feed)
-            episodes_by_feed[feed.feed_url] = episodes
-            feed_archetypes[feed.feed_url] = archetype
-
-            print(f"[ARCHETYPE] {feed.feed_url} → {archetype}")
-
-        except Exception:
-            continue
-
-    # ------------ SCORING PHASE -------------------
-    podcast_scores: Dict[str, float] = {
-        feed.feed_url: score_podcast_context(feed, query)
-        for feed in feeds
-    }
-
-    # ------------ EPISODE SELECTION ----------------
     results: List[Dict[str, Any]] = []
 
-    for feed in feeds:
-        feed_url = feed.feed_url
-        archetype = feed_archetypes.get(feed_url, "unknown")
-        feed_score = podcast_scores.get(feed_url, 0)
-        episodes = episodes_by_feed.get(feed_url, [])
+    for url in feed_urls:
+        feed = resolve_podcast_source(url)
+        if not feed:
+            continue
+
+        episodes = fetch_episode_window(feed.feed_url)
+        if not episodes:
+            continue
+
+        archetype = classify_feed_archetype(episodes)
+        feed_score = score_podcast_context(feed, query)
 
         scored = []
-
         for ep in episodes:
-            title = ep.get("title")
-            explainer = is_explainer_episode(title)
+            explainer = is_explainer_episode(ep["title"])
 
             try:
                 ep_score, _ = score_episode(
@@ -197,8 +199,7 @@ def preview_blend(
         if not scored:
             continue
 
-        # ✅ FINAL RANKING LOGIC:
-        # Explainer beats non-explainer, then relevance score
+        # ✅ FINAL SELECTION: explainer first, then score
         best = sorted(
             scored,
             key=lambda s: (
@@ -209,9 +210,9 @@ def preview_blend(
         )[0]
 
         results.append({
-            "feed_url": feed_url,
-            "episode_title": best["episode"].get("title"),
-            "episode_link": best["episode"].get("link"),
+            "feed_url": feed.feed_url,
+            "episode_title": best["episode"]["title"],
+            "episode_link": best["episode"]["link"],
             "archetype": archetype,
             "episode_explainer": best["episode_explainer"],
             "episode_score": best["episode_score"],
