@@ -16,54 +16,48 @@ router = APIRouter()
 
 
 # =================================================
-# FEED PENALTY & INTENT HEURISTICS (v2)
+# NARRATIVE ARCHETYPE CLASSIFIER (OBSERVATION MODE)
 # =================================================
 
-ANALYSIS_INTENT_KEYWORDS = {
-    "theory", "theories", "analysis", "explained",
-    "symbolism", "meaning", "themes", "dark",
-    "breakdown", "essay", "deep dive"
+EXPLAINER_TERMS = {
+    "explained", "why", "how", "meaning", "theory",
+    "analysis", "symbolism", "themes", "deep dive", "breakdown"
 }
 
-NEWS_KEYWORDS = {
-    "news", "update", "latest", "breaking",
-    "release", "trailer", "box office"
+COMMENTARY_TERMS = {
+    "reaction", "thoughts", "opinions", "fandom",
+    "discuss", "take", "recap"
 }
 
-CULTURE_MEDIA_KEYWORDS = {
-    "film", "movie", "movies", "cinema",
-    "culture", "media", "story", "storytelling",
-    "fandom", "animation", "comics", "tv", "series"
+NEWS_TERMS = {
+    "latest", "update", "breaking", "release",
+    "trailer", "box office", "this week", "today"
 }
 
 
-def detect_analysis_intent(query: str) -> bool:
-    q = query.lower()
-    return any(term in q for term in ANALYSIS_INTENT_KEYWORDS)
-
-
-def compute_feed_penalty(feed: Any, query: str) -> float:
+def classify_feed_archetype(feed: Any) -> str:
     """
-    Soft‑gate feeds by applying a penalty multiplier.
-    1.0 = high confidence feed
-    <1.0 = allowed but de‑prioritized
+    Observation-only narrative archetype classifier.
+    Returns: explainer | commentary | news | generalist
     """
 
     title = (getattr(feed, "title", "") or "").lower()
     description = (getattr(feed, "description", "") or "").lower()
     text = f"{title} {description}"
 
-    analysis_intent = detect_analysis_intent(query)
+    # Explainer: teaching / interpretation
+    if any(term in text for term in EXPLAINER_TERMS):
+        return "explainer"
 
-    # Heavy penalty for news/update feeds under analysis intent
-    if analysis_intent and any(k in text for k in NEWS_KEYWORDS):
-        return 0.35
+    # News: recency & updates
+    if any(term in text for term in NEWS_TERMS):
+        return "news"
 
-    # Mild penalty for feeds without clear culture/media framing
-    if not any(k in text for k in CULTURE_MEDIA_KEYWORDS):
-        return 0.6
+    # Commentary: opinions & fandom
+    if any(term in text for term in COMMENTARY_TERMS):
+        return "commentary"
 
-    return 1.0
+    return "generalist"
 
 
 # =================================================
@@ -77,12 +71,12 @@ def preview_blend(
 ) -> Dict[str, Any]:
     """
     Generate either:
-    - SUBJECT blend (semantic, scored, curated)
+    - SUBJECT blend (semantic, scored)
     - PODCASTER blend (direct, no scoring)
     """
 
     # =================================================
-    # PODCASTER MODE (DIRECT)
+    # PODCASTER MODE
     # =================================================
     if podcaster_feed:
         episodes = fetch_podcaster_episodes(podcaster_feed)
@@ -131,11 +125,20 @@ def preview_blend(
     feed_urls = resolve_search_term(query)
 
     feeds: List[Any] = []
+    feed_archetypes: Dict[str, str] = {}
+
     for url in feed_urls:
         try:
             feed = resolve_podcast_source(url)
             if feed:
                 feeds.append(feed)
+
+                archetype = classify_feed_archetype(feed)
+                feed_archetypes[feed.feed_url] = archetype
+
+                # LOG archetype observation
+                print(f"[ARCHETYPE] {feed.feed_url} → {archetype}")
+
         except Exception:
             continue
 
@@ -148,28 +151,16 @@ def preview_blend(
             "results": [],
         }
 
-    feeds = feeds[:25]  # safety cap
+    feeds = feeds[:25]
 
     # -------------------------------------------------
-    # 2. Compute feed penalties (SOFT GATING)
-    # -------------------------------------------------
-    feed_penalties: Dict[str, float] = {}
-    for feed in feeds:
-        feed_penalties[feed.feed_url] = compute_feed_penalty(
-            feed, query
-        )
-
-    # -------------------------------------------------
-    # 3. Podcast‑level scoring + RSS fetch
+    # 2. Podcast-level scoring + RSS fetch
     # -------------------------------------------------
     podcast_scores: Dict[str, float] = {}
     episodes_by_feed: Dict[str, List[Any]] = {}
 
     for feed in feeds:
-        base_score = score_podcast_context(feed, query)
-        penalty = feed_penalties.get(feed.feed_url, 1.0)
-
-        podcast_scores[feed.feed_url] = base_score * penalty
+        podcast_scores[feed.feed_url] = score_podcast_context(feed, query)
 
         try:
             rss_data = fetch_rss_feed(feed.feed_url)
@@ -180,13 +171,14 @@ def preview_blend(
             episodes_by_feed[feed.feed_url] = []
 
     # -------------------------------------------------
-    # 4. Episode scoring (transcript still required)
+    # 3. Episode scoring
     # -------------------------------------------------
     results: List[Dict[str, Any]] = []
 
     for feed in feeds:
         feed_url = feed.feed_url
         feed_score = podcast_scores.get(feed_url, 0.0)
+        archetype = feed_archetypes.get(feed_url, "unknown")
         episodes = episodes_by_feed.get(feed_url, [])
 
         scored_episodes: List[tuple] = []
@@ -221,6 +213,7 @@ def preview_blend(
             "episode_link": best_episode.get("link"),
             "podcast_score": feed_score,
             "episode_score": best_score,
+            "archetype": archetype,  # 👈 EXPOSED FOR DEBUGGING
             "matched_master_topics": best_metadata.get(
                 "matched_master_topics", []
             ),
@@ -230,7 +223,7 @@ def preview_blend(
         })
 
     # -------------------------------------------------
-    # 5. Final ranking + guidance
+    # 4. Final response
     # -------------------------------------------------
     if not results:
         return {
@@ -238,8 +231,7 @@ def preview_blend(
             "query": query,
             "relevance_percent": 0,
             "guidance": (
-                "We couldn’t find strong analytical podcast matches "
-                "for this topic yet."
+                "We couldn’t find strong podcast matches for this topic yet."
             ),
             "results": [],
         }
@@ -261,19 +253,10 @@ def preview_blend(
         ],
     )
 
-    # Partial vs strong blend messaging
-    if relevance_percent < 55:
-        guidance = (
-            "We found related podcast discussions, but not deep "
-            "analysis yet. These are adjacent perspectives."
-        )
-    else:
-        guidance = None
-
     return {
         "mode": "subject",
         "query": query,
         "relevance_percent": relevance_percent,
-        "guidance": guidance,
+        "guidance": None,
         "results": top_three,
     }
