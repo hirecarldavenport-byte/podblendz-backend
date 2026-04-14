@@ -6,7 +6,6 @@ from podpal.search.resolve import resolve_search_term
 from podpal.scoring import (
     score_podcast_context,
     score_episode,
-    compute_blend_relevance_percent,
 )
 from podpal.rss.resolver import resolve_podcast_source
 from podpal.services.rss_test import fetch_rss_feed
@@ -15,34 +14,40 @@ from podpal.retrieval.podcasters import fetch_podcaster_episodes
 
 router = APIRouter()
 
+# =================================================
+# COMMENTARY ANCHOR (MOVIES – CONTROLLED CONTRAST)
+# =================================================
 
-# =================================================
-# COMMENTARY ANCHOR (MOVIES – TESTING ONLY)
-# =================================================
-# Replace with ONE known movie commentary feed you trust.
-# Example shown is placeholder – use a real RSS feed URL.
 MOVIES_COMMENTARY_ANCHORS = [
+    # The Ringer – The Big Picture (commentary / criticism)
     "https://feeds.megaphone.fm/the-big-picture"
 ]
 
-
 # =================================================
-# ARCHETYPE LANGUAGE SETS
+# ARCHETYPE SIGNAL SETS
 # =================================================
-
-EXPLAINER_TERMS = {
-    "explained", "why", "how", "meaning", "theory",
-    "analysis", "symbolism", "themes", "deep dive", "breakdown"
-}
-
-COMMENTARY_TERMS = {
-    "reaction", "thoughts", "opinions", "fandom",
-    "discuss", "take", "recap"
-}
 
 NEWS_TERMS = {
     "update", "latest", "breaking", "release",
     "trailer", "box office", "this week", "today"
+}
+
+EXPLAINER_TERMS = {
+    "explained", "why", "how", "meaning",
+    "theory", "analysis", "symbolism",
+    "themes", "deep dive", "breakdown"
+}
+
+COMMENTARY_STRUCTURAL_TERMS = {
+    # ranking / evaluative structure
+    "top", "best", "worst", "rank", "ranking",
+    "favorite", "least favorite",
+
+    # opinion / critical framing
+    "was it worth", "did it work", "does it work",
+
+    # conversational cues
+    "with", "featuring", "guest"
 }
 
 
@@ -52,9 +57,18 @@ def classify_feed_archetype(
 ) -> str:
     """
     Episode-aware narrative archetype classifier.
-    Observation-only. No enforcement.
+
+    Archetypes:
+      - explainer
+      - commentary
+      - news
+      - generalist
+
+    Observation-only: classification reflects behavior,
+    not enforcement.
     """
 
+    # Use recent episode titles as behavioral signal
     titles = [
         (ep.get("title", "") or "").lower()
         for ep in episodes[:25]
@@ -69,16 +83,19 @@ def classify_feed_archetype(
     for term in EXPLAINER_TERMS:
         counts["explainer"] += text.count(term)
 
-    for term in COMMENTARY_TERMS:
+    for term in COMMENTARY_STRUCTURAL_TERMS:
         counts["commentary"] += text.count(term)
 
-    # Precedence rules (very important)
+    # --------- PRECEDENCE RULES ---------
+    # 1. News dominates if clearly present
     if counts["news"] >= 2:
         return "news"
 
+    # 2. Explainer requires dominance AND no news framing
     if counts["explainer"] >= 2 and counts["news"] == 0:
         return "explainer"
 
+    # 3. Commentary requires structure/opinion signals
     if counts["commentary"] >= 2 and counts["news"] == 0:
         return "commentary"
 
@@ -117,9 +134,9 @@ def preview_blend(
     # -------------------------------------------------
     feed_urls = resolve_search_term(query)
 
-    # --- Inject ONE commentary anchor for Movies ---
-    query_lower = query.lower()
-    if "movie" in query_lower or "film" in query_lower:
+    # Inject one commentary anchor for Movies (TESTING)
+    q = query.lower()
+    if "movie" in q or "film" in q:
         for anchor in MOVIES_COMMENTARY_ANCHORS:
             if anchor not in feed_urls:
                 feed_urls.append(anchor)
@@ -143,7 +160,7 @@ def preview_blend(
             episodes_by_feed[feed.feed_url] = episodes
             feed_archetypes[feed.feed_url] = archetype
 
-            # LOG archetype observation
+            # LOG observation (critical)
             print(f"[ARCHETYPE] {feed.feed_url} → {archetype}")
 
         except Exception:
@@ -159,7 +176,7 @@ def preview_blend(
     feeds = feeds[:25]
 
     # -------------------------------------------------
-    # 2. Podcast-level scoring (UNCHANGED)
+    # 2. Podcast-level scoring (unchanged)
     # -------------------------------------------------
     podcast_scores: Dict[str, float] = {
         feed.feed_url: score_podcast_context(feed, query)
@@ -167,7 +184,7 @@ def preview_blend(
     }
 
     # -------------------------------------------------
-    # 3. Episode scoring (UNCHANGED)
+    # 3. Episode scoring (unchanged)
     # -------------------------------------------------
     results: List[Dict[str, Any]] = []
 
@@ -181,7 +198,7 @@ def preview_blend(
 
         for episode in episodes:
             try:
-                ep_score, meta = score_episode(
+                ep_score, _ = score_episode(
                     episode=episode,
                     query=query,
                     podcast_score=feed_score,
