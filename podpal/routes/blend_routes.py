@@ -16,7 +16,7 @@ router = APIRouter()
 
 
 # =================================================
-# NARRATIVE ARCHETYPE CLASSIFIER (OBSERVATION MODE)
+# NARRATIVE ARCHETYPE CLASSIFIER (EPISODE‑AWARE)
 # =================================================
 
 EXPLAINER_TERMS = {
@@ -35,25 +35,39 @@ NEWS_TERMS = {
 }
 
 
-def classify_feed_archetype(feed: Any) -> str:
+def classify_feed_archetype(
+    feed: Any,
+    episodes: List[Dict[str, Any]],
+) -> str:
     """
-    Observation-only narrative archetype classifier.
-    Returns: explainer | commentary | news | generalist
+    Narrative archetype classifier based on FEED + EPISODE BEHAVIOR.
+    Observation‑only (no enforcement yet).
+
+    Returns:
+      explainer | commentary | news | generalist
     """
 
-    title = (getattr(feed, "title", "") or "").lower()
-    description = (getattr(feed, "description", "") or "").lower()
-    text = f"{title} {description}"
+    feed_text = (
+        (getattr(feed, "title", "") or "") + " " +
+        (getattr(feed, "description", "") or "")
+    ).lower()
 
-    # Explainer: teaching / interpretation
+    episode_titles = " ".join(
+        (ep.get("title", "") or "").lower()
+        for ep in episodes[:20]
+    )
+
+    text = f"{feed_text} {episode_titles}"
+
+    # Explainer behavior
     if any(term in text for term in EXPLAINER_TERMS):
         return "explainer"
 
-    # News: recency & updates
+    # News / reactive behavior
     if any(term in text for term in NEWS_TERMS):
         return "news"
 
-    # Commentary: opinions & fandom
+    # Commentary / fandom behavior
     if any(term in text for term in COMMENTARY_TERMS):
         return "commentary"
 
@@ -71,12 +85,12 @@ def preview_blend(
 ) -> Dict[str, Any]:
     """
     Generate either:
-    - SUBJECT blend (semantic, scored)
+    - SUBJECT blend (semantic, scored, observed)
     - PODCASTER blend (direct, no scoring)
     """
 
     # =================================================
-    # PODCASTER MODE
+    # PODCASTER MODE (UNCHANGED)
     # =================================================
     if podcaster_feed:
         episodes = fetch_podcaster_episodes(podcaster_feed)
@@ -126,18 +140,25 @@ def preview_blend(
 
     feeds: List[Any] = []
     feed_archetypes: Dict[str, str] = {}
+    episodes_by_feed: Dict[str, List[Any]] = {}
 
     for url in feed_urls:
         try:
             feed = resolve_podcast_source(url)
-            if feed:
-                feeds.append(feed)
+            if not feed:
+                continue
 
-                archetype = classify_feed_archetype(feed)
-                feed_archetypes[feed.feed_url] = archetype
+            rss_data = fetch_rss_feed(feed.feed_url)
+            episodes = rss_data.get("items", []) if rss_data else []
 
-                # LOG archetype observation
-                print(f"[ARCHETYPE] {feed.feed_url} → {archetype}")
+            archetype = classify_feed_archetype(feed, episodes)
+
+            feeds.append(feed)
+            feed_archetypes[feed.feed_url] = archetype
+            episodes_by_feed[feed.feed_url] = episodes
+
+            # LOG observation (critical for learning)
+            print(f"[ARCHETYPE] {feed.feed_url} → {archetype}")
 
         except Exception:
             continue
@@ -151,27 +172,19 @@ def preview_blend(
             "results": [],
         }
 
-    feeds = feeds[:25]
+    feeds = feeds[:25]  # safety cap
 
     # -------------------------------------------------
-    # 2. Podcast-level scoring + RSS fetch
+    # 2. Podcast‑level scoring
     # -------------------------------------------------
     podcast_scores: Dict[str, float] = {}
-    episodes_by_feed: Dict[str, List[Any]] = {}
-
     for feed in feeds:
-        podcast_scores[feed.feed_url] = score_podcast_context(feed, query)
-
-        try:
-            rss_data = fetch_rss_feed(feed.feed_url)
-            episodes_by_feed[feed.feed_url] = (
-                rss_data.get("items", []) if rss_data else []
-            )
-        except Exception:
-            episodes_by_feed[feed.feed_url] = []
+        podcast_scores[feed.feed_url] = score_podcast_context(
+            feed, query
+        )
 
     # -------------------------------------------------
-    # 3. Episode scoring
+    # 3. Episode scoring (unchanged behavior)
     # -------------------------------------------------
     results: List[Dict[str, Any]] = []
 
@@ -213,7 +226,7 @@ def preview_blend(
             "episode_link": best_episode.get("link"),
             "podcast_score": feed_score,
             "episode_score": best_score,
-            "archetype": archetype,  # 👈 EXPOSED FOR DEBUGGING
+            "archetype": archetype,  # 👈 KEY OUTPUT
             "matched_master_topics": best_metadata.get(
                 "matched_master_topics", []
             ),
