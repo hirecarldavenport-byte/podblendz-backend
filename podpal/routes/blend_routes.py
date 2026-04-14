@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Body
 from typing import Dict, Any, List, Optional
 from collections import Counter
+import re
 
 from podpal.search.resolve import resolve_search_term
 from podpal.scoring import (
@@ -19,12 +20,11 @@ router = APIRouter()
 # =================================================
 
 MOVIES_COMMENTARY_ANCHORS = [
-    # The Ringer – The Big Picture (commentary / criticism)
     "https://feeds.megaphone.fm/the-big-picture"
 ]
 
 # =================================================
-# ARCHETYPE SIGNAL SETS
+# ARCHETYPE LANGUAGE SETS (FEED-LEVEL)
 # =================================================
 
 NEWS_TERMS = {
@@ -32,43 +32,67 @@ NEWS_TERMS = {
     "trailer", "box office", "this week", "today"
 }
 
-EXPLAINER_TERMS = {
-    "explained", "why", "how", "meaning",
-    "theory", "analysis", "symbolism",
-    "themes", "deep dive", "breakdown"
-}
-
 COMMENTARY_STRUCTURAL_TERMS = {
-    # ranking / evaluative structure
     "top", "best", "worst", "rank", "ranking",
     "favorite", "least favorite",
-
-    # opinion / critical framing
     "was it worth", "did it work", "does it work",
-
-    # conversational cues
     "with", "featuring", "guest"
 }
 
+# =================================================
+# EPISODE-LEVEL EXPLAINER DETECTION
+# =================================================
+
+EXPLAINER_EPISODE_TERMS = {
+    "explained", "meaning", "symbolism", "theory",
+    "analysis", "themes", "dystopia", "allegory",
+    "history of", "origins of"
+}
+
+RECENCY_TERMS = {
+    "update", "latest", "this week", "today"
+}
+
+
+def is_explainer_episode(title: str) -> bool:
+    """
+    Episode-level explainer detector.
+    Looks for evergreen, thesis-style framing.
+    """
+
+    if not title:
+        return False
+
+    title_lower = title.lower()
+
+    # Reject obvious recency-driven episodes
+    if any(term in title_lower for term in RECENCY_TERMS):
+        return False
+
+    # Look for explainer language
+    if any(term in title_lower for term in EXPLAINER_EPISODE_TERMS):
+        return True
+
+    # Named work + conceptual framing (heuristic)
+    # e.g. "The 10th Victim — Italy’s 1965 Pop Art Dystopia"
+    if re.search(r"\—|\:", title_lower) and len(title_lower.split()) >= 6:
+        return True
+
+    return False
+
+
+# =================================================
+# FEED-LEVEL ARCHETYPE CLASSIFICATION
+# =================================================
 
 def classify_feed_archetype(
     feed: Any,
     episodes: List[Dict[str, Any]],
 ) -> str:
     """
-    Episode-aware narrative archetype classifier.
-
-    Archetypes:
-      - explainer
-      - commentary
-      - news
-      - generalist
-
-    Observation-only: classification reflects behavior,
-    not enforcement.
+    Feed-level narrative archetype (behavioral).
     """
 
-    # Use recent episode titles as behavioral signal
     titles = [
         (ep.get("title", "") or "").lower()
         for ep in episodes[:25]
@@ -80,22 +104,13 @@ def classify_feed_archetype(
     for term in NEWS_TERMS:
         counts["news"] += text.count(term)
 
-    for term in EXPLAINER_TERMS:
-        counts["explainer"] += text.count(term)
-
     for term in COMMENTARY_STRUCTURAL_TERMS:
         counts["commentary"] += text.count(term)
 
-    # --------- PRECEDENCE RULES ---------
-    # 1. News dominates if clearly present
+    # Precedence
     if counts["news"] >= 2:
         return "news"
 
-    # 2. Explainer requires dominance AND no news framing
-    if counts["explainer"] >= 2 and counts["news"] == 0:
-        return "explainer"
-
-    # 3. Commentary requires structure/opinion signals
     if counts["commentary"] >= 2 and counts["news"] == 0:
         return "commentary"
 
@@ -112,9 +127,7 @@ def preview_blend(
     podcaster_feed: Optional[str] = Body(default=None),
 ) -> Dict[str, Any]:
 
-    # =================================================
-    # PODCASTER MODE (UNCHANGED)
-    # =================================================
+    # ---------------- PODCASTER MODE ----------------
     if podcaster_feed:
         episodes = fetch_podcaster_episodes(podcaster_feed)
         return {
@@ -129,12 +142,10 @@ def preview_blend(
             "results": [],
         }
 
-    # -------------------------------------------------
-    # 1. Resolve discovery candidates
-    # -------------------------------------------------
+    # ------------ DISCOVERY CANDIDATES -------------
     feed_urls = resolve_search_term(query)
 
-    # Inject one commentary anchor for Movies (TESTING)
+    # Inject commentary anchor for movie queries
     q = query.lower()
     if "movie" in q or "film" in q:
         for anchor in MOVIES_COMMENTARY_ANCHORS:
@@ -160,43 +171,32 @@ def preview_blend(
             episodes_by_feed[feed.feed_url] = episodes
             feed_archetypes[feed.feed_url] = archetype
 
-            # LOG observation (critical)
             print(f"[ARCHETYPE] {feed.feed_url} → {archetype}")
 
         except Exception:
             continue
 
-    if not feeds:
-        return {
-            "mode": "subject",
-            "query": query,
-            "results": [],
-        }
-
-    feeds = feeds[:25]
-
-    # -------------------------------------------------
-    # 2. Podcast-level scoring (unchanged)
-    # -------------------------------------------------
+    # ------------- PODCAST SCORING -----------------
     podcast_scores: Dict[str, float] = {
         feed.feed_url: score_podcast_context(feed, query)
         for feed in feeds
     }
 
-    # -------------------------------------------------
-    # 3. Episode scoring (unchanged)
-    # -------------------------------------------------
+    # ------------- EPISODE SCORING -----------------
     results: List[Dict[str, Any]] = []
 
     for feed in feeds:
         feed_url = feed.feed_url
         archetype = feed_archetypes.get(feed_url, "unknown")
-        episodes = episodes_by_feed.get(feed_url, [])
         feed_score = podcast_scores.get(feed_url, 0)
+        episodes = episodes_by_feed.get(feed_url, [])
 
         scored = []
 
         for episode in episodes:
+            title = episode.get("title")
+            explainer = is_explainer_episode(title)
+
             try:
                 ep_score, _ = score_episode(
                     episode=episode,
@@ -204,7 +204,7 @@ def preview_blend(
                     podcast_score=feed_score,
                 )
                 if ep_score > 0:
-                    scored.append((ep_score, episode))
+                    scored.append((ep_score, episode, explainer))
             except Exception:
                 continue
 
@@ -213,17 +213,18 @@ def preview_blend(
 
         best = max(scored, key=lambda x: x[0])
 
+        if best[2]:
+            print(f"[EXPLAINER EPISODE] {best[1].get('title')}")
+
         results.append({
             "feed_url": feed_url,
             "episode_title": best[1].get("title"),
             "episode_link": best[1].get("link"),
             "archetype": archetype,
+            "episode_explainer": best[2],
             "episode_score": best[0],
         })
 
-    # -------------------------------------------------
-    # 4. Final response
-    # -------------------------------------------------
     return {
         "mode": "subject",
         "query": query,
