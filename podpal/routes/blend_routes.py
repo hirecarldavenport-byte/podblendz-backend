@@ -15,6 +15,17 @@ from podpal.retrieval.podcasters import fetch_podcaster_episodes
 
 router = APIRouter()
 
+
+# =================================================
+# COMMENTARY ANCHOR (MOVIES – TESTING ONLY)
+# =================================================
+# Replace with ONE known movie commentary feed you trust.
+# Example shown is placeholder – use a real RSS feed URL.
+MOVIES_COMMENTARY_ANCHORS = [
+    "https://example.com/movie-commentary-feed.xml"
+]
+
+
 # =================================================
 # ARCHETYPE LANGUAGE SETS
 # =================================================
@@ -40,18 +51,16 @@ def classify_feed_archetype(
     episodes: List[Dict[str, Any]],
 ) -> str:
     """
-    Correct, episode‑aware narrative archetype classifier.
-    Observation‑only.
+    Episode-aware narrative archetype classifier.
+    Observation-only. No enforcement.
     """
 
-    # Combine recent episode titles only (behavior signal)
     titles = [
         (ep.get("title", "") or "").lower()
         for ep in episodes[:25]
     ]
 
     text = " ".join(titles)
-
     counts = Counter()
 
     for term in NEWS_TERMS:
@@ -63,17 +72,13 @@ def classify_feed_archetype(
     for term in COMMENTARY_TERMS:
         counts["commentary"] += text.count(term)
 
-    total_hits = sum(counts.values())
-
-    # --- Rule 1: News dominates if clearly present ---
+    # Precedence rules (very important)
     if counts["news"] >= 2:
         return "news"
 
-    # --- Rule 2: Explainer requires dominance ---
     if counts["explainer"] >= 2 and counts["news"] == 0:
         return "explainer"
 
-    # --- Rule 3: Commentary ---
     if counts["commentary"] >= 2 and counts["news"] == 0:
         return "commentary"
 
@@ -90,6 +95,9 @@ def preview_blend(
     podcaster_feed: Optional[str] = Body(default=None),
 ) -> Dict[str, Any]:
 
+    # =================================================
+    # PODCASTER MODE (UNCHANGED)
+    # =================================================
     if podcaster_feed:
         episodes = fetch_podcaster_episodes(podcaster_feed)
         return {
@@ -104,7 +112,17 @@ def preview_blend(
             "results": [],
         }
 
+    # -------------------------------------------------
+    # 1. Resolve discovery candidates
+    # -------------------------------------------------
     feed_urls = resolve_search_term(query)
+
+    # --- Inject ONE commentary anchor for Movies ---
+    query_lower = query.lower()
+    if "movie" in query_lower or "film" in query_lower:
+        for anchor in MOVIES_COMMENTARY_ANCHORS:
+            if anchor not in feed_urls:
+                feed_urls.append(anchor)
 
     feeds: List[Any] = []
     episodes_by_feed: Dict[str, List[Any]] = {}
@@ -125,21 +143,37 @@ def preview_blend(
             episodes_by_feed[feed.feed_url] = episodes
             feed_archetypes[feed.feed_url] = archetype
 
+            # LOG archetype observation
             print(f"[ARCHETYPE] {feed.feed_url} → {archetype}")
 
         except Exception:
             continue
 
-    podcast_scores = {
+    if not feeds:
+        return {
+            "mode": "subject",
+            "query": query,
+            "results": [],
+        }
+
+    feeds = feeds[:25]
+
+    # -------------------------------------------------
+    # 2. Podcast-level scoring (UNCHANGED)
+    # -------------------------------------------------
+    podcast_scores: Dict[str, float] = {
         feed.feed_url: score_podcast_context(feed, query)
         for feed in feeds
     }
 
-    results = []
+    # -------------------------------------------------
+    # 3. Episode scoring (UNCHANGED)
+    # -------------------------------------------------
+    results: List[Dict[str, Any]] = []
 
     for feed in feeds:
         feed_url = feed.feed_url
-        archetype = feed_archetypes[feed_url]
+        archetype = feed_archetypes.get(feed_url, "unknown")
         episodes = episodes_by_feed.get(feed_url, [])
         feed_score = podcast_scores.get(feed_url, 0)
 
@@ -153,7 +187,7 @@ def preview_blend(
                     podcast_score=feed_score,
                 )
                 if ep_score > 0:
-                    scored.append((ep_score, episode, meta))
+                    scored.append((ep_score, episode))
             except Exception:
                 continue
 
@@ -170,6 +204,9 @@ def preview_blend(
             "episode_score": best[0],
         })
 
+    # -------------------------------------------------
+    # 4. Final response
+    # -------------------------------------------------
     return {
         "mode": "subject",
         "query": query,
