@@ -22,7 +22,7 @@ router = APIRouter()
 # Replace with ONE known movie commentary feed you trust.
 # Example shown is placeholder – use a real RSS feed URL.
 MOVIES_COMMENTARY_ANCHORS = [
-    "https://example.com/movie-commentary-feed.xml"
+    "https://feeds.megaphone.fm/the-big-picture"
 ]
 
 
