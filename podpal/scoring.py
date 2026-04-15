@@ -1,4 +1,4 @@
-from typing import Dict, List, Any, Set, Tuple
+from typing import Dict, List, Any, Set, Tuple, Optional
 
 
 # =================================================
@@ -118,6 +118,13 @@ GENERIC_TERMS: Set[str] = {
 # =================================================
 
 def detect_query_master_topics(query: str) -> Set[str]:
+    """
+    Detect master topics from free-text query.
+    Used by /blend when topics are not pre-labeled.
+    """
+    if not query:
+        return set()
+
     q = query.lower()
     detected: Set[str] = set()
 
@@ -142,6 +149,10 @@ def detect_query_master_topics(query: str) -> Set[str]:
 # =================================================
 
 def score_podcast_context(feed: Any, query: str) -> float:
+    """
+    Lightweight podcast-level relevance signal.
+    Used by blend_routes during discovery.
+    """
     score = 0.0
     query_topics = detect_query_master_topics(query)
 
@@ -160,29 +171,36 @@ def score_podcast_context(feed: Any, query: str) -> float:
 
 
 # =================================================
-# 5. EPISODE‑LEVEL SCORING (UPDATED)
+# 5. EPISODE‑LEVEL SCORING (BLEND‑SAFE)
 # =================================================
 
 def score_episode(
     episode: Dict[str, Any],
     query: str,
-    podcast_score: float,
+    podcast_score: float = 0.0,
+    *,
+    pre_labeled_topics: Optional[Set[str]] = None,
 ) -> Tuple[float, Dict[str, Any]]:
     """
     Score episode relevance.
+
+    Compatible with:
+    - Current live discovery in blend_routes
+    - Future offline-ingested, pre-labeled episodes
+    - Highlight / featured blends
+
     IMPORTANT:
-    - Never rejects an episode outright.
-    - Returns low-but-nonzero scores instead of 0.
+    - Never rejects episodes outright
+    - Returns low-but-nonzero scores
     """
 
     title = (episode.get("title") or "").lower()
     description = (episode.get("description") or "").lower()
-    q = (query or "").lower()
 
     matched_master_topics: Set[str] = set()
     matched_terms: Set[str] = set()
 
-    query_topics = detect_query_master_topics(query)
+    query_topics = pre_labeled_topics or detect_query_master_topics(query)
 
     for master in query_topics:
         topic = MASTER_TOPICS.get(master, {})
@@ -192,8 +210,14 @@ def score_episode(
                     matched_master_topics.add(master)
                     matched_terms.add(term)
 
-    score = 0.1  # baseline – everything is eligible
+    # -------------------------------------------------
+    # BASELINE
+    # -------------------------------------------------
+    score = 0.1  # everything is eligible
 
+    # -------------------------------------------------
+    # TERM MATCHING
+    # -------------------------------------------------
     for term in matched_terms:
         is_generic = term in GENERIC_TERMS
         if term in title:
@@ -201,16 +225,27 @@ def score_episode(
         elif term in description:
             score += 0.75 if is_generic else 2.0
 
-    # Soft reward for longer / richer titles
+    # -------------------------------------------------
+    # STRUCTURAL SIGNALS
+    # -------------------------------------------------
     if len(title.split()) >= 6:
         score += 0.5
 
-    # Very light podcast reputation influence
+    # -------------------------------------------------
+    # PODCAST AUTHORITY (LIGHT)
+    # -------------------------------------------------
     score += min(podcast_score, 4.0) * 0.25
+
+    # -------------------------------------------------
+    # FEATURED / HIGHLIGHT BOOST (OPTIONAL)
+    # -------------------------------------------------
+    if episode.get("is_highlight"):
+        score += 0.75
 
     metadata = {
         "matched_master_topics": sorted(matched_master_topics),
         "matched_terms": sorted(matched_terms),
+        "is_highlight": bool(episode.get("is_highlight")),
     }
 
     return score, metadata
@@ -224,6 +259,9 @@ def compute_blend_relevance_percent(
     podcast_scores: Dict[str, float],
     episode_scores: List[float],
 ) -> int:
+    """
+    Converts aggregate relevance into a UX-friendly percent.
+    """
     raw_score = sum(podcast_scores.values()) + sum(episode_scores)
     MAX_REASONABLE_SCORE = 20.0
 

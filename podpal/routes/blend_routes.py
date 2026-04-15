@@ -8,6 +8,9 @@ import feedparser
 from podpal.search.resolve import resolve_search_term
 from podpal.scoring import score_podcast_context, score_episode
 from podpal.rss.resolver import resolve_podcast_source
+from podpal.topics.master_topic_podcasters import (
+    get_daily_podcaster_highlight,
+)
 
 
 # =================================================
@@ -94,7 +97,6 @@ def is_explainer_episode(title: Optional[str]) -> bool:
     if any(term in t for term in EXPLAINER_TERMS):
         return True
 
-    # Long, thesis-style titles
     if re.search(r"[–—:]", t) and len(t.split()) >= 6:
         return True
 
@@ -122,6 +124,26 @@ def classify_feed_archetype(episodes: List[Dict[str, Any]]) -> str:
 
 
 # =================================================
+# FEATURED BLEND HELPERS
+# =================================================
+
+def build_featured_blend(highlight: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Builds a lightweight featured blend descriptor
+    based on the daily podcaster highlight.
+    """
+    return {
+        "title": f"Featured: {highlight['name']}",
+        "description": highlight.get(
+            "description",
+            "Today’s editorial podcast highlight",
+        ),
+        "highlight_name": highlight["name"],
+        "cta": "Explore related blends",
+    }
+
+
+# =================================================
 # MAIN ENDPOINT
 # =================================================
 
@@ -138,11 +160,23 @@ def blend(
 
     2) SUBJECT MODE
        Topic query → broad discovery → ranked recommendations
+
+    Both modes are augmented with:
+    - Daily Podcaster Highlight
+    - Featured Blend metadata
     """
+
+    # -------------------------------------------------
+    # DAILY HIGHLIGHT (EDITORIAL LAYER)
+    # -------------------------------------------------
+
+    highlight = get_daily_podcaster_highlight()
+    featured_blend = build_featured_blend(highlight)
 
     # -------------------------------------------------
     # PODCASTER MODE
     # -------------------------------------------------
+
     if podcaster_feed:
         feed = resolve_podcast_source(podcaster_feed)
 
@@ -150,6 +184,8 @@ def blend(
             return {
                 "mode": "podcaster",
                 "podcaster_feed": podcaster_feed,
+                "highlight": highlight,
+                "featured_blend": featured_blend,
                 "results": [],
                 "error": "Unable to resolve podcast source",
             }
@@ -159,16 +195,21 @@ def blend(
         return {
             "mode": "podcaster",
             "podcaster_feed": feed.feed_url,
+            "highlight": highlight,
+            "featured_blend": featured_blend,
             "results": episodes,
         }
 
     # -------------------------------------------------
-    # SUBJECT MODE (missing query)
+    # SUBJECT MODE (MISSING QUERY)
     # -------------------------------------------------
+
     if not query:
         return {
             "mode": "subject",
             "query": None,
+            "highlight": highlight,
+            "featured_blend": featured_blend,
             "results": [],
         }
 
@@ -181,7 +222,6 @@ def blend(
 
     feed_urls = resolve_search_term(query)
 
-    # Domain anchors
     if "movie" in query_lc or "film" in query_lc:
         for anchor in MOVIES_COMMENTARY_ANCHORS:
             if anchor not in feed_urls:
@@ -215,7 +255,6 @@ def blend(
                     podcast_score=feed_score,
                 )
 
-                # Lexical + explainer boosts
                 score += lexical_hits * 0.25
                 if is_explainer_episode(ep["title"]):
                     score += 0.5
@@ -243,5 +282,7 @@ def blend(
     return {
         "mode": "subject",
         "query": query,
+        "highlight": highlight,
+        "featured_blend": featured_blend,
         "results": scored_results[:MAX_SUBJECT_RESULTS],
     }
