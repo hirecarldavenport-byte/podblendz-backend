@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Body
 from typing import Dict, Any, List, Optional
 from collections import Counter
+from datetime import datetime
 import re
 import feedparser
-from datetime import datetime
 
 from podpal.search.resolve import resolve_search_term
 from podpal.scoring import score_podcast_context, score_episode
@@ -11,28 +11,22 @@ from podpal.rss.resolver import resolve_podcast_source
 from podpal.retrieval.podcasters import fetch_podcaster_episodes
 
 
-router = APIRouter()
+# -------------------------------------------------
+# Router
+# -------------------------------------------------
+
+router = APIRouter(prefix="/blend", tags=["blend"])
 
 
-# =================================================
-# CONFIG: SAFE EPISODE WINDOW
-# =================================================
+# -------------------------------------------------
+# Configuration
+# -------------------------------------------------
 
-MAX_EPISODES_PER_FEED = 100   # safe upper bound
-
-
-# =================================================
-# COMMENTARY ANCHOR (Movies)
-# =================================================
+MAX_EPISODES_PER_FEED = 100
 
 MOVIES_COMMENTARY_ANCHORS = [
     "https://feeds.megaphone.fm/the-big-picture"
 ]
-
-
-# =================================================
-# ARCHETYPE & EXPLAINER SIGNALS
-# =================================================
 
 NEWS_TERMS = {
     "update", "latest", "breaking", "release",
@@ -48,8 +42,8 @@ COMMENTARY_TERMS = {
 
 EXPLAINER_TERMS = {
     "explained", "meaning", "symbolism", "theory",
-    "analysis", "themes", "dystopia", "allegory",
-    "history of", "origins of"
+    "analysis", "themes", "history of", "origins of",
+    "allegory", "dystopia"
 }
 
 RECENCY_TERMS = {
@@ -57,9 +51,9 @@ RECENCY_TERMS = {
 }
 
 
-# =================================================
-# UTILITIES
-# =================================================
+# -------------------------------------------------
+# Utilities
+# -------------------------------------------------
 
 def parse_pubdate(entry) -> Optional[datetime]:
     if hasattr(entry, "published_parsed") and entry.published_parsed:
@@ -79,7 +73,7 @@ def is_explainer_episode(title: Optional[str]) -> bool:
     if any(term in t for term in EXPLAINER_TERMS):
         return True
 
-    # Thesis-style long framing (Apple-style titles)
+    # Long thesis-style framing
     if re.search(r"[–—:]", t) and len(t.split()) >= 6:
         return True
 
@@ -89,8 +83,8 @@ def is_explainer_episode(title: Optional[str]) -> bool:
 def classify_feed_archetype(episodes: List[Dict[str, Any]]) -> str:
     titles = [(e.get("title") or "").lower() for e in episodes]
     text = " ".join(titles)
-    counts = Counter()
 
+    counts = Counter()
     for term in NEWS_TERMS:
         counts["news"] += text.count(term)
 
@@ -110,49 +104,72 @@ def fetch_episode_window(feed_url: str) -> List[Dict[str, Any]]:
     parsed = feedparser.parse(feed_url)
     entries = parsed.entries or []
 
-    enriched = []
+    episodes: List[Dict[str, Any]] = []
     for entry in entries:
-        enriched.append({
+        episodes.append({
             "title": entry.get("title"),
             "link": entry.get("link"),
-            "published": parse_pubdate(entry)
+            "published": parse_pubdate(entry),
         })
 
-    # Sort newest → oldest
-    enriched.sort(
+    episodes.sort(
         key=lambda e: e["published"] or datetime.min,
         reverse=True
     )
 
-    return enriched[:MAX_EPISODES_PER_FEED]
+    return episodes[:MAX_EPISODES_PER_FEED]
 
 
-# =================================================
-# BLEND ROUTE
-# =================================================
+# -------------------------------------------------
+# Blend Endpoint
+# -------------------------------------------------
 
-@router.post("/blend")
+@router.post("/")
 def preview_blend(
     query: Optional[str] = Body(default=None),
     podcaster_feed: Optional[str] = Body(default=None),
 ) -> Dict[str, Any]:
+    """
+    Preview blend results for either:
+    - Podcaster mode (explicit podcast feed or page URL)
+    - Subject discovery mode (semantic topic search)
+    """
 
-    # ---------------- PODCASTER MODE ----------------
+    # -------------------------------------------------
+    # PODCASTER MODE
+    # -------------------------------------------------
     if podcaster_feed:
-        episodes = fetch_podcaster_episodes(podcaster_feed)
+        feed = resolve_podcast_source(podcaster_feed)
+
+        if not feed:
+            return {
+                "mode": "podcaster",
+                "podcaster_feed": podcaster_feed,
+                "results": [],
+                "error": "Unable to resolve podcast feed"
+            }
+
+        episodes = fetch_podcaster_episodes(feed.feed_url)
+
         return {
             "mode": "podcaster",
-            "podcaster_feed": podcaster_feed,
+            "podcaster_feed": feed.feed_url,
             "results": episodes,
         }
 
+    # -------------------------------------------------
+    # SUBJECT MODE (no query)
+    # -------------------------------------------------
     if not query:
         return {
             "mode": "subject",
+            "query": None,
             "results": [],
         }
 
-    # ---------------- DISCOVERY ---------------------
+    # -------------------------------------------------
+    # SUBJECT DISCOVERY
+    # -------------------------------------------------
     feed_urls = resolve_search_term(query)
 
     q = query.lower()
@@ -163,8 +180,8 @@ def preview_blend(
 
     results: List[Dict[str, Any]] = []
 
-    for url in feed_urls:
-        feed = resolve_podcast_source(url)
+    for candidate_url in feed_urls:
+        feed = resolve_podcast_source(candidate_url)
         if not feed:
             continue
 
@@ -175,10 +192,9 @@ def preview_blend(
         archetype = classify_feed_archetype(episodes)
         feed_score = score_podcast_context(feed, query)
 
-        scored = []
-        for ep in episodes:
-            explainer = is_explainer_episode(ep["title"])
+        scored_episodes = []
 
+        for ep in episodes:
             try:
                 ep_score, _ = score_episode(
                     episode=ep,
@@ -187,21 +203,20 @@ def preview_blend(
                 )
 
                 if ep_score > 0:
-                    scored.append({
+                    scored_episodes.append({
                         "episode": ep,
                         "episode_score": ep_score,
-                        "episode_explainer": explainer,
+                        "episode_explainer": is_explainer_episode(ep["title"]),
                     })
 
             except Exception:
                 continue
 
-        if not scored:
+        if not scored_episodes:
             continue
 
-        # ✅ FINAL SELECTION: explainer first, then score
         best = sorted(
-            scored,
+            scored_episodes,
             key=lambda s: (
                 1 if s["episode_explainer"] else 0,
                 s["episode_score"],
