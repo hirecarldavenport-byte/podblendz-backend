@@ -73,6 +73,7 @@ def fetch_episode_window(feed_url: str) -> List[Dict[str, Any]]:
         episodes.append({
             "title": entry.get("title"),
             "link": entry.get("link"),
+            "summary": entry.get("summary") or entry.get("description"),
             "published": parse_pubdate(entry),
         })
 
@@ -136,16 +137,14 @@ def blend(
     Blend endpoint with two clean modes:
 
     1) PODCASTER MODE:
-       Triggered when podcaster_feed is provided.
-       Resolves podcast → RSS → episodes.
+       Explicit podcast feed or platform URL → RSS → episodes
 
     2) SUBJECT MODE:
-       Triggered when query is provided without podcaster_feed.
-       Discovers and scores podcast episodes by topic.
+       Topic query → discovery → scoring → editorial recommendation
     """
 
     # -------------------------------------------------
-    # PODCASTER MODE (explicit feed)
+    # PODCASTER MODE
     # -------------------------------------------------
     if podcaster_feed:
         feed = resolve_podcast_source(podcaster_feed)
@@ -167,7 +166,7 @@ def blend(
         }
 
     # -------------------------------------------------
-    # SUBJECT MODE (no query)
+    # SUBJECT MODE (missing query)
     # -------------------------------------------------
     if not query:
         return {
@@ -180,11 +179,11 @@ def blend(
     # SUBJECT DISCOVERY & SCORING
     # -------------------------------------------------
 
+    query_lc = query.lower()
     feed_urls = resolve_search_term(query)
 
-    # Domain anchors (movies, etc.)
-    q = query.lower()
-    if "movie" in q or "film" in q:
+    # Domain anchors
+    if "movie" in query_lc or "film" in query_lc:
         for anchor in MOVIES_COMMENTARY_ANCHORS:
             if anchor not in feed_urls:
                 feed_urls.append(anchor)
@@ -207,11 +206,24 @@ def blend(
 
         for ep in episodes:
             try:
+                # Build episode text for lexical grounding
+                episode_text = " ".join([
+                    ep.get("title") or "",
+                    ep.get("summary") or "",
+                ]).lower()
+
+                # HARD FILTER: require query to appear somewhere
+                if query_lc not in episode_text:
+                    continue
+
                 score, _ = score_episode(
                     episode=ep,
                     query=query,
                     podcast_score=feed_score,
                 )
+
+                # BOOST explicit matches
+                score *= 1.5
 
                 if score > 0:
                     scored.append({
@@ -230,7 +242,7 @@ def blend(
             scored,
             key=lambda s: (
                 1 if s["explainer"] else 0,
-                s["score"]
+                s["score"],
             ),
             reverse=True
         )[0]
@@ -241,7 +253,7 @@ def blend(
             "episode_link": best["episode"]["link"],
             "archetype": archetype,
             "episode_explainer": best["explainer"],
-            "episode_score": best["score"],
+            "episode_score": round(best["score"], 3),
         })
 
     return {
