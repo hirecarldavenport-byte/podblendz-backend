@@ -3,14 +3,14 @@ Master Topic Podcasters & Highlights
 ------------------------------------
 
 Purpose:
-- Canonical podcasters per master topic
-- Replaces open-ended RSS discovery with curated sources
-- Designed for offline ingestion + fast blending
+- Canonical podcasters per master topic (curated foundation)
+- Replaces open-ended podcast discovery with trusted sources
+- Supports daily ingestion and blend-friendly architecture
 - Includes deterministic daily Podcaster Highlight rotation
 
 Notes:
-- feed_url may be None for creators not yet ingested or verified
-- No runtime network calls should exist in this file
+- feed_url may be None if RSS is not yet verified
+- apple_url is optional metadata for attribution / UI
 """
 
 from typing import Dict, List, Optional
@@ -99,7 +99,8 @@ TOP_PODCASTERS_BY_MASTER_TOPIC: Dict[str, List[Dict[str, Optional[str]]]] = {
         {"name": "LRB Podcast", "feed_url": "https://www.lrb.co.uk/podcast/rss"},
         {
             "name": "As a Man Readeth",
-            "feed_url": None,  # intentionally nullable until verified
+            "feed_url": None,  # RSS intentionally not forced
+            "apple_url": "https://podcasts.apple.com/us/podcast/as-a-man-readeth/id1721430579",
         },
     ],
 
@@ -200,10 +201,9 @@ def get_daily_podcaster_highlight(
     day: Optional[date] = None,
 ) -> Dict[str, Optional[str]]:
     """
-    Deterministically rotates highlights by day.
-    Same result for all users on the same calendar day.
+    Deterministically rotates podcaster highlights by day.
+    Same highlight for everyone on the same date.
     """
-
     if not PODCASTER_HIGHLIGHTS:
         raise ValueError("No podcaster highlights configured")
 
