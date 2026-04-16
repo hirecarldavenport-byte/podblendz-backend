@@ -10,3 +10,12 @@ var/cache/
 *.log
 *.sqlite
 *.db
+# Audio artifacts (Blendz outputs)
+*.mp3
+*.wav
+*.m4a
+*.aac
+
+# Temporary concat / source audio
+source_audio.*
+blendz_*.txt
