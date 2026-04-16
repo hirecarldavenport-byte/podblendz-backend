@@ -1,18 +1,20 @@
 import feedparser
 import requests
-from pydub import AudioSegment
-import io
+import subprocess
+import imageio_ffmpeg
+from pathlib import Path
+
+RSS_URL = "https://feeds.megaphone.fm/the-big-picture"
 
 def extract_clip(
-    rss_url: str,
     start_sec: int = 30,
     duration_sec: int = 60,
-    output_file: str = "clip.wav"
+    output_file: str = "podcast_clip_demo.mp3",
 ):
     print("Parsing feed...")
-    feed = feedparser.parse(rss_url)
-
+    feed = feedparser.parse(RSS_URL)
     entry = feed.entries[0]
+
     print("Episode:", entry.title)
 
     if not entry.enclosures:
@@ -21,22 +23,27 @@ def extract_clip(
     audio_url = str(entry.enclosures[0].get("href"))
     print("Audio URL:", audio_url)
 
-    print("Downloading audio...")
-    audio_bytes = requests.get(audio_url).content
+    audio_path = Path("source_audio.mp3")
+    print("Downloading full episode audio...")
+    audio_path.write_bytes(requests.get(audio_url).content)
 
-    print("Loading audio...")
-    audio = AudioSegment.from_file(io.BytesIO(audio_bytes), format="mp3")
+    ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
 
-    start_ms = start_sec * 1000
-    end_ms = start_ms + duration_sec * 1000
-    clip = audio[start_ms:end_ms]
+    print("Extracting real podcast clip...")
+    subprocess.run(
+        [
+            ffmpeg,
+            "-y",
+            "-i", str(audio_path),
+            "-ss", str(start_sec),
+            "-t", str(duration_sec),
+            "-acodec", "copy",
+            output_file,
+        ],
+        check=True,
+    )
 
-    clip.export(output_file, format="wav")
-    print(f"✅ Real podcast clip saved to {output_file}")
-
+    print(f"✅ Real podcast audio clip saved → {output_file}")
 
 if __name__ == "__main__":
-    extract_clip(
-        rss_url="https://feeds.megaphone.fm/the-big-picture",
-        output_file="podcast_clip_demo.wav"
-    )
+    extract_clip()
