@@ -21,7 +21,7 @@ from podpal.ingestion.retention import enforce_retention
 
 from podpal.db.session import get_session
 from podpal.db.models import Podcast, Episode
-
+print("[DEBUG] Loaded registry:", TOP_PODCASTERS_BY_MASTER_TOPIC)
 MAX_EPISODES_PER_PODCAST = 50
 
 
