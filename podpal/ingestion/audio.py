@@ -1,5 +1,11 @@
 """
 Audio ingestion utilities.
+
+Responsibilities:
+- Download episode audio to a temporary file
+- Compute audio duration (via ffprobe if available)
+- Upload audio to S3
+- Return structured metadata to ingestion pipeline
 """
 
 import os
@@ -8,6 +14,7 @@ import subprocess
 import shutil
 from contextlib import contextmanager
 from dataclasses import dataclass
+from urllib.parse import urlparse
 
 import boto3
 import requests
@@ -21,6 +28,10 @@ class AudioIngestResult:
     duration_seconds: int
 
 
+# -------------------------------------------------
+# PUBLIC ENTRY POINT
+# -------------------------------------------------
+
 def ingest_episode_audio(
     master_topic: str,
     podcast,
@@ -33,6 +44,7 @@ def ingest_episode_audio(
 
     with _download_to_tempfile(audio_url) as tmp_path:
         duration = _compute_audio_duration(tmp_path)
+
         s3_key = _upload_to_s3(
             file_path=tmp_path,
             master_topic=master_topic,
@@ -46,14 +58,35 @@ def ingest_episode_audio(
     )
 
 
+# -------------------------------------------------
+# INTERNAL HELPERS
+# -------------------------------------------------
+
 @contextmanager
 def _download_to_tempfile(url: str):
+    """
+    Stream-download audio to a safe temporary file.
+
+    - Strips query parameters from URL
+    - Uses OS-safe filenames
+    - Guarantees cleanup
+    """
     response = requests.get(url, stream=True, timeout=60)
     response.raise_for_status()
 
-    suffix = os.path.splitext(url)[-1] or ".mp3"
+    # ---- SAFE EXTENSION HANDLING (IMPORTANT) ----
+    parsed = urlparse(url)
+    path = parsed.path  # removes ?query=...
+    ext = os.path.splitext(path)[-1].lower()
 
-    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
+    if ext not in (".mp3", ".m4a", ".wav", ".aac", ".ogg"):
+        ext = ".mp3"
+    # --------------------------------------------
+
+    tmp = tempfile.NamedTemporaryFile(
+        delete=False,
+        suffix=ext,
+    )
 
     try:
         for chunk in response.iter_content(chunk_size=8192):
@@ -62,6 +95,7 @@ def _download_to_tempfile(url: str):
 
         tmp.flush()
         tmp.close()
+
         yield tmp.name
 
     finally:
@@ -70,19 +104,29 @@ def _download_to_tempfile(url: str):
 
 
 def _compute_audio_duration(path: str) -> int:
+    """
+    Compute duration using ffprobe.
+
+    Returns 0 if:
+    - file missing
+    - ffprobe unavailable
+    - ffprobe fails
+
+    This must NEVER crash ingestion.
+    """
     if not os.path.exists(path):
         print(f"[WARN] Audio file missing for duration check: {path}")
         return 0
 
-    ffprobe_path = shutil.which("ffprobe")
-    if not ffprobe_path:
+    ffprobe = shutil.which("ffprobe")
+    if not ffprobe:
         print("[WARN] ffprobe not found on PATH; duration set to 0")
         return 0
 
     try:
         result = subprocess.run(
             [
-                ffprobe_path,
+                ffprobe,
                 "-v", "error",
                 "-show_entries", "format=duration",
                 "-of", "default=noprint_wrappers=1:nokey=1",
@@ -94,6 +138,7 @@ def _compute_audio_duration(path: str) -> int:
             check=True,
         )
         return int(float(result.stdout.strip()))
+
     except Exception as e:
         print(f"[WARN] ffprobe failed, duration set to 0: {e}")
         return 0
@@ -105,18 +150,20 @@ def _upload_to_s3(
     podcast_id: str,
     episode_id: str,
 ) -> str:
-    s3_client = boto3.client("s3", region_name=AWS_REGION)
+    s3 = boto3.client("s3", region_name=AWS_REGION)
 
     ext = os.path.splitext(file_path)[-1]
     s3_key = f"{master_topic}/{podcast_id}/{episode_id}{ext}"
 
-    print(f"[AUDIO] Uploading episode audio to s3://{EPISODE_AUDIO_BUCKET}/{s3_key}")
+    print(
+        f"[AUDIO] Uploading episode audio to "
+        f"s3://{EPISODE_AUDIO_BUCKET}/{s3_key}"
+    )
 
-    s3_client.upload_file(
+    s3.upload_file(
         Filename=file_path,
         Bucket=EPISODE_AUDIO_BUCKET,
         Key=s3_key,
     )
 
     return s3_key
-
