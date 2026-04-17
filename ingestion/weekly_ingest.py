@@ -21,11 +21,18 @@ from podpal.ingestion.retention import enforce_retention
 
 from podpal.db.session import get_session
 from podpal.db.models import Podcast, Episode
-print("[DEBUG] Loaded registry:", TOP_PODCASTERS_BY_MASTER_TOPIC)
+
 MAX_EPISODES_PER_PODCAST = 50
 
 
 def run_weekly_ingestion(dry_run: bool = False) -> None:
+    # -------------------------------------------------
+    # SANITY CHECKS (TEMPORARY)
+    # -------------------------------------------------
+    print("[SANITY] run_weekly_ingestion() entered")
+    print("[SANITY] Loaded registry keys:", list(TOP_PODCASTERS_BY_MASTER_TOPIC.keys()))
+    # -------------------------------------------------
+
     print(f"[INGEST] Weekly ingestion started at {datetime.utcnow().isoformat()}")
 
     session = get_session()
@@ -45,26 +52,21 @@ def run_weekly_ingestion(dry_run: bool = False) -> None:
                     .one_or_none()
                 )
 
-                # ✅ Explicit None check on concrete object
                 if podcast_obj is None:
                     print(f"[WARN] Podcast {podcast_id} not found in DB. Skipping.")
                     continue
 
-                # ✅ Extract feed_url into concrete Python value immediately
                 raw_feed_url = podcast_obj.feed_url
                 feed_url_str = str(raw_feed_url) if raw_feed_url is not None else ""
 
                 if not feed_url_str:
-                    print(
-                        f"[WARN] Podcast {podcast_obj.name} has no feed URL. Skipping."
-                    )
+                    print(f"[WARN] Podcast {podcast_obj.name} has no feed URL. Skipping.")
                     continue
 
                 print(f"[INGEST] Fetching RSS for {podcast_obj.name}")
 
                 rss_items = fetch_rss_items(feed_url_str)
 
-                # ✅ Never use ORM-contaminated objects in boolean context
                 if rss_items is None or len(rss_items) == 0:
                     print(f"[INGEST] No RSS items for {podcast_obj.name}")
                     continue
@@ -124,13 +126,11 @@ def run_weekly_ingestion(dry_run: bool = False) -> None:
 
                     print(f"[INGEST] Episode committed: {episode.title}")
 
-                podcast_id_str = str(podcast_obj.id)
-
                 print(f"[INGEST] Enforcing retention for {podcast_obj.name}")
 
                 enforce_retention(
                     session=session,
-                    podcast_id=podcast_id_str,
+                    podcast_id=str(podcast_obj.id),
                     max_hot_episodes=MAX_EPISODES_PER_PODCAST,
                 )
 
