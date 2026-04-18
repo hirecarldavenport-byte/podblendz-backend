@@ -1,20 +1,25 @@
 import json
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 
-from .schema import Transcript, Segment
+from podpal.transcription.schema import Transcript, Segment
 
 
 class TranscriptLoader:
+    """
+    Loads normalized transcripts from disk.
+    No Whisper, no side effects.
+    """
+
     @staticmethod
-    def load(path: Path) -> Optional[Transcript]:
-        if not path.exists():
+    def load(transcript_path: Path) -> Optional[Transcript]:
+        if not transcript_path.exists():
             return None
 
-        with path.open("r", encoding="utf-8") as f:
+        with transcript_path.open("r", encoding="utf-8") as f:
             data = json.load(f)
 
-        segments = [
+        segments: List[Segment] = [
             Segment(
                 start=seg["start"],
                 end=seg["end"],
