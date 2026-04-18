@@ -2,6 +2,7 @@ from pathlib import Path
 import logging
 
 from podpal.transcription.transcriber import Transcriber, TranscriptionError
+from podpal.transcription.normalizer import TranscriptNormalizer
 from podpal.io.transcripts import TranscriptWriter
 
 
@@ -17,25 +18,18 @@ def transcribe_batch(
     model_name: str = "medium",
 ) -> None:
     """
-    Batch-transcribe podcast episodes.
+    Batch-transcribe podcast episodes with normalization.
 
-    Expects structure:
-    episodes/
-      ep_001/
-        audio.mp3
-      ep_002/
-        audio.mp3
+    Pipeline:
+      audio → transcriber → normalizer → transcript writer
 
-    Writes:
-      transcript.json
-      transcript.txt
-
-    Safe to re-run: skips episodes with existing transcripts.
+    Safe to re-run: skips episodes with existing transcript.json.
     """
     if not episodes_dir.exists():
         raise FileNotFoundError(f"Episodes directory not found: {episodes_dir}")
 
     transcriber = Transcriber(model_name=model_name)
+    normalizer = TranscriptNormalizer()
 
     episode_dirs = sorted(
         d for d in episodes_dir.iterdir()
@@ -66,7 +60,7 @@ def transcribe_batch(
         logger.info("[%s] Transcribing: %s", episode_id, audio_path.name)
 
         try:
-            transcript = transcriber.transcribe_file(
+            raw_transcript = transcriber.transcribe_file(
                 audio_path=audio_path,
                 episode_id=episode_id,
             )
@@ -74,13 +68,17 @@ def transcribe_batch(
             logger.error("[%s] Transcription failed: %s", episode_id, exc)
             continue
 
+        logger.info("[%s] Normalizing transcript", episode_id)
+
+        normalized_transcript = normalizer.normalize(raw_transcript)
+
         TranscriptWriter.write_all(
-            transcript,
+            normalized_transcript,
             json_path=json_path,
             txt_path=txt_path,
         )
 
-        logger.info("[%s] Transcription complete", episode_id)
+        logger.info("[%s] Transcription + normalization complete", episode_id)
 
     logger.info("Batch transcription finished")
 
@@ -99,7 +97,9 @@ def _find_audio_file(episode_dir: Path) -> Path | None:
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="Batch transcribe podcast episodes")
+    parser = argparse.ArgumentParser(
+        description="Batch transcribe and normalize podcast episodes"
+    )
     parser.add_argument(
         "episodes_dir",
         type=Path,

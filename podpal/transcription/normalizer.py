@@ -12,93 +12,81 @@ FILLER_PATTERN = re.compile(
 
 class TranscriptNormalizer:
     """
-    Normalizes transcript text and structure.
-
-    Responsibilities:
-    - Remove filler words
-    - Normalize whitespace
-    - Merge very short segments
+    Normalizes transcript text and structure safely.
     """
 
     def __init__(
         self,
-        min_segment_duration: float = 1.0,
-        min_segment_chars: int = 15,
+        min_segment_duration: float = 0.8,   # seconds
+        min_segment_chars: int = 20,
+        max_merge_gap: float = 0.5,           # seconds
     ):
         self.min_segment_duration = min_segment_duration
         self.min_segment_chars = min_segment_chars
+        self.max_merge_gap = max_merge_gap
 
     def normalize(self, transcript: Transcript) -> Transcript:
-        """
-        Normalize a Transcript and return a new Transcript object.
-        """
         cleaned_segments: List[Segment] = []
-
         buffer: Segment | None = None
 
-        for segment in transcript.segments:
-            cleaned_text = self._clean_text(segment.text)
-
-            if not cleaned_text:
+        for seg in transcript.segments:
+            text = self._clean_text(seg.text)
+            if not text:
                 continue
 
-            new_segment = Segment(
-                start=segment.start,
-                end=segment.end,
-                speaker=segment.speaker,
-                text=cleaned_text,
+            current = Segment(
+                start=seg.start,
+                end=seg.end,
+                speaker=seg.speaker,
+                text=text,
             )
 
             if buffer is None:
-                buffer = new_segment
+                buffer = current
                 continue
 
-            if self._should_merge(buffer, new_segment):
-                buffer = self._merge(buffer, new_segment)
+            if self._should_merge(buffer, current):
+                buffer = self._merge(buffer, current)
             else:
                 cleaned_segments.append(buffer)
-                buffer = new_segment
+                buffer = current
 
-        if buffer is not None:
+        if buffer:
             cleaned_segments.append(buffer)
 
         return Transcript(
             episode_id=transcript.episode_id,
-            duration=transcript.duration,
+            duration=self._infer_duration(cleaned_segments),
             segments=cleaned_segments,
         )
 
-    # ---------- internal helpers ----------
+    # ---------- helpers ----------
 
     def _clean_text(self, text: str) -> str:
-        """
-        Clean filler words and normalize whitespace.
-        """
         text = FILLER_PATTERN.sub("", text)
         text = re.sub(r"\s+", " ", text)
-        text = text.strip(" ,.-")
-
-        return text
+        return text.strip(" ,.-")
 
     def _should_merge(self, a: Segment, b: Segment) -> bool:
-        """
-        Decide whether two segments should be merged.
-        """
-        duration = b.end - a.start
-        combined_text_len = len(a.text) + len(b.text)
+        segment_length = b.end - b.start
+        gap = b.start - a.end
+        combined_chars = len(a.text) + len(b.text)
 
         return (
-            duration <= self.min_segment_duration
-            or combined_text_len <= self.min_segment_chars
+            segment_length < self.min_segment_duration
+            or combined_chars < self.min_segment_chars
+            or gap <= self.max_merge_gap
         )
 
     def _merge(self, a: Segment, b: Segment) -> Segment:
-        """
-        Merge two segments into one.
-        """
         return Segment(
             start=a.start,
             end=b.end,
             speaker=a.speaker or b.speaker,
             text=f"{a.text} {b.text}".strip(),
         )
+
+    def _infer_duration(self, segments: List[Segment]) -> float:
+        if not segments:
+            return 0.0
+        return max(seg.end for seg in segments)
