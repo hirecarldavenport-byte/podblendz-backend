@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
-    /* Reset */
+    /* ---------- RESET ---------- */
     * {
       margin: 0;
       padding: 0;
@@ -15,25 +15,26 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: #111;
-      color: #fff;
+      background-color: #0f0f0f;
+      color: #ffffff;
     }
 
     a {
-      text-decoration: none;
       color: inherit;
+      text-decoration: none;
     }
 
     /* ---------- NAV ---------- */
     .nav {
       position: absolute;
       top: 0;
+      left: 0;
       width: 100%;
       z-index: 10;
       padding: 1.5rem 3rem;
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
     }
 
     .logo {
@@ -55,28 +56,33 @@
     /* ---------- HERO ---------- */
     .hero {
       position: relative;
-      min-height: 95vh;
-      background-image: url("https://podblendz-ui-346871934277-us-east-1.s3.amazonaws.com/assets/black-lady-on-the-train.jpg");
+      min-height: 92vh;
+      background-image: url("https://podblendz-ui-346871994277-us-east-1-an.s3.us-east-1.amazonaws.com/assets/black-lady-on-the-train.jpg");
       background-size: cover;
-      background-position: center;
+      background-position: right center;
+      background-repeat: no-repeat;
     }
 
+    /* Left-to-right gradient overlay */
     .hero::after {
       content: "";
       position: absolute;
       inset: 0;
       background: linear-gradient(
         to right,
-        rgba(0,0,0,0.75),
-        rgba(0,0,0,0.25)
+        rgba(0, 0, 0, 0.88) 0%,
+        rgba(0, 0, 0, 0.65) 35%,
+        rgba(0, 0, 0, 0.35) 60%,
+        rgba(0, 0, 0, 0.15) 85%,
+        rgba(0, 0, 0, 0.05) 100%
       );
     }
 
     .hero-content {
       position: relative;
       z-index: 2;
-      padding: 8rem 3rem 4rem;
-      max-width: 620px;
+      padding: 9rem 3rem 4rem;
+      max-width: 640px;
     }
 
     .hero-content h1 {
@@ -89,7 +95,7 @@
     .hero-content p {
       font-size: 1.1rem;
       opacity: 0.9;
-      margin-bottom: 2rem;
+      margin-bottom: 2.2rem;
     }
 
     /* ---------- BUTTONS ---------- */
@@ -97,21 +103,22 @@
       display: flex;
       gap: 1rem;
       flex-wrap: wrap;
+      margin-bottom: 0.75rem;
     }
 
     .btn {
-      padding: 0.8rem 1.6rem;
+      padding: 0.85rem 1.8rem;
       border-radius: 999px;
-      font-size: 0.95rem;
       border: 1px solid rgba(255,255,255,0.4);
       background: transparent;
+      color: #ffffff;
+      font-size: 0.95rem;
       cursor: pointer;
     }
 
     .btn-primary {
       background-color: #ff6a00;
       border: none;
-      color: #fff;
       font-weight: 600;
     }
 
@@ -120,48 +127,61 @@
     }
 
     .cta-subtext {
-      margin-top: 0.8rem;
       font-size: 0.85rem;
       opacity: 0.75;
     }
 
-    /* ---------- SECTIONS ---------- */
-    .section {
-      padding: 3rem;
+    /* ---------- TOPIC GRID ---------- */
+    .topics {
       background-color: #121212;
+      padding: 3rem;
       border-top: 1px solid rgba(255,255,255,0.06);
     }
 
-    .section h2 {
-      font-size: 1.4rem;
-      margin-bottom: 1rem;
-    }
-
-    .placeholder-row {
+    .topic-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 1.2rem;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.4rem;
     }
 
-    .card {
+    .topic-card {
       background-color: #1c1c1c;
-      border-radius: 8px;
-      padding: 1rem;
-      height: 120px;
-      opacity: 0.85;
+      border-radius: 10px;
+      padding: 1.4rem;
+      min-height: 130px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      cursor: pointer;
     }
 
-    .card:hover {
-      opacity: 1;
+    .topic-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 22px rgba(0,0,0,0.4);
+    }
+
+    .topic-card h3 {
+      font-size: 1.05rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .topic-card p {
+      font-size: 0.85rem;
+      opacity: 0.75;
     }
 
     @media (max-width: 768px) {
-      .hero-content {
-        padding: 7rem 2rem 3rem;
+      .nav {
+        padding: 1.2rem 2rem;
       }
 
-      .nav {
-        padding: 1rem 2rem;
+      .hero-content {
+        padding: 8rem 2rem 3rem;
+      }
+
+      .topics {
+        padding: 2rem;
       }
     }
   </style>
@@ -183,8 +203,33 @@
   <!-- HERO -->
   <section class="hero">
     <div class="hero-content">
-      <h1>Your Podcasts. Your Blendz. Your Way.</h1>
+      <h1>Your Podcasts.<br />Your Blendz. Your Way.</h1>
       <p>Listen Smarter. Share Deeper. Blend Ideas.</p>
 
       <div class="button-row">
         <button class="btn">Get Started</button>
+        <button class="btn">Watch Demo</button>
+        <button class="btn btn-primary">Generate Your Blendz</button>
+      </div>
+
+      <div class="cta-subtext">
+        Start mixing your favorite podcast moments
+      </div>
+    </div>
+  </section>
+
+  <!-- MASTER TOPICS -->
+  <section class="topics">
+    <div class="topic-grid">
+      <div class="topic-card"><h3>AI & Technology</h3><p>Trends shaping the future</p></div>
+      <div class="topic-card"><h3>Health & Fitness</h3><p>Mind, body, longevity</p></div>
+      <div class="topic-card"><h3>Finance</h3><p>Money, markets, strategy</p></div>
+      <div class="topic-card"><h3>Movies & Media</h3><p>Culture, film, storytelling</p></div>
+      <div class="topic-card"><h3>Entrepreneurship</h3><p>Startups and leadership</p></div>
+      <div class="topic-card"><h3>Science</h3><p>Discovery and research</p></div>
+      <div class="topic-card"><h3>True Crime</h3><p>Cases and investigations</p></div>
+    </div>
+  </section>
+
+</body>
+</html>
