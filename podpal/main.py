@@ -5,12 +5,12 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 # -------------------------------------------------
-# Environment setup
+# Environment
 # -------------------------------------------------
 load_dotenv()
 
 # -------------------------------------------------
-# Path resolution (Render-safe, absolute paths)
+# Path resolution (absolute, Render-safe)
 # -------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent  # /app
 UI_DIR = BASE_DIR / "ui"
@@ -21,27 +21,28 @@ ASSETS_DIR = UI_DIR / "assets"
 # -------------------------------------------------
 app = FastAPI(
     title="PodBlendz Backend",
-    description="Backend API for Blendz generation, narration, ingestion, and static UI delivery.",
+    description="Backend API for Blendz generation, narration, ingestion, and UI delivery.",
     version="1.0.0",
 )
 
 # -------------------------------------------------
-# Static file serving (CRITICAL)
+# Static file serving (SAFE)
 # -------------------------------------------------
+# ✅ Only mount if directories exist (prevents crash)
 
-# Serve hero images and other UI assets
-app.mount(
-    "/assets",
-    StaticFiles(directory=str(ASSETS_DIR)),
-    name="assets",
-)
+if ASSETS_DIR.exists():
+    app.mount(
+        "/assets",
+        StaticFiles(directory=str(ASSETS_DIR)),
+        name="assets",
+    )
 
-# Serve UI HTML files (index-v2.html, etc.)
-app.mount(
-    "/ui",
-    StaticFiles(directory=str(UI_DIR), html=True),
-    name="ui",
-)
+if UI_DIR.exists():
+    app.mount(
+        "/ui",
+        StaticFiles(directory=str(UI_DIR), html=True),
+        name="ui",
+    )
 
 # -------------------------------------------------
 # API routes
