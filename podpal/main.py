@@ -3,33 +3,21 @@ from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
-# -------------------------------------------------
-# Environment
-# -------------------------------------------------
 load_dotenv()
 
-# -------------------------------------------------
-# Path resolution (absolute, Render-safe)
-# -------------------------------------------------
-BASE_DIR = Path(__file__).resolve().parent.parent  # /app
+BASE_DIR = Path(__file__).resolve().parent.parent
 UI_DIR = BASE_DIR / "ui"
 ASSETS_DIR = UI_DIR / "assets"
+INDEX_FILE = UI_DIR / "index-v2.html"
 
-# -------------------------------------------------
-# App initialization
-# -------------------------------------------------
 app = FastAPI(
     title="PodBlendz Backend",
-    description="Backend API for Blendz generation, narration, ingestion, and UI delivery.",
     version="1.0.0",
 )
 
-# -------------------------------------------------
-# Static file serving (SAFE)
-# -------------------------------------------------
-# ✅ Only mount if directories exist (prevents crash)
-
+# ✅ Serve assets ONLY
 if ASSETS_DIR.exists():
     app.mount(
         "/assets",
@@ -37,16 +25,14 @@ if ASSETS_DIR.exists():
         name="assets",
     )
 
-if UI_DIR.exists():
-    app.mount(
-        "/ui",
-        StaticFiles(directory=str(UI_DIR), html=True),
-        name="ui",
-    )
+# ✅ Serve homepage explicitly (NO /ui routing)
+@app.get("/", include_in_schema=False)
+def serve_homepage():
+    return FileResponse(INDEX_FILE)
 
-# -------------------------------------------------
-# API routes
-# -------------------------------------------------
+# -----------------------------
+# API routes (unchanged)
+# -----------------------------
 from podpal.routes.health import router as health_router
 from podpal.routes.s3_routes import router as s3_router
 from podpal.routes.narration_routes import router as narration_router
