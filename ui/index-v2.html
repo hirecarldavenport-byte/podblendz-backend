@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
-    /* ---------- RESET ---------- */
     * {
       margin: 0;
       padding: 0;
@@ -15,38 +14,33 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: #0f0f0f;
+      background: #0f0f0f;
       color: #ffffff;
     }
 
     a {
-      text-decoration: none;
       color: inherit;
+      text-decoration: none;
     }
 
-    /* ---------- NAV ---------- */
+    /* NAV */
     .nav {
       position: absolute;
       top: 0;
       width: 100%;
       z-index: 10;
-      padding: 1.4rem 3rem;
+      padding: 1.5rem 3rem;
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
     }
 
     .logo {
       font-size: 1.25rem;
       font-weight: 700;
-      letter-spacing: 0.4px;
       display: flex;
       align-items: center;
-      gap: 0.35rem;
-    }
-
-    .logo span {
-      font-size: 1.1rem;
+      gap: 0.4rem;
     }
 
     .nav-links a {
@@ -59,57 +53,41 @@
       opacity: 1;
     }
 
-    /* ---------- HERO ---------- */
+    /* HERO */
     .hero {
       position: relative;
-      min-height: 92vh;
-      background-image: url("https://podblendz-ui-346871994277-us-east-1-an.s3.us-east-1.amazonaws.com/assets/black-lady-on-the-train.jpg");
-      background-size: cover;
-      background-position: 80% center;
-      background-repeat: no-repeat;
+      height: 92vh;
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      overflow: hidden;
+      background: #000;
     }
 
-    .hero::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(
-        to right,
-        rgba(0,0,0,0.92) 0%,
-        rgba(0,0,0,0.80) 28%,
-        rgba(0,0,0,0.55) 48%,
-        rgba(0,0,0,0.25) 68%,
-        rgba(0,0,0,0.10) 82%,
-        rgba(0,0,0,0.00) 100%
-      );
-    }
-
-    .hero-content {
+    .hero-left {
       position: relative;
-      z-index: 2;
+      z-index: 3;
       padding: 9rem 3rem 4rem;
-      max-width: 650px;
+      max-width: 640px;
     }
 
-    .hero-content h1 {
+    .hero-left h1 {
       font-size: clamp(2.7rem, 5vw, 3.7rem);
       font-weight: 700;
       line-height: 1.15;
-      margin-bottom: 1.1rem;
+      margin-bottom: 1rem;
     }
 
-    .hero-content p {
+    .hero-left p {
       font-size: 1.1rem;
       opacity: 0.9;
       margin-bottom: 2.3rem;
     }
 
-    /* ---------- BUTTONS ---------- */
-    .button-row {
+    .buttons {
       display: flex;
       gap: 1rem;
       flex-wrap: wrap;
-      margin-bottom: 0.8rem;
+      margin-bottom: 0.6rem;
     }
 
     .btn {
@@ -117,87 +95,107 @@
       border-radius: 999px;
       border: 1px solid rgba(255,255,255,0.4);
       background: transparent;
-      color: #ffffff;
-      font-size: 0.95rem;
+      color: #fff;
       cursor: pointer;
     }
 
     .btn-primary {
-      background-color: #ff6a00;
+      background: #ff6a00;
       border: none;
       font-weight: 600;
     }
 
     .btn-primary:hover {
-      background-color: #ff8126;
+      background: #ff8126;
     }
 
-    .cta-subtext {
+    .cta-note {
       font-size: 0.85rem;
-      opacity: 0.75;
+      opacity: 0.7;
     }
 
-    /* ---------- TOPICS ---------- */
+    /* HERO IMAGE SIDE */
+    .hero-right {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-image {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+      width: auto;
+      min-width: 100%;
+      object-fit: cover;
+    }
+
+    .hero-gradient {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to right,
+        rgba(0,0,0,0.92) 0%,
+        rgba(0,0,0,0.70) 35%,
+        rgba(0,0,0,0.35) 60%,
+        rgba(0,0,0,0.00) 100%
+      );
+      z-index: 2;
+    }
+
+    /* TOPICS */
     .topics {
-      background-color: #121212;
       padding: 3rem;
+      background: #121212;
       border-top: 1px solid rgba(255,255,255,0.06);
     }
 
-    .topic-grid {
+    .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
       gap: 1.4rem;
     }
 
-    .topic-card {
-      background-color: #1c1c1c;
+    .tile {
+      background: #1c1c1c;
       border-radius: 10px;
       padding: 1.4rem;
-      min-height: 125px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      min-height: 130px;
       cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .topic-card:hover {
+    .tile:hover {
       transform: translateY(-2px);
       box-shadow: 0 10px 26px rgba(0,0,0,0.45);
     }
 
-    .topic-card h3 {
+    .tile h3 {
       font-size: 1.05rem;
       margin-bottom: 0.3rem;
     }
 
-    .topic-card p {
+    .tile p {
       font-size: 0.85rem;
       opacity: 0.75;
     }
 
-    @media (max-width: 768px) {
-      .nav {
-        padding: 1.2rem 2rem;
+    @media (max-width: 900px) {
+      .hero {
+        grid-template-columns: 1fr;
       }
 
-      .hero-content {
-        padding: 8rem 2rem 3rem;
-      }
-
-      .topics {
-        padding: 2rem;
+      .hero-right {
+        display: none;
       }
     }
   </style>
 </head>
-
 <body>
 
   <!-- NAV -->
   <div class="nav">
-    <div class="logo">PodBlendz <span>🎧</span></div>
+    <div class="logo">PodBlendz 🎧</div>
     <div class="nav-links">
       <a href="#">Explore</a>
       <a href="#">My Blendz</a>
@@ -208,32 +206,39 @@
 
   <!-- HERO -->
   <section class="hero">
-    <div class="hero-content">
+    <div class="hero-left">
       <h1>Your Podcasts.<br>Your Blendz. Your Way.</h1>
       <p>Listen Smarter. Share Deeper. Blend Ideas.</p>
 
-      <div class="button-row">
+      <div class="buttons">
         <button class="btn">Get Started</button>
         <button class="btn">Watch Demo</button>
         <button class="btn btn-primary">Generate Your Blendz</button>
       </div>
 
-      <div class="cta-subtext">
-        Start mixing your favorite podcast moments
-      </div>
+      <div class="cta-note">Start mixing your favorite podcast moments</div>
+    </div>
+
+    <div class="hero-right">
+      <img
+        class="hero-image"
+        src="https://podblendz-ui-346871994277-us-east-1-an.s3.us-east-1.amazonaws.com/assets/black-lady-on-the-train.jpg"
+        alt="Podcast listener on transit"
+      />
+      <div class="hero-gradient"></div>
     </div>
   </section>
 
   <!-- MASTER TOPICS -->
   <section class="topics">
-    <div class="topic-grid">
-      <div class="topic-card"><h3>AI & Technology</h3><p>Trends shaping the future</p></div>
-      <div class="topic-card"><h3>Health & Fitness</h3><p>Mind, body, longevity</p></div>
-      <div class="topic-card"><h3>Finance</h3><p>Money, markets, strategy</p></div>
-      <div class="topic-card"><h3>Movies & Media</h3><p>Culture, film, storytelling</p></div>
-      <div class="topic-card"><h3>Entrepreneurship</h3><p>Startups and leadership</p></div>
-      <div class="topic-card"><h3>Science</h3><p>Discovery and research</p></div>
-      <div class="topic-card"><h3>True Crime</h3><p>Cases and investigations</p></div>
+    <div class="grid">
+      <div class="tile"><h3>AI & Technology</h3><p>Trends shaping the future</p></div>
+      <div class="tile"><h3>Health & Fitness</h3><p>Mind, body, longevity</p></div>
+      <div class="tile"><h3>Finance</h3><p>Money, markets, strategy</p></div>
+      <div class="tile"><h3>Movies & Media</h3><p>Culture, film, storytelling</p></div>
+      <div class="tile"><h3>Entrepreneurship</h3><p>Startups and leadership</p></div>
+      <div class="tile"><h3>Science</h3><p>Discovery and research</p></div>
+      <div class="tile"><h3>True Crime</h3><p>Cases and investigations</p></div>
     </div>
   </section>
 
