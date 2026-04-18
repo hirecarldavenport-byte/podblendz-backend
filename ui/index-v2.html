@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
-    /* ---------- Reset ---------- */
+    /* Reset */
     * {
       margin: 0;
       padding: 0;
@@ -14,124 +14,177 @@
     }
 
     body {
-      background-color: #000;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #111;
       color: #fff;
     }
 
-    /* ---------- Hero Container ---------- */
-    .hero {
-      position: relative;
-      height: 100vh;
-      width: 100%;
-      background-color: #000;
-      overflow: hidden;
+    a {
+      text-decoration: none;
+      color: inherit;
     }
 
-    /* Background image */
-    .hero::before {
-      content: "";
+    /* ---------- NAV ---------- */
+    .nav {
       position: absolute;
-      inset: 0;
+      top: 0;
+      width: 100%;
+      z-index: 10;
+      padding: 1.5rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-weight: 700;
+      font-size: 1.2rem;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-links a {
+      margin-left: 1.8rem;
+      font-size: 0.95rem;
+      opacity: 0.9;
+    }
+
+    .nav-links a:hover {
+      opacity: 1;
+    }
+
+    /* ---------- HERO ---------- */
+    .hero {
+      position: relative;
+      min-height: 95vh;
       background-image: url("https://podblendz-ui-346871934277-us-east-1.s3.amazonaws.com/assets/black-lady-on-the-train.jpg");
       background-size: cover;
       background-position: center;
-      background-repeat: no-repeat;
-      opacity: 0.95;
-      z-index: 0;
     }
 
-    /* Dark overlay to ensure text contrast */
     .hero::after {
       content: "";
       position: absolute;
       inset: 0;
       background: linear-gradient(
-        to bottom,
-        rgba(0,0,0,0.55),
-        rgba(0,0,0,0.85)
+        to right,
+        rgba(0,0,0,0.75),
+        rgba(0,0,0,0.25)
       );
-      z-index: 1;
     }
 
-    /* ---------- Hero Content ---------- */
     .hero-content {
       position: relative;
       z-index: 2;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem;
+      padding: 8rem 3rem 4rem;
+      max-width: 620px;
     }
 
-    /* Framed panel (from earlier design) */
-    .hero-frame {
-      border: 2px solid rgba(255, 255, 255, 0.6);
-      padding: 3rem 3.5rem;
-      max-width: 760px;
-      width: 100%;
-      text-align: center;
-      backdrop-filter: blur(2px);
-      background-color: rgba(0, 0, 0, 0.35);
-    }
-
-    .hero-frame h1 {
-      font-size: clamp(2.2rem, 4.5vw, 3.4rem);
+    .hero-content h1 {
+      font-size: clamp(2.6rem, 5vw, 3.6rem);
       font-weight: 700;
       line-height: 1.15;
-      margin-bottom: 1.1rem;
+      margin-bottom: 1rem;
     }
 
-    .hero-frame p {
+    .hero-content p {
       font-size: 1.1rem;
       opacity: 0.9;
-      margin-bottom: 2.3rem;
-      line-height: 1.5;
+      margin-bottom: 2rem;
     }
 
-    /* ---------- CTA Button ---------- */
-    .cta-button {
-      display: inline-block;
-      padding: 0.95rem 2.6rem;
-      background-color: #ff6a00;
-      color: #fff;
-      font-size: 1rem;
-      font-weight: 600;
-      text-decoration: none;
+    /* ---------- BUTTONS ---------- */
+    .button-row {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 0.8rem 1.6rem;
       border-radius: 999px;
-      transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-      box-shadow: 0 0 0 rgba(0,0,0,0);
+      font-size: 0.95rem;
+      border: 1px solid rgba(255,255,255,0.4);
+      background: transparent;
+      cursor: pointer;
     }
 
-    .cta-button:hover {
+    .btn-primary {
+      background-color: #ff6a00;
+      border: none;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .btn-primary:hover {
       background-color: #ff8126;
-      transform: translateY(-1px);
-      box-shadow: 0 6px 18px rgba(0,0,0,0.35);
     }
 
-    /* ---------- Responsive Tweaks ---------- */
-    @media (max-width: 640px) {
-      .hero-frame {
-        padding: 2.2rem 1.8rem;
+    .cta-subtext {
+      margin-top: 0.8rem;
+      font-size: 0.85rem;
+      opacity: 0.75;
+    }
+
+    /* ---------- SECTIONS ---------- */
+    .section {
+      padding: 3rem;
+      background-color: #121212;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .section h2 {
+      font-size: 1.4rem;
+      margin-bottom: 1rem;
+    }
+
+    .placeholder-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1.2rem;
+    }
+
+    .card {
+      background-color: #1c1c1c;
+      border-radius: 8px;
+      padding: 1rem;
+      height: 120px;
+      opacity: 0.85;
+    }
+
+    .card:hover {
+      opacity: 1;
+    }
+
+    @media (max-width: 768px) {
+      .hero-content {
+        padding: 7rem 2rem 3rem;
+      }
+
+      .nav {
+        padding: 1rem 2rem;
       }
     }
   </style>
 </head>
 
 <body>
+
+  <!-- NAV -->
+  <div class="nav">
+    <div class="logo">pod blendz</div>
+    <div class="nav-links">
+      <a href="#">Explore</a>
+      <a href="#">My Blendz</a>
+      <a href="#">Create</a>
+      <a href="#">Sign Up</a>
+    </div>
+  </div>
+
+  <!-- HERO -->
   <section class="hero">
     <div class="hero-content">
-      <div class="hero-frame">
-        <h1>Your Podcasts. Your Blendz. Your Way.</h1>
-        <p>
-          PodBlendz transforms the most important podcast conversations into
-          focused, intelligent blends you can actually finish — and remember.
-        </p>
-        <a href="#" class="cta-button">Generate Blendz</a>
-      </div>
-    </div>
-  </section>
-</body>
-</html>
+      <h1>Your Podcasts. Your Blendz. Your Way.</h1>
+      <p>Listen Smarter. Share Deeper. Blend Ideas.</p>
 
+      <div class="button-row">
+        <button class="btn">Get Started</button>
