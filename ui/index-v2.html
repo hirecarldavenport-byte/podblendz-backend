@@ -3,272 +3,135 @@
 <head>
   <meta charset="UTF-8" />
   <title>PodBlendz</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
+    /* ---------- Reset ---------- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 0 20px 60px;
+      background-color: #000;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: #fff;
     }
 
-    h1 {
-      font-size: 2.5rem;
-      margin-bottom: 0.5rem;
+    /* ---------- Hero Container ---------- */
+    .hero {
+      position: relative;
+      height: 100vh;
+      width: 100%;
+      background-color: #000;
+      overflow: hidden;
     }
 
-    p {
+    /* Background image */
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: url("https://podblendz-ui-346871934277-us-east-1.s3.amazonaws.com/assets/black-lady-on-the-train.jpg");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      opacity: 0.95;
+      z-index: 0;
+    }
+
+    /* Dark overlay to ensure text contrast */
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.55),
+        rgba(0,0,0,0.85)
+      );
+      z-index: 1;
+    }
+
+    /* ---------- Hero Content ---------- */
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    /* Framed panel (from earlier design) */
+    .hero-frame {
+      border: 2px solid rgba(255, 255, 255, 0.6);
+      padding: 3rem 3.5rem;
+      max-width: 760px;
+      width: 100%;
+      text-align: center;
+      backdrop-filter: blur(2px);
+      background-color: rgba(0, 0, 0, 0.35);
+    }
+
+    .hero-frame h1 {
+      font-size: clamp(2.2rem, 4.5vw, 3.4rem);
+      font-weight: 700;
+      line-height: 1.15;
+      margin-bottom: 1.1rem;
+    }
+
+    .hero-frame p {
       font-size: 1.1rem;
+      opacity: 0.9;
+      margin-bottom: 2.3rem;
       line-height: 1.5;
     }
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 16px;
-    }
-
-    .card {
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      padding: 16px;
-      cursor: pointer;
-      background: white;
-    }
-
-    .card:hover {
-      background: #f7f7f7;
-    }
-
-    .meta {
-      font-size: 0.8rem;
-      color: #666;
-      margin-top: 4px;
-    }
-
-    .vibe {
-      font-size: 0.9rem;
-      margin-top: 8px;
-      color: #444;
-    }
-
-    input {
-      width: 100%;
-      max-width: 420px;
-      padding: 10px;
+    /* ---------- CTA Button ---------- */
+    .cta-button {
+      display: inline-block;
+      padding: 0.95rem 2.6rem;
+      background-color: #ff6a00;
+      color: #fff;
       font-size: 1rem;
-      margin-top: 16px;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 999px;
+      transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 0 0 rgba(0,0,0,0);
     }
 
-    button {
-      margin-top: 12px;
-      padding: 10px 18px;
-      font-size: 1rem;
-      cursor: pointer;
+    .cta-button:hover {
+      background-color: #ff8126;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.35);
     }
 
-    #status {
-      margin-top: 12px;
-      font-style: italic;
-    }
-
-    audio {
-      margin-top: 20px;
-      width: 100%;
-    }
-
-    pre {
-      background: #f4f4f4;
-      padding: 12px;
-      margin-top: 20px;
-      font-size: 0.9rem;
-      overflow-x: auto;
+    /* ---------- Responsive Tweaks ---------- */
+    @media (max-width: 640px) {
+      .hero-frame {
+        padding: 2.2rem 1.8rem;
+      }
     }
   </style>
 </head>
 
 <body>
-
-<!-- HERO SECTION -->
-<section
-  style="
-    position: relative;
-    min-height: 70vh;
-    background-image: url('https://podblendz-ui-346871994277-us-east-1-an.s3.us-east-1.amazonaws.com/assets/black-lady-on-the-train.jpg');
-    background-size: cover;
-    background-position: center;
-    color: white;
-    margin-bottom: 40px;
-  "
->
-  <div style="position:absolute; inset:0; background:rgba(0,0,0,.55);"></div>
-
-  <div style="position:relative; z-index:1; max-width:900px; padding:80px 40px;">
-    <div style="opacity:.85; margin-bottom:12px;">pod blendz</div>
-
-    <h1>Your Podcasts. Your Blendz. Your Way.</h1>
-
-    <p style="font-size:1.3rem; max-width:600px;">
-      Listen smarter. Blend ideas across podcasts and creators.
-    </p>
-
-    <button
-      style="margin-top:20px; padding:14px 32px; font-size:1.1rem; font-weight:bold;"
-      onclick="document.getElementById('cards').scrollIntoView({ behavior: 'smooth' })">
-      Explore Blendz
-    </button>
-  </div>
-</section>
-
-<!-- CARDS -->
-<section id="cards">
-
-  <h2>Explore by Topic</h2>
-  <div id="subjectCards" class="grid"></div>
-
-  <h2 style="margin-top:48px;">Featured Voices</h2>
-  <div id="podcasterCards"></div>
-
-</section>
-
-<!-- MANUAL SEARCH (OPTIONAL / ADVANCED) -->
-<section style="margin-top:60px;">
-  <h2>Or create a custom blend</h2>
-
-  <input
-    id="queryInput"
-    type="text"
-    placeholder="What do you want to listen to?"
-  />
-
-  <button onclick="createBlend()">Create Blend</button>
-</section>
-
-<div id="status"></div>
-
-<audio id="audioPlayer" controls crossorigin="anonymous"></audio>
-<pre id="debug"></pre>
-
-<script>
-  const BACKEND_BASE = "https://podblendz-backend.onrender.com";
-
-  /* ---------------------------------------------
-     LOAD CARDS (HOME / HERO)
-  --------------------------------------------- */
-  async function loadCards() {
-    const res = await fetch(`${BACKEND_BASE}/cards`);
-    const data = await res.json();
-
-    const subjectContainer = document.getElementById("subjectCards");
-    const podcasterContainer = document.getElementById("podcasterCards");
-
-    // Subject cards
-    data.subject_cards.forEach(card => {
-      const el = document.createElement("div");
-      el.className = "card";
-      el.innerHTML = `
-        <strong>${card.title}</strong>
-        <div class="meta">${card.master_topic.replace("_"," ")}</div>
-        <div class="vibe">${card.vibe || ""}</div>
-      `;
-      el.onclick = () => runSubjectBlend(card.query);
-      subjectContainer.appendChild(el);
-    });
-
-    // Podcaster cards
-    Object.entries(data.podcaster_cards).forEach(([topic, pods]) => {
-      const section = document.createElement("div");
-      section.innerHTML = `<h3 style="margin-top:24px;">${topic.replace("_"," ")}</h3>`;
-      const grid = document.createElement("div");
-      grid.className = "grid";
-
-      pods.forEach(pod => {
-        const el = document.createElement("div");
-        el.className = "card";
-        el.innerHTML = `
-          <strong>${pod.name}</strong>
-          <div class="meta">podcaster</div>
-        `;
-        el.onclick = () => runPodcasterBlend(pod.feed_url);
-        grid.appendChild(el);
-      });
-
-      section.appendChild(grid);
-      podcasterContainer.appendChild(section);
-    });
-  }
-
-  /* ---------------------------------------------
-     SUBJECT BLEND
-  --------------------------------------------- */
-  async function runSubjectBlend(query) {
-    document.getElementById("queryInput").value = query;
-    createBlend(query);
-  }
-
-  async function createBlend(forcedQuery) {
-    const query = forcedQuery || document.getElementById("queryInput").value.trim();
-    const status = document.getElementById("status");
-    const audio = document.getElementById("audioPlayer");
-    const debug = document.getElementById("debug");
-
-    status.textContent = "";
-    debug.textContent = "";
-
-    audio.pause();
-    audio.removeAttribute("src");
-    audio.load();
-
-    if (!query) {
-      status.textContent = "Please enter a topic.";
-      return;
-    }
-
-    status.textContent = "Creating blend…";
-
-    const response = await fetch(`${BACKEND_BASE}/blend`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query })
-    });
-
-    const data = await response.json();
-    debug.textContent = JSON.stringify(data, null, 2);
-
-    if (!data.audio_path) {
-      status.textContent = "Blend created, but no audio returned.";
-      return;
-    }
-
-    audio.src = BACKEND_BASE + data.audio_path;
-    audio.load();
-    audio.play().then(() => status.textContent = "Blend ready.");
-  }
-
-  /* ---------------------------------------------
-     PODCASTER BLEND
-  --------------------------------------------- */
-  async function runPodcasterBlend(feedUrl) {
-    const status = document.getElementById("status");
-    const debug = document.getElementById("debug");
-
-    status.textContent = "Loading episodes…";
-
-    const response = await fetch(`${BACKEND_BASE}/blend`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ podcaster_feed: feedUrl })
-    });
-
-    const data = await response.json();
-    debug.textContent = JSON.stringify(data, null, 2);
-
-    status.textContent = "Episodes loaded (see console / next step: narration).";
-  }
-
-  loadCards();
-</script>
-
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-frame">
+        <h1>Your Podcasts. Your Blendz. Your Way.</h1>
+        <p>
+          PodBlendz transforms the most important podcast conversations into
+          focused, intelligent blends you can actually finish — and remember.
+        </p>
+        <a href="#" class="cta-button">Generate Blendz</a>
+      </div>
+    </div>
+  </section>
 </body>
 </html>
 
