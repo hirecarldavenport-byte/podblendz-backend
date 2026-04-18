@@ -1,22 +1,19 @@
 from pathlib import Path
-from typing import Optional, List, Any
+from typing import Optional, Any, List
 
 from .schema import Transcript, Segment
 
 
 class TranscriptionError(Exception):
-    """Raised when transcription fails."""
+    pass
 
 
 class Transcriber:
-    def __init__(self, model_name: str = "large-v3"):
+    def __init__(self, model_name: str = "medium"):
         self.model_name = model_name
-        self._model: Optional[Any] = None  # Whisper model, loaded lazily
+        self._model: Optional[Any] = None
 
     def _load_model(self) -> None:
-        """
-        Lazy-load the Whisper ASR model.
-        """
         if self._model is not None:
             return
 
@@ -24,43 +21,53 @@ class Transcriber:
             import whisper  # type: ignore
         except ImportError as exc:
             raise RuntimeError(
-                "Whisper is not installed. Install with: pip install openai-whisper"
+                "Whisper not installed. Run: pip install openai-whisper"
             ) from exc
 
         self._model = whisper.load_model(self.model_name)
 
     def transcribe_file(self, audio_path: Path, episode_id: str) -> Transcript:
         if not audio_path.exists():
-            raise FileNotFoundError(f"Audio file not found: {audio_path}")
+            raise FileNotFoundError(audio_path)
 
         self._load_model()
-
-        # ✅ Type narrowing for Pylance
-        assert self._model is not None, "ASR model failed to load"
+        assert self._model is not None
 
         try:
             result = self._model.transcribe(
                 str(audio_path),
                 verbose=False,
+                temperature=0.0,
+                condition_on_previous_text=False,
+                no_speech_threshold=0.6,
+                logprob_threshold=-1.0,
+                compression_ratio_threshold=2.4,
             )
         except Exception as exc:
-            raise TranscriptionError(
-                f"Failed to transcribe {audio_path.name}"
-            ) from exc
+            raise TranscriptionError(str(exc)) from exc
 
         segments: List[Segment] = []
         for seg in result.get("segments", []):
+            text = seg["text"].strip()
+            if not text:
+                continue
             segments.append(
                 Segment(
                     start=float(seg["start"]),
                     end=float(seg["end"]),
                     speaker=None,
-                    text=seg["text"].strip(),
+                    text=text,
                 )
             )
 
+        duration = (
+            float(result.get("duration"))
+            if result.get("duration") is not None
+            else (max((s.end for s in segments), default=0.0))
+        )
+
         return Transcript(
             episode_id=episode_id,
-            duration=float(result.get("duration", 0.0)),
+            duration=duration,
             segments=segments,
         )
