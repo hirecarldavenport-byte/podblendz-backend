@@ -11,22 +11,18 @@ FILLER_PATTERN = re.compile(
 
 
 class TranscriptNormalizer:
-    """
-    Normalizes transcript text and structure safely.
-    """
-
     def __init__(
         self,
-        min_segment_duration: float = 0.8,   # seconds
+        min_segment_duration: float = 0.8,
         min_segment_chars: int = 20,
-        max_merge_gap: float = 0.5,           # seconds
+        max_merge_gap: float = 0.5,
     ):
         self.min_segment_duration = min_segment_duration
         self.min_segment_chars = min_segment_chars
         self.max_merge_gap = max_merge_gap
 
     def normalize(self, transcript: Transcript) -> Transcript:
-        cleaned_segments: List[Segment] = []
+        cleaned: List[Segment] = []
         buffer: Segment | None = None
 
         for seg in transcript.segments:
@@ -48,19 +44,19 @@ class TranscriptNormalizer:
             if self._should_merge(buffer, current):
                 buffer = self._merge(buffer, current)
             else:
-                cleaned_segments.append(buffer)
+                cleaned.append(buffer)
                 buffer = current
 
         if buffer:
-            cleaned_segments.append(buffer)
+            cleaned.append(buffer)
+
+        duration = max((s.end for s in cleaned), default=0.0)
 
         return Transcript(
             episode_id=transcript.episode_id,
-            duration=self._infer_duration(cleaned_segments),
-            segments=cleaned_segments,
+            duration=duration,
+            segments=cleaned,
         )
-
-    # ---------- helpers ----------
 
     def _clean_text(self, text: str) -> str:
         text = FILLER_PATTERN.sub("", text)
@@ -68,12 +64,12 @@ class TranscriptNormalizer:
         return text.strip(" ,.-")
 
     def _should_merge(self, a: Segment, b: Segment) -> bool:
-        segment_length = b.end - b.start
         gap = b.start - a.end
+        segment_len = b.end - b.start
         combined_chars = len(a.text) + len(b.text)
 
         return (
-            segment_length < self.min_segment_duration
+            segment_len < self.min_segment_duration
             or combined_chars < self.min_segment_chars
             or gap <= self.max_merge_gap
         )
@@ -85,8 +81,3 @@ class TranscriptNormalizer:
             speaker=a.speaker or b.speaker,
             text=f"{a.text} {b.text}".strip(),
         )
-
-    def _infer_duration(self, segments: List[Segment]) -> float:
-        if not segments:
-            return 0.0
-        return max(seg.end for seg in segments)
