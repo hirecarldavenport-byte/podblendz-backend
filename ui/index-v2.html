@@ -180,7 +180,7 @@
       opacity: 0.75;
     }
 
-    /* ✅ MOBILE UPDATE */
+    /* MOBILE */
     @media (max-width: 900px) {
       .nav {
         padding: 1rem 1.5rem;
@@ -271,10 +271,14 @@
       <div class="buttons">
         <button class="btn">Get Started</button>
         <button class="btn">Watch Demo</button>
-        <button class="btn btn-primary">Generate Your Blendz</button>
+        <button class="btn btn-primary" id="generateBlendzBtn">
+          Generate Your Blendz
+        </button>
       </div>
 
-      <div class="cta-note">Start mixing your favorite podcast moments</div>
+      <div class="cta-note">
+        Start mixing your favorite podcast moments
+      </div>
     </div>
 
     <div class="hero-right">
@@ -299,6 +303,17 @@
       <div class="tile"><h3>True Crime</h3><p>Cases and investigations</p></div>
     </div>
   </section>
+
+  <!-- ✅ JS NAV WIRING -->
+  <script>
+    const generateBtn = document.getElementById("generateBlendzBtn");
+
+    if (generateBtn) {
+      generateBtn.addEventListener("click", () => {
+        window.location.href = "/onboard/topics";
+      });
+    }
+  </script>
 
 </body>
 </html>
