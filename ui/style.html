@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Blending Style | PodBlendz</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f0f0f;
+      color: #ffffff;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      opacity: 0.8;
+      margin-bottom: 2.5rem;
+    }
+
+    .style-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .style-card {
+      background: #1c1c1c;
+      border-radius: 14px;
+      padding: 1.75rem 1.5rem;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .style-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.45);
+    }
+
+    .style-card.selected {
+      border-color: #ff6a00;
+      background: #222;
+    }
+
+    .style-card.selected::after {
+      content: "✓";
+      position: absolute;
+      top: 14px;
+      right: 18px;
+      font-size: 1.3rem;
+      color: #ff6a00;
+      font-weight: bold;
+    }
+
+    .style-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+    }
+
+    .style-desc {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      line-height: 1.45;
+    }
+
+    .recommended {
+      display: inline-block;
+      margin-top: 0.6rem;
+      font-size: 0.75rem;
+      color: #ff6a00;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .footer {
+      margin-top: 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .back-link {
+      font-size: 0.9rem;
+      opacity: 0.7;
+      cursor: pointer;
+    }
+
+    .cta {
+      padding: 0.9rem 2.2rem;
+      border-radius: 999px;
+      background: #ff6a00;
+      color: #fff;
+      border: none;
+      font-size: 0.95rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 1.9rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>How should ideas be blended?</h1>
+    <p class="subtitle">
+      Choose how you want different perspectives combined.
+    </p>
+
+    <div class="style-grid">
+      <div class="style-card selected" data-style="balanced">
+        <div class="style-title">Balanced</div>
+        <div class="style-desc">
+          Consensus with thoughtful counterpoints—our most popular blend.
+        </div>
+        <div class="recommended">Recommended</div>
+      </div>
+
+      <div class="style-card" data-style="consensus">
+        <div class="style-title">Consensus</div>
+        <div class="style-desc">
+          Focus on where experts tend to agree.
+        </div>
+      </div>
+
+      <div class="style-card" data-style="contrast">
+        <div class="style-title">Contrast</div>
+        <div class="style-desc">
+          Hear disagreements side‑by‑side.
+        </div>
+      </div>
+
+      <div class="style-card" data-style="deep_dive">
+        <div class="style-title">Deep Dive</div>
+        <div class="style-desc">
+          One idea explored across multiple voices.
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="back-link" id="backBtn">
+        ← Back
+      </div>
+
+      <button class="cta" id="continueBtn">
+        Generate Blendz
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const cards = document.querySelectorAll(".style-card");
+    const continueBtn = document.getElementById("continueBtn");
+    const backBtn = document.getElementById("backBtn");
+
+    let selectedStyle = "balanced"; // default
+
+    cards.forEach(card => {
+      card.addEventListener("click", () => {
+        cards.forEach(c => c.classList.remove("selected"));
+        card.classList.add("selected");
+        selectedStyle = card.dataset.style;
+      });
+    });
+
+    continueBtn.addEventListener("click", () => {
+      const topicsData = JSON.parse(
+        localStorage.getItem("podblendz_onboard_topics") || "{}"
+      );
+
+      const durationData = JSON.parse(
+        localStorage.getItem("podblendz_onboard_duration") || "{}"
+      );
+
+      const payload = {
+        ...topicsData,
+        ...durationData,
+        blend_style: selectedStyle
+      };
+
+      localStorage.setItem(
+        "podblendz_onboard_complete",
+        JSON.stringify(payload)
+      );
+
+      // ✅ Proceed to generation
+      window.location.href = "/generate";
+    });
+
+    backBtn.addEventListener("click", () => {
+      window.location.href = "/onboard/duration";
+    });
+  </script>
+</body>
+</html>
