@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Select Duration | PodBlendz</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f0f0f;
+      color: #ffffff;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      opacity: 0.8;
+      margin-bottom: 2.5rem;
+    }
+
+    .duration-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .duration-card {
+      background: #1c1c1c;
+      border-radius: 14px;
+      padding: 2rem 1.5rem;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.2s ease;
+      text-align: center;
+      position: relative;
+    }
+
+    .duration-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.45);
+    }
+
+    .duration-card.selected {
+      border-color: #ff6a00;
+      background: #222;
+    }
+
+    .duration-card.selected::after {
+      content: "✓";
+      position: absolute;
+      top: 14px;
+      right: 18px;
+      font-size: 1.3rem;
+      color: #ff6a00;
+      font-weight: bold;
+    }
+
+    .duration-time {
+      font-size: 3rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .duration-label {
+      font-size: 1rem;
+      opacity: 0.75;
+      margin-bottom: 0.75rem;
+    }
+
+    .duration-desc {
+      font-size: 0.9rem;
+      opacity: 0.85;
+    }
+
+    .footer {
+      margin-top: 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .back-link {
+      font-size: 0.9rem;
+      opacity: 0.7;
+      cursor: pointer;
+    }
+
+    .cta {
+      padding: 0.9rem 2.2rem;
+      border-radius: 999px;
+      background: #ff6a00;
+      color: #fff;
+      border: none;
+      font-size: 0.95rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 1.9rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>How much time do you have?</h1>
+    <p class="subtitle">
+      We’ll tailor your Blendz to fit your day.
+    </p>
+
+    <div class="duration-grid" id="durationGrid">
+      <div class="duration-card" data-duration="5">
+        <div class="duration-time">5</div>
+        <div class="duration-label">minutes</div>
+        <div class="duration-desc">
+          Quick insight, no filler
+        </div>
+      </div>
+
+      <div class="duration-card selected" data-duration="10">
+        <div class="duration-time">10</div>
+        <div class="duration-label">minutes</div>
+        <div class="duration-desc">
+          A focused blend of ideas
+        </div>
+      </div>
+
+      <div class="duration-card" data-duration="25">
+        <div class="duration-time">25</div>
+        <div class="duration-label">minutes</div>
+        <div class="duration-desc">
+          Deeper exploration across voices
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="back-link" id="backBtn">
+        ← Back
+      </div>
+
+      <button class="cta" id="continueBtn">
+        Continue
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const cards = document.querySelectorAll(".duration-card");
+    const continueBtn = document.getElementById("continueBtn");
+    const backBtn = document.getElementById("backBtn");
+
+    let selectedDuration = "10"; // default
+
+    cards.forEach(card => {
+      card.addEventListener("click", () => {
+        cards.forEach(c => c.classList.remove("selected"));
+        card.classList.add("selected");
+        selectedDuration = card.dataset.duration;
+      });
+    });
+
+    continueBtn.addEventListener("click", () => {
+      const existingTopics = JSON.parse(
+        localStorage.getItem("podblendz_onboard_topics") || "{}"
+      );
+
+      const payload = {
+        ...existingTopics,
+        duration_minutes: parseInt(selectedDuration, 10)
+      };
+
+      localStorage.setItem(
+        "podblendz_onboard_duration",
+        JSON.stringify(payload)
+      );
+
+      // ✅ Proceed to Screen 3
+      window.location.href = "/onboard/style";
+    });
+
+    backBtn.addEventListener("click", () => {
+      window.location.href = "/onboard/topics";
+    });
+  </script>
+</body>
+</html>
