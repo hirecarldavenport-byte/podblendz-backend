@@ -6,8 +6,11 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# ✅ Copy ALL project files, including ui/assets
+# Copy application code
 COPY . .
+
+# ✅ GUARANTEE static directories exist
+RUN mkdir -p /app/ui/assets
 
 ENV PYTHONUNBUFFERED=1
 
