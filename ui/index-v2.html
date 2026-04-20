@@ -49,10 +49,6 @@
       opacity: 0.9;
     }
 
-    .nav-links a:hover {
-      opacity: 1;
-    }
-
     /* HERO */
     .hero {
       position: relative;
@@ -75,6 +71,7 @@
       font-weight: 700;
       line-height: 1.15;
       margin-bottom: 1rem;
+      letter-spacing: -0.01em;
     }
 
     .hero-left p {
@@ -105,10 +102,6 @@
       font-weight: 600;
     }
 
-    .btn-primary:hover {
-      background: #ff8126;
-    }
-
     .cta-note {
       font-size: 0.85rem;
       opacity: 0.7;
@@ -122,12 +115,11 @@
 
     .hero-image {
       position: absolute;
-      top: 0;
-      right: 0;
+      inset: 0;
+      width: 100%;
       height: 100%;
-      width: auto;
-      min-width: 100%;
       object-fit: cover;
+      object-position: right center;
     }
 
     .hero-gradient {
@@ -156,30 +148,6 @@
       gap: 1.4rem;
     }
 
-    .tile {
-      background: #1c1c1c;
-      border-radius: 10px;
-      padding: 1.4rem;
-      min-height: 130px;
-      cursor: pointer;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .tile:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 26px rgba(0,0,0,0.45);
-    }
-
-    .tile h3 {
-      font-size: 1.05rem;
-      margin-bottom: 0.3rem;
-    }
-
-    .tile p {
-      font-size: 0.85rem;
-      opacity: 0.75;
-    }
-
     /* MOBILE */
     @media (max-width: 900px) {
       .nav {
@@ -190,6 +158,7 @@
         display: none;
       }
 
+      /* ✅ Mobile hero mirrors desktop intent */
       .hero {
         display: flex;
         flex-direction: column;
@@ -197,39 +166,19 @@
         min-height: 100vh;
       }
 
-      .hero-right {
-        display: block;
-        height: 45vh;
-      }
-
-      .hero-image {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-
-      .hero-gradient {
-        background: linear-gradient(
-          to bottom,
-          rgba(0,0,0,0.0) 0%,
-          rgba(0,0,0,0.25) 40%,
-          rgba(0,0,0,0.85) 100%
-        );
-      }
-
       .hero-left {
-        padding: 2rem 1.5rem 2.5rem;
+        padding: 2.5rem 1.5rem 5.5rem;
         max-width: 100%;
       }
 
       .hero-left h1 {
-        font-size: 2.1rem;
+        font-size: clamp(2rem, 7vw, 2.4rem);
+        line-height: 1.1;
       }
 
       .hero-left p {
         font-size: 1rem;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.6rem;
       }
 
       .buttons {
@@ -240,6 +189,26 @@
       .btn {
         width: 100%;
         text-align: center;
+      }
+
+      /* ✅ Image becomes part of hero, not a section */
+      .hero-right {
+        height: 55vh;
+        margin-top: -3.5rem; /* pulls image upward into hero */
+      }
+
+      .hero-image {
+        position: absolute;
+      }
+
+      .hero-gradient {
+        background: linear-gradient(
+          to bottom,
+          rgba(0,0,0,0.95) 0%,
+          rgba(0,0,0,0.55) 30%,
+          rgba(0,0,0,0.15) 55%,
+          rgba(0,0,0,0.0) 80%
+        );
       }
 
       .topics {
@@ -254,12 +223,6 @@
   <!-- NAV -->
   <div class="nav">
     <div class="logo">PodBlendz 🎧</div>
-    <div class="nav-links">
-      <a href="#">Explore</a>
-      <a href="#">My Blendz</a>
-      <a href="#">Create</a>
-      <a href="#">Sign Up</a>
-    </div>
   </div>
 
   <!-- HERO -->
@@ -290,30 +253,6 @@
       <div class="hero-gradient"></div>
     </div>
   </section>
-
-  <!-- MASTER TOPICS -->
-  <section class="topics">
-    <div class="grid">
-      <div class="tile"><h3>AI & Technology</h3><p>Trends shaping the future</p></div>
-      <div class="tile"><h3>Health & Fitness</h3><p>Mind, body, longevity</p></div>
-      <div class="tile"><h3>Finance</h3><p>Money, markets, strategy</p></div>
-      <div class="tile"><h3>Movies & Media</h3><p>Culture, film, storytelling</p></div>
-      <div class="tile"><h3>Entrepreneurship</h3><p>Startups and leadership</p></div>
-      <div class="tile"><h3>Science</h3><p>Discovery and research</p></div>
-      <div class="tile"><h3>True Crime</h3><p>Cases and investigations</p></div>
-    </div>
-  </section>
-
-  <!-- ✅ JS NAV WIRING -->
-  <script>
-    const generateBtn = document.getElementById("generateBlendzBtn");
-
-    if (generateBtn) {
-      generateBtn.addEventListener("click", () => {
-        window.location.href = "/onboard/topics.html";
-      });
-    }
-  </script>
 
 </body>
 </html>
