@@ -23,7 +23,9 @@
       text-decoration: none;
     }
 
-    /* NAV */
+    /* =========================
+       NAV
+    ========================== */
     .nav {
       position: absolute;
       top: 0;
@@ -49,11 +51,9 @@
       opacity: 0.9;
     }
 
-    .nav-links a:hover {
-      opacity: 1;
-    }
-
-    /* HERO */
+    /* =========================
+       HERO (DESKTOP)
+    ========================== */
     .hero {
       position: relative;
       height: 92vh;
@@ -75,6 +75,7 @@
       font-weight: 700;
       line-height: 1.15;
       margin-bottom: 1rem;
+      letter-spacing: -0.01em;
     }
 
     .hero-left p {
@@ -114,7 +115,9 @@
       opacity: 0.7;
     }
 
-    /* HERO IMAGE */
+    /* =========================
+       HERO IMAGE
+    ========================== */
     .hero-right {
       position: relative;
       overflow: hidden;
@@ -122,12 +125,11 @@
 
     .hero-image {
       position: absolute;
-      top: 0;
-      right: 0;
+      inset: 0;
+      width: 100%;
       height: 100%;
-      width: auto;
-      min-width: 100%;
       object-fit: cover;
+      object-position: right center;
     }
 
     .hero-gradient {
@@ -143,7 +145,9 @@
       z-index: 2;
     }
 
-    /* TOPICS */
+    /* =========================
+       TOPICS
+    ========================== */
     .topics {
       padding: 3rem;
       background: #121212;
@@ -156,31 +160,9 @@
       gap: 1.4rem;
     }
 
-    .tile {
-      background: #1c1c1c;
-      border-radius: 10px;
-      padding: 1.4rem;
-      min-height: 130px;
-      cursor: pointer;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .tile:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 26px rgba(0,0,0,0.45);
-    }
-
-    .tile h3 {
-      font-size: 1.05rem;
-      margin-bottom: 0.3rem;
-    }
-
-    .tile p {
-      font-size: 0.85rem;
-      opacity: 0.75;
-    }
-
-    /* MOBILE */
+    /* =========================
+       MOBILE (THE IMPORTANT PART)
+    ========================== */
     @media (max-width: 900px) {
       .nav {
         padding: 1rem 1.5rem;
@@ -190,46 +172,28 @@
         display: none;
       }
 
+      /* Hero becomes layered, not stacked */
       .hero {
-        display: flex;
-        flex-direction: column;
-        height: auto;
+        position: relative;
+        display: block;
         min-height: 100vh;
       }
 
-      .hero-right {
-        display: block;
-        height: 45vh;
-      }
-
-      .hero-image {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-
-      .hero-gradient {
-        background: linear-gradient(
-          to bottom,
-          rgba(0,0,0,0.0) 0%,
-          rgba(0,0,0,0.25) 40%,
-          rgba(0,0,0,0.85) 100%
-        );
-      }
-
       .hero-left {
-        padding: 2rem 1.5rem 2.5rem;
+        position: relative;
+        z-index: 3;
+        padding: 2.5rem 1.5rem 9.5rem; /* space for image */
         max-width: 100%;
       }
 
       .hero-left h1 {
-        font-size: 2.1rem;
+        font-size: clamp(2rem, 7vw, 2.4rem);
+        line-height: 1.1;
       }
 
       .hero-left p {
         font-size: 1rem;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.6rem;
       }
 
       .buttons {
@@ -240,6 +204,36 @@
       .btn {
         width: 100%;
         text-align: center;
+      }
+
+      /* Image acts like "right side" */
+      .hero-right {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        width: 85%;
+        height: 55vh;
+        z-index: 1;
+        pointer-events: none;
+      }
+
+      .hero-image {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: right center;
+      }
+
+      .hero-gradient {
+        background: linear-gradient(
+          to top,
+          rgba(0,0,0,0.95) 0%,
+          rgba(0,0,0,0.6) 35%,
+          rgba(0,0,0,0.25) 60%,
+          rgba(0,0,0,0.0) 85%
+        );
       }
 
       .topics {
@@ -291,7 +285,7 @@
     </div>
   </section>
 
-  <!-- MASTER TOPICS -->
+  <!-- TOPICS -->
   <section class="topics">
     <div class="grid">
       <div class="tile"><h3>AI & Technology</h3><p>Trends shaping the future</p></div>
@@ -304,10 +298,9 @@
     </div>
   </section>
 
-  <!-- ✅ JS NAV WIRING -->
+  <!-- ✅ JS WIRES THE CTA BACK UP -->
   <script>
     const generateBtn = document.getElementById("generateBlendzBtn");
-
     if (generateBtn) {
       generateBtn.addEventListener("click", () => {
         window.location.href = "/onboard/topics.html";
