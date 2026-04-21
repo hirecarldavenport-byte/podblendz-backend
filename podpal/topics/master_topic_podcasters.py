@@ -40,10 +40,10 @@ TOP_PODCASTERS_BY_MASTER_TOPIC: Dict[str, List[Podcaster]] = {
     # GENETICS
     # -------------------------
     "genetics": [
-        {"id": "dna_today", "name": "DNA Today", "feed_url": "https://dnatoday.libsyn.com/rss", "ingestible": True},
+        {"id": "dna_today", "name": "DNA Today", "feed_url": "https://dnatodaypodcast.podbean.com/feed.xm", "ingestible": True},
         {"id": "naked_genetics", "name": "Naked Genetics", "feed_url": "https://feeds.feedburner.com/nakedgenetics", "ingestible": True},
         {"id": "the_genetics_podcast", "name": "The Genetics Podcast", "feed_url": "https://feeds.simplecast.com/gc2fd2af", "ingestible": True},
-        {"id": "genetics_unzipped", "name": "Genetics Unzipped", "feed_url": "https://geneticsunzipped.com/feed/podcast/", "ingestible": True},
+        {"id": "genetics_unzipped", "name": "Genetics Unzipped", "feed_url": "https://geneticsunzipped.com/feed/", "ingestible": True},
         {"id": "mendelspod", "name": "Mendelspod", "feed_url": "https://mendelspod.libsyn.com/rss", "ingestible": True},
     ],
 
@@ -62,11 +62,11 @@ TOP_PODCASTERS_BY_MASTER_TOPIC: Dict[str, List[Podcaster]] = {
     # FOOD & TRAVEL
     # -------------------------
     "food_travel": [
-        {"id": "gastropod", "name": "Gastropod", "feed_url": "https://feeds.megaphone.fm/gastropod", "ingestible": True},
+        {"id": "gastropod", "name": "Gastropod", "feed_url": "https://feeds.megaphone.fm/VMP6255701211", "ingestible": True},
         {"id": "milk_street_radio", "name": "Milk Street Radio", "feed_url": "https://rss.art19.com/milk-street-radio", "ingestible": True},
         {"id": "the_splendid_table", "name": "The Splendid Table", "feed_url": "https://feeds.publicradio.org/public_feeds/splendid-table", "ingestible": True},
         {"id": "proof", "name": "Proof", "feed_url": "https://feeds.megaphone.fm/proof", "ingestible": True},
-        {"id": "the_sporkful", "name": "The Sporkful", "feed_url": "https://feeds.megaphone.fm/sporkful", "ingestible": True},
+        {"id": "the_sporkful", "name": "The Sporkful", "feed_url": "https://rss.art19.com/the-sporkful", "ingestible": True},
     ],
 
     # -------------------------
@@ -106,14 +106,14 @@ TOP_PODCASTERS_BY_MASTER_TOPIC: Dict[str, List[Podcaster]] = {
     # LITERATURE & CULTURE
     # -------------------------
     "literature_culture": [
-        {"id": "new_yorker_fiction", "name": "The New Yorker: Fiction", "feed_url": "https://www.wnyc.org/feeds/shows/newyorkerfiction", "ingestible": True},
-        {"id": "between_the_covers", "name": "Between the Covers", "feed_url": "https://betweenthecovers.libsyn.com/rss", "ingestible": True},
+        {"id": "new_yorker_fiction", "name": "The New Yorker: Fiction", "feed_url": "https://shows.acast.com/the-new-yorker-fiction", "ingestible": True},
+        {"id": "between_the_covers", "name": "Between the Covers", "feed_url": "https://feeds.podcastindex.org/api/1.0/rss/byguid/4fd41648-ec02-57b8-b1e6-5d6f9cbd1d8c", "ingestible": True},
         {"id": "overdue", "name": "Overdue", "feed_url": "https://overduepodcast.com/itunes.xml", "ingestible": True},
         {"id": "lrb_podcast", "name": "LRB Podcast", "feed_url": "https://www.lrb.co.uk/podcast/rss", "ingestible": True},
         {
             "id": "as_a_man_readeth",
             "name": "As a Man Readeth",
-            "feed_url": "https://podcastaddict.com/feed/6234743",
+            "feed_url": "https://rss.buzzsprout.com/2288603.rss",
             "apple_url": "https://podcasts.apple.com/us/podcast/as-a-man-readeth/id1721430579",
             "ingestible": True,
         },
