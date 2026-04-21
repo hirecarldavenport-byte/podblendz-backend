@@ -6,6 +6,7 @@ PodBlendz RSS → S3 ingestion script
 - Downloads only NEW episodes
 - Uploads audio to S3
 - Safe to run repeatedly (idempotent)
+- FAIL-SOFT: RSS imperfections never block ingestion
 """
 
 from pathlib import Path
@@ -123,8 +124,15 @@ def ingest_all() -> None:
             print(f"\n🔗 Fetching feed: {podcast_id}")
             feed = feedparser.parse(feed_url)
 
+            # ✅ FAIL-SOFT FIX: bozo is a warning, not fatal
             if feed.bozo:
-                print(f"❌ RSS parse error for {podcast_id}")
+                print(
+                    f"⚠️ RSS parse warning for {podcast_id}: "
+                    f"{feed.bozo_exception}"
+                )
+
+            if not getattr(feed, "entries", None):
+                print(f"❌ No entries found for {podcast_id}, skipping")
                 continue
 
             for entry in feed.entries:
@@ -135,7 +143,7 @@ def ingest_all() -> None:
                 try:
                     episode_id = safe_episode_id(entry)
                 except ValueError as exc:
-                    print(f"❌ Skipping entry: {exc}")
+                    print(f"❌ Skipping entry in {podcast_id}: {exc}")
                     continue
 
                 s3_key = (
