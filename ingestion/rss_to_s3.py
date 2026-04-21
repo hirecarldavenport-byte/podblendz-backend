@@ -2,7 +2,7 @@
 PodBlendz RSS → S3 ingestion script
 
 - Reads master_topic_podcasters.py
-- Fetches RSS feeds
+- Fetches RSS feeds using requests (NOT feedparser HTTP)
 - Downloads only NEW episodes
 - Uploads audio to S3
 - Safe to run repeatedly (idempotent)
@@ -33,6 +33,10 @@ TMP_DIR.mkdir(parents=True, exist_ok=True)
 
 REQUEST_TIMEOUT = 30
 
+FEED_HEADERS = {
+    "User-Agent": "PodBlendz/1.0 (RSS ingestion; contact@podblendz.com)"
+}
+
 # ==================================================
 # AWS CLIENT
 # ==================================================
@@ -56,9 +60,7 @@ def safe_episode_id(entry: Dict) -> str:
     if not base:
         raise ValueError("RSS entry missing id/guid/link")
 
-    return hashlib.sha256(
-        base.encode("utf-8")
-    ).hexdigest()[:32]
+    return hashlib.sha256(base.encode("utf-8")).hexdigest()[:32]
 
 
 def get_audio_url(entry: Dict) -> Optional[str]:
@@ -84,6 +86,7 @@ def download_audio(url: str, dest: Path) -> None:
         url,
         stream=True,
         timeout=REQUEST_TIMEOUT,
+        headers=FEED_HEADERS,
     )
     response.raise_for_status()
 
@@ -101,6 +104,21 @@ def upload_to_s3(local_path: Path, s3_key: str) -> None:
         ExtraArgs={"ContentType": "audio/mpeg"},
     )
 
+
+def fetch_and_parse_feed(feed_url: str):
+    """
+    Fetch RSS using requests, then parse with feedparser.
+    This avoids feedparser HTTP/parser edge cases.
+    """
+    response = requests.get(
+        feed_url,
+        headers=FEED_HEADERS,
+        timeout=REQUEST_TIMEOUT,
+    )
+    response.raise_for_status()
+
+    return feedparser.parse(response.content)
+
 # ==================================================
 # INGESTION LOGIC
 # ==================================================
@@ -109,9 +127,9 @@ def ingest_all() -> None:
     print("\n🚀 Starting RSS → S3 ingestion")
 
     for topic, podcasts in TOP_PODCASTERS_BY_MASTER_TOPIC.items():
-        print(f"\n==============================")
+        print("\n==============================")
         print(f"📂 MASTER TOPIC: {topic}")
-        print(f"==============================")
+        print("==============================")
 
         for podcast in podcasts:
             podcast_id = podcast.get("id")
@@ -122,9 +140,14 @@ def ingest_all() -> None:
                 continue
 
             print(f"\n🔗 Fetching feed: {podcast_id}")
-            feed = feedparser.parse(feed_url)
 
-            # ✅ FAIL-SOFT FIX: bozo is a warning, not fatal
+            try:
+                feed = fetch_and_parse_feed(feed_url)
+            except Exception as exc:
+                print(f"❌ Failed to fetch feed for {podcast_id}: {exc}")
+                continue
+
+            # ✅ FAIL-SOFT: bozo is a warning, not fatal
             if feed.bozo:
                 print(
                     f"⚠️ RSS parse warning for {podcast_id}: "
