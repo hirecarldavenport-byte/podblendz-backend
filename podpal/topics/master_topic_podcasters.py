@@ -40,10 +40,10 @@ TOP_PODCASTERS_BY_MASTER_TOPIC: Dict[str, List[Podcaster]] = {
     # GENETICS
     # -------------------------
     "genetics": [
-        {"id": "dna_today", "name": "DNA Today", "feed_url": "https://dnatodaypodcast.podbean.com/feed.xm", "ingestible": True},
-        {"id": "naked_genetics", "name": "Naked Genetics", "feed_url": "https://feeds.feedburner.com/nakedgenetics", "ingestible": True},
-        {"id": "the_genetics_podcast", "name": "The Genetics Podcast", "feed_url": "https://feeds.simplecast.com/gc2fd2af", "ingestible": True},
-        {"id": "genetics_unzipped", "name": "Genetics Unzipped", "feed_url": "https://geneticsunzipped.com/feed/", "ingestible": True},
+        {"id": "dna_today", "name": "DNA Today", "feed_url": "https://dnatodaypodcast.podbean.com/feed.xml", "ingestible": True},
+        {"id": "naked_genetics", "name": "Naked Genetics", "feed_url": "https://www.thenakedscientists.com/feeds/naked_genetics.xml", "ingestible": True},
+        {"id": "the_genetics_podcast", "name": "The Genetics Podcast", "feed_url": "https://feeds.fireside.fm/thegeneticspodcast/rss", "ingestible": True},
+        {"id": "genepod", "name": "Genepod: Genetics in Medicine", "feed_url": "https://www.gimjournal.org/pb-assets/Health%20Advance/journals/gim/GIM_rss_audio.xml", "ingestible": True},
         {"id": "mendelspod", "name": "Mendelspod", "feed_url": "https://mendelspod.libsyn.com/rss", "ingestible": True},
     ],
 
