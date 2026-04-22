@@ -51,9 +51,9 @@ TOP_PODCASTERS_BY_MASTER_TOPIC: Dict[str, List[Podcaster]] = {
     # AI & TECHNOLOGY
     # -------------------------
     "ai_tech": [
-        {"id": "lex_fridman_podcast", "name": "Lex Fridman Podcast", "feed_url": "https://lexfridman.com/feed/podcast/", "ingestible": True},
+        {"id": "lex_fridman", "name": "Lex Fridman Podcast", "feed_url": "https://lexfridman.com/feed/podcast/", "ingestible": True},
         {"id": "hard_fork", "name": "Hard Fork", "feed_url": "https://feeds.simplecast.com/8pJZtsjw", "ingestible": True},
-        {"id": "twiml_ai_podcast", "name": "The TWIML AI Podcast", "feed_url": "https://twimlai.com/feed/podcast/", "ingestible": True},
+        {"id": "twiml_ai", "name": "The TWIML AI Podcast", "feed_url": "https://twimlai.com/feed/podcast/", "ingestible": True},
         {"id": "everyday_ai", "name": "Everyday AI", "feed_url": "https://feeds.simplecast.com/d6iXYPnx", "ingestible": True},
         {"id": "practical_ai", "name": "Practical AI", "feed_url": "https://feeds.simplecast.com/Wko5k20b", "ingestible": True},
     ],
@@ -64,7 +64,7 @@ TOP_PODCASTERS_BY_MASTER_TOPIC: Dict[str, List[Podcaster]] = {
     "food_travel": [
         {"id": "gastropod", "name": "Gastropod", "feed_url": "https://feeds.megaphone.fm/VMP6255701211", "ingestible": True},
         {"id": "milk_street_radio", "name": "Milk Street Radio", "feed_url": "https://rss.art19.com/milk-street-radio", "ingestible": True},
-        {"id": "the_splendid_table", "name": "The Splendid Table", "feed_url": "https://feeds.publicradio.org/public_feeds/splendid-table", "ingestible": True},
+        {"id": "splendid_table", "name": "The Splendid Table", "feed_url": "https://feeds.publicradio.org/public_feeds/splendid-table", "ingestible": True},
         {"id": "proof", "name": "Proof", "feed_url": "https://feeds.megaphone.fm/proof", "ingestible": True},
         {"id": "the_sporkful", "name": "The Sporkful", "feed_url": "https://rss.art19.com/the-sporkful", "ingestible": True},
     ],
@@ -107,9 +107,9 @@ TOP_PODCASTERS_BY_MASTER_TOPIC: Dict[str, List[Podcaster]] = {
     # -------------------------
     "literature_culture": [
         {"id": "new_yorker_fiction", "name": "The New Yorker: Fiction", "feed_url": "https://shows.acast.com/the-new-yorker-fiction", "ingestible": True},
-        {"id": "between_the_covers", "name": "Between the Covers", "feed_url": "https://feeds.podcastindex.org/api/1.0/rss/byguid/4fd41648-ec02-57b8-b1e6-5d6f9cbd1d8c", "ingestible": True},
-        {"id": "overdue", "name": "Overdue", "feed_url": "https://overduepodcast.com/itunes.xml", "ingestible": True},
-        {"id": "lrb_podcast", "name": "LRB Podcast", "feed_url": "https://www.lrb.co.uk/podcast/rss", "ingestible": True},
+        {"id": "benjamin_dixon", "name": "The Benjamin Dixon Show", "feed_url": "https://www.spreaker.com/show/1324393/episodes/feed", "ingestible": True},
+        {"id": "higher_learning", "name": "Higher Learning", "feed_url": "https://feeds.megaphone.fm/higherlearning", "ingestible": True},
+        {"id": "jemele_hill", "name": "Jemele Hill is Unbothered", "feed_url": "https://feeds.megaphone.fm/jemelehillisunbothered", "ingestible": True},
         {
             "id": "as_a_man_readeth",
             "name": "As a Man Readeth",
@@ -125,7 +125,7 @@ TOP_PODCASTERS_BY_MASTER_TOPIC: Dict[str, List[Podcaster]] = {
     "entrepreneurship": [
         {"id": "how_i_built_this", "name": "How I Built This", "feed_url": "https://feeds.npr.org/510313/podcast.xml", "ingestible": True},
         {"id": "my_first_million", "name": "My First Million", "feed_url": "https://feeds.megaphone.fm/MFM", "ingestible": True},
-        {"id": "all_in_podcast", "name": "All-In Podcast", "feed_url": "https://feeds.simplecast.com/_14bx6pC", "ingestible": True},
+        {"id": "all_in_podcast", "name": "All‑In Podcast", "feed_url": "https://feeds.simplecast.com/_14bx6pC", "ingestible": True},
         {"id": "diary_of_a_ceo", "name": "The Diary of a CEO", "feed_url": "https://feeds.megaphone.fm/thediaryofaceo", "ingestible": True},
         {"id": "this_week_in_startups", "name": "This Week in Startups", "feed_url": "https://thisweekinstartups.com/feed/podcast/", "ingestible": True},
     ],
@@ -136,13 +136,13 @@ TOP_PODCASTERS_BY_MASTER_TOPIC: Dict[str, List[Podcaster]] = {
     "education_learning": [
         {"id": "ted_talks_daily", "name": "TED Talks Daily", "feed_url": "https://feeds.feedburner.com/TEDTalks_audio", "ingestible": True},
         {"id": "hidden_brain", "name": "Hidden Brain", "feed_url": "https://feeds.npr.org/510308/podcast.xml", "ingestible": True},
-        {"id": "99_percent_invisible", "name": "99% Invisible", "feed_url": "https://feeds.simplecast.com/BqbsxVfO", "ingestible": True},
+        {"id": "ninety_nine_percent_invisible", "name": "99% Invisible", "feed_url": "https://feeds.simplecast.com/BqbsxVfO", "ingestible": True},
         {"id": "you_are_not_so_smart", "name": "You Are Not So Smart", "feed_url": "https://feeds.megaphone.fm/YANSS", "ingestible": True},
         {"id": "stuff_you_should_know", "name": "Stuff You Should Know", "feed_url": "https://feeds.megaphone.fm/stuffyoushouldknow", "ingestible": True},
     ],
 
     # -------------------------
-    # POLITICS
+    # POLITICS ✅ FIXED
     # -------------------------
     "politics": [
         {"id": "the_daily", "name": "The Daily", "feed_url": "https://rss.art19.com/the-daily", "ingestible": True},
@@ -150,6 +150,8 @@ TOP_PODCASTERS_BY_MASTER_TOPIC: Dict[str, List[Podcaster]] = {
         {"id": "pod_save_america", "name": "Pod Save America", "feed_url": "https://feeds.simplecast.com/dxZsm5kX", "ingestible": True},
         {"id": "ezra_klein_show", "name": "The Ezra Klein Show", "feed_url": "https://feeds.simplecast.com/82FI35Px", "ingestible": True},
         {"id": "npr_politics", "name": "NPR Politics Podcast", "feed_url": "https://feeds.npr.org/510310/podcast.xml", "ingestible": True},
+        {"id": "bakari_sellers", "name": "The Bakari Sellers Podcast", "feed_url": "https://feeds.megaphone.fm/bakari-sellers-podcast", "ingestible": True},
+        {"id": "joy_reid", "name": "The ReidOut with Joy Reid", "feed_url": "https://feeds.megaphone.fm/reidout", "ingestible": True},
     ],
 
     # -------------------------
@@ -199,14 +201,10 @@ TOP_PODCASTERS_BY_MASTER_TOPIC: Dict[str, List[Podcaster]] = {
 
 
 # =================================================
-# FAIL-SOFT ITERATOR (USE THIS IN INGESTION)
+# FAIL-SOFT ITERATOR
 # =================================================
 
 def iter_ingestible_podcasters():
-    """
-    Yields (topic, podcaster) pairs that are safe to ingest.
-    Missing feeds or disabled pods are skipped gracefully.
-    """
     for topic, podcasters in TOP_PODCASTERS_BY_MASTER_TOPIC.items():
         for pod in podcasters:
             if pod.get("ingestible") and pod.get("feed_url"):
@@ -227,13 +225,7 @@ PODCASTER_HIGHLIGHTS: List[Dict[str, Optional[str]]] = [
 ]
 
 
-def get_daily_podcaster_highlight(
-    day: Optional[date] = None,
-):
-    """
-    Deterministically rotates podcaster highlights by day.
-    Same highlight for everyone on the same date.
-    """
+def get_daily_podcaster_highlight(day: Optional[date] = None):
     if not PODCASTER_HIGHLIGHTS:
         raise ValueError("No podcaster highlights configured")
 
