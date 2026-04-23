@@ -1,50 +1,89 @@
 """
 Run scoring over ingested episode metadata.
 
-- Loads episodes
-- Scores them using scoring.py
+- Loads episode metadata JSON files
+- Normalizes fields for scoring (e.g., published dates)
+- Scores episodes using podpal.scoring
 - Writes ranked results to disk
 """
 
 from pathlib import Path
 import json
-from collections import defaultdict
+from datetime import datetime
+from typing import Any, Dict, List
 
 from podpal.scoring import (
     score_episode,
     score_podcast_context,
 )
 
-# Adjust this to wherever ingestion stored episode metadata
+# =================================================
+# CONFIG
+# =================================================
+
 EPISODE_METADATA_DIR = Path("ingestion/episode_metadata")
 OUTPUT_DIR = Path("scoring/output")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-# Default discovery query (cross-topic blend)
+# Default cross-topic discovery query
 DEFAULT_QUERY = "general discovery"
 
 
-def load_episodes():
-    episodes = []
+# =================================================
+# HELPERS
+# =================================================
+
+def normalize_published_date(ep: Dict[str, Any]) -> None:
+    """
+    Mutates episode dict in-place:
+    - Converts ISO datetime string to datetime object
+    - Leaves None untouched
+    """
+    published = ep.get("published")
+
+    if isinstance(published, str):
+        try:
+            ep["published"] = datetime.fromisoformat(published)
+        except ValueError:
+            ep["published"] = None
+
+
+def load_episodes() -> List[Dict[str, Any]]:
+    """
+    Loads all episode metadata JSON files from disk.
+    """
+    episodes: List[Dict[str, Any]] = []
+
     for path in EPISODE_METADATA_DIR.glob("**/*.json"):
-        with open(path, "r", encoding="utf-8") as f:
-            episodes.append(json.load(f))
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                episodes.append(json.load(f))
+        except Exception as e:
+            print(f"⚠️ Failed to load {path}: {e}")
+
     return episodes
 
 
-def run_scoring(query: str = DEFAULT_QUERY):
+# =================================================
+# SCORING RUNNER
+# =================================================
+
+def run_scoring(query: str = DEFAULT_QUERY) -> List[Dict[str, Any]]:
     episodes = load_episodes()
     print(f"Loaded {len(episodes)} episodes")
 
-    scored = []
+    scored: List[Dict[str, Any]] = []
 
     for ep in episodes:
-        podcast_feed = ep.get("podcast")
-        if not podcast_feed:
+        # ✅ Normalize published date for scoring
+        normalize_published_date(ep)
+
+        podcast = ep.get("podcast")
+        if not podcast:
             continue
 
         podcast_score = score_podcast_context(
-            feed=podcast_feed,
+            feed=podcast,
             query=query,
         )
 
@@ -59,7 +98,7 @@ def run_scoring(query: str = DEFAULT_QUERY):
 
         scored.append({
             "episode_id": ep.get("episode_id"),
-            "podcast_id": podcast_feed.get("id"),
+            "podcast_id": podcast.get("id"),
             "title": ep.get("title"),
             "published": ep.get("published"),
             "score": round(score, 4),
@@ -67,18 +106,21 @@ def run_scoring(query: str = DEFAULT_QUERY):
             "metadata": metadata,
         })
 
-    # Sort highest score first
     scored.sort(key=lambda x: x["score"], reverse=True)
     return scored
 
 
-def save_scores(scored):
+def save_scores(scored: List[Dict[str, Any]]) -> None:
     out_path = OUTPUT_DIR / "episode_scores.json"
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(scored, f, indent=2, default=str)
 
     print(f"Saved {len(scored)} scored episodes → {out_path}")
 
+
+# =================================================
+# MAIN
+# =================================================
 
 if __name__ == "__main__":
     scored = run_scoring()
