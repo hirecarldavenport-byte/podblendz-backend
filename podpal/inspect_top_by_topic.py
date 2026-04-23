@@ -38,7 +38,7 @@ def main():
         for topic in ep.get("matched_master_topics", []):
             by_topic[topic].append(ep)
 
-    for topic, episodes in by_topic.items():
+    for topic, episodes in sorted(by_topic.items()):
         episodes.sort(key=lambda x: x["score"], reverse=True)
 
         print("\n" + "=" * 80)
