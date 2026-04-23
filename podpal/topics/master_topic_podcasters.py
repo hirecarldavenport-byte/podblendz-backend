@@ -1,18 +1,16 @@
 """
-Master Topic Podcasters & Highlights
+Master Topic Podcasters & Enforcement
 ------------------------------------
 
 Purpose:
-- Canonical podcasters per master topic (curated foundation)
-- Editorial lane control (primary topic + cross-topic policy)
-- Supports daily ingestion and blend-friendly architecture
-- Deterministic + explicit (no hidden heuristics)
+- Canonical podcasters per master topic (editorial truth source)
+- Strict lane enforcement (no accidental dominance)
+- Fail-soft ingestion
+- Deterministic blending eligibility
 
-Design principles:
-- FAIL-SOFT: missing or broken feeds never crash ingestion
-- ID-FIRST: podcast identity is stable independent of feed
-- RESUMABLE: safe to re-run ingestion at any time
-- EDITORIAL-FIRST: generalists never overwhelm specialists
+IMPORTANT:
+This file is AUTHORITATIVE.
+All subject blending must flow through this registry.
 """
 
 from typing import Dict, List, Optional, TypedDict
@@ -20,7 +18,7 @@ from datetime import date
 
 
 # =================================================
-# TYPED PODCASTER SCHEMA ✅
+# PODCASTER SCHEMA
 # =================================================
 
 class Podcaster(TypedDict, total=False):
@@ -35,13 +33,13 @@ class Podcaster(TypedDict, total=False):
     # Ingestion
     ingestible: bool
 
-    # ✅ NEW: Editorial control
-    primary_topic: str               # canonical lane
-    allow_cross_topic: bool          # can appear outside lane?
+    # Editorial control
+    primary_topic: str
+    allow_cross_topic: bool
 
 
 # =================================================
-# TOP PODCASTERS PER MASTER TOPIC (CANONICAL)
+# CANONICAL PODCASTERS BY MASTER TOPIC
 # =================================================
 
 TOP_PODCASTERS_BY_MASTER_TOPIC: Dict[str, List[Podcaster]] = {
@@ -85,10 +83,8 @@ TOP_PODCASTERS_BY_MASTER_TOPIC: Dict[str, List[Podcaster]] = {
             "name": "Lex Fridman Podcast",
             "feed_url": "https://lexfridman.com/feed/podcast/",
             "ingestible": True,
-
-            # ✅ KEY CHANGE
             "primary_topic": "ai_tech",
-            "allow_cross_topic": False,   # 🧠 generalist, but lane-bound
+            "allow_cross_topic": False,  # lane-bound despite range
         },
         {
             "id": "hard_fork",
@@ -158,34 +154,42 @@ TOP_PODCASTERS_BY_MASTER_TOPIC: Dict[str, List[Podcaster]] = {
             "primary_topic": "science_general",
             "allow_cross_topic": False,
         },
-        {
-            "id": "startalk",
-            "name": "StarTalk",
-            "feed_url": "https://feeds.feedburner.com/StarTalkRadio",
-            "ingestible": True,
-            "primary_topic": "science_general",
-            "allow_cross_topic": False,
-        },
     ],
 
     # -------------------------
-    # POLITICS
+    # POLITICS & COMMENTARY
     # -------------------------
-    "politics": [
+    "politics_commentary": [
         {
-            "id": "the_daily",
-            "name": "The Daily",
-            "feed_url": "https://rss.art19.com/the-daily",
-            "ingestible": True,
-            "primary_topic": "politics",
+            "id": "the_reidout",
+            "name": "The ReidOut with Joy Reid",
+            "feed_url": None,             # confirm before ingesting
+            "ingestible": False,
+            "primary_topic": "politics_commentary",
             "allow_cross_topic": False,
         },
         {
-            "id": "ezra_klein_show",
-            "name": "The Ezra Klein Show",
-            "feed_url": "https://feeds.simplecast.com/82FI35Px",
-            "ingestible": True,
-            "primary_topic": "politics",
+            "id": "bakari_sellers",
+            "name": "The Bakari Sellers Podcast",
+            "feed_url": None,             # confirm feed
+            "ingestible": False,
+            "primary_topic": "politics_commentary",
+            "allow_cross_topic": False,
+        },
+        {
+            "id": "jemele_hill_unbothered",
+            "name": "Jemele Hill Is Unbothered",
+            "feed_url": None,             # confirm feed
+            "ingestible": False,
+            "primary_topic": "politics_commentary",
+            "allow_cross_topic": False,
+        },
+        {
+            "id": "as_a_man_reath",
+            "name": "As a Man …",
+            "feed_url": None,             # unclear title/feed
+            "ingestible": False,
+            "primary_topic": "politics_commentary",
             "allow_cross_topic": False,
         },
     ],
@@ -193,10 +197,43 @@ TOP_PODCASTERS_BY_MASTER_TOPIC: Dict[str, List[Podcaster]] = {
 
 
 # =================================================
-# FAIL-SOFT ITERATOR
+# ENFORCEMENT HELPERS (AUTHORITATIVE)
 # =================================================
 
+def get_podcasters_for_master_topic(
+    topic: str,
+    *,
+    include_cross_topic: bool = False,
+) -> List[Podcaster]:
+    """
+    AUTHORITATIVE candidate selector.
+
+    Rules:
+    - Always include podcasters whose primary_topic == topic
+    - Optionally include cross-topic podcasters ONLY if allow_cross_topic=True
+    - Never include ingestible=False
+    """
+
+    selected: List[Podcaster] = []
+
+    for master_topic, podcasters in TOP_PODCASTERS_BY_MASTER_TOPIC.items():
+        for pod in podcasters:
+            if not pod.get("ingestible"):
+                continue
+
+            if pod.get("primary_topic") == topic:
+                selected.append(pod)
+            elif include_cross_topic and pod.get("allow_cross_topic"):
+                selected.append(pod)
+
+    return selected
+
+
 def iter_ingestible_podcasters():
+    """
+    Fail-soft ingestion iterator.
+    Used ONLY for ingestion jobs, never blending.
+    """
     for topic, podcasters in TOP_PODCASTERS_BY_MASTER_TOPIC.items():
         for pod in podcasters:
             if pod.get("ingestible") and pod.get("feed_url"):
@@ -204,17 +241,10 @@ def iter_ingestible_podcasters():
 
 
 # =================================================
-# PODCASTER HIGHLIGHTS (DAILY ROTATION)
+# PODCASTER HIGHLIGHTS (EDITORIAL)
 # =================================================
 
-PODCASTER_HIGHLIGHTS: List[Dict[str, Optional[str]]] = [
-    {
-        "name": "KevOnStage",
-        "category": "comedy_culture",
-        "description": "Comedian, creator, and cultural commentator",
-        "feed_url": None,
-    },
-]
+PODCASTER_HIGHLIGHTS: List[Dict[str, Optional[str]]] = []
 
 
 def get_daily_podcaster_highlight(day: Optional[date] = None):
