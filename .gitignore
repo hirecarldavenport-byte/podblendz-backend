@@ -1,21 +1,47 @@
+# --- Python virtual environments ---
 venv/
 .venv/
 .venv312/
+
+# --- Python cache ---
 __pycache__/
-output/
-var/cache/
 *.pyc
 *.pyo
 *.pyd
+
+# --- Logs ---
 *.log
+
+# --- Local databases (never commit ingestion DBs) ---
 *.sqlite
 *.db
-# Audio artifacts (Blendz outputs)
+
+# --- App/runtime output ---
+output/
+var/cache/
+
+# --- Audio artifacts (Blendz outputs) ---
 *.mp3
 *.wav
 *.m4a
 *.aac
 
-# Temporary concat / source audio
+# --- Temporary concat / source audio ---
 source_audio.*
 blendz_*.txt
+
+# --- Ingestion artifacts (CRITICAL) ---
+# Hash-based or chunk files generated during ingestion
+[a-f0-9][a-f0-9][a-f0-9][a-f0-9]*
+*.json
+*.npy
+*.pkl
+
+# --- Transcripts / embeddings / intermediate data ---
+transcripts/
+embeddings/
+chunks/
+ingestion_output/
+
+# --- OS ---
+.DS_Store
