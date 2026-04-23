@@ -1,6 +1,6 @@
 from pathlib import Path
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from collections import defaultdict
 from typing import Dict, List, Any
 
@@ -26,7 +26,7 @@ def parse_published(published):
 
 def main():
     scores = load_scores()
-    cutoff_date = datetime.now() - timedelta(days=30 * MONTHS_BACK)
+    cutoff_date = datetime.now(timezone.utc) - timedelta(days=30 * MONTHS_BACK)
 
     by_topic: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
 
