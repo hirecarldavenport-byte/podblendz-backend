@@ -27,15 +27,18 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # Safe for now; can restrict later
+    allow_origins=["*"],   # Safe for now; restrict later if needed
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # -------------------------------------------------
-# Audio endpoint (explicit MIME type)
+# Audio file serving endpoint
 # -------------------------------------------------
+# NOTE:
+# - Purely serves files already created by Blendz
+# - No ingestion or blending logic lives here
 
 @app.get("/audio/{filename}", tags=["Audio"])
 def get_audio(filename: str):
@@ -51,7 +54,7 @@ def get_audio(filename: str):
     )
 
 # -------------------------------------------------
-# Import routers
+# Import routers (business logic lives in routes/)
 # -------------------------------------------------
 
 from podpal.routes.health import router as health_router
