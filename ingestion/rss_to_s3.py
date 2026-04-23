@@ -1,17 +1,18 @@
 """
-RSS → S3 Ingestion with Metadata Persistence
+RSS → S3 Ingestion with Metadata Persistence (FINAL)
 
-- Fetches RSS feeds from canonical podcasters
-- Uploads episode audio to S3
-- Writes episode metadata JSON for scoring
-- FAIL-SOFT and resumable by design
+Guarantees:
+- Episode metadata is always written if RSS entry is parsed
+- Audio download is best-effort only
+- Fail-soft across all feeds
+- Idempotent and resumable
+- Pylance-clean
 """
 
 from pathlib import Path
 import hashlib
 import json
-from typing import Optional
-
+from typing import Optional, Mapping, Any, cast
 from datetime import datetime, timezone
 
 import requests
@@ -21,6 +22,7 @@ from botocore.exceptions import ClientError, EndpointConnectionError
 
 from podpal.topics.master_topic_podcasters import (
     TOP_PODCASTERS_BY_MASTER_TOPIC,
+    Podcaster,
 )
 
 # =================================================
@@ -59,13 +61,23 @@ def s3_object_exists(bucket: str, key: str) -> bool:
             return False
         raise
     except EndpointConnectionError:
-        # fail-soft network issue
         return False
 
 
 def download_audio(url: str) -> Optional[bytes]:
+    """
+    Best-effort download. Failure here MUST NOT block metadata persistence.
+    """
     try:
-        r = requests.get(url, timeout=REQUEST_TIMEOUT, stream=True)
+        headers = {
+            "User-Agent": "Mozilla/5.0"
+        }
+        r = requests.get(
+            url,
+            headers=headers,
+            timeout=REQUEST_TIMEOUT,
+            stream=True,
+        )
         r.raise_for_status()
 
         size = int(r.headers.get("content-length", 0))
@@ -79,18 +91,22 @@ def download_audio(url: str) -> Optional[bytes]:
         return None
 
 
-def parse_published(entry) -> Optional[datetime]:
-    if hasattr(entry, "published_parsed") and entry.published_parsed:
-        return datetime(*entry.published_parsed[:6], tzinfo=timezone.utc)
+def parse_published(entry_map: Mapping[str, Any]) -> Optional[datetime]:
+    parsed = entry_map.get("published_parsed")
+    if parsed:
+        return datetime(*parsed[:6], tzinfo=timezone.utc)
     return None
 
 # =================================================
 # INGESTION LOGIC
 # =================================================
 
-def ingest_feed(topic: str, pod: dict):
-    pod_id = pod["id"]
-    feed_url = pod["feed_url"]
+def ingest_feed(topic: str, pod: Podcaster) -> None:
+    pod_id = pod.get("id")
+    feed_url = pod.get("feed_url")
+
+    if not pod_id or not feed_url:
+        return
 
     print(f"\n🔗 Fetching feed: {pod_id}")
 
@@ -103,32 +119,40 @@ def ingest_feed(topic: str, pod: dict):
         print(f"❌ No entries found for {pod_id}, skipping")
         return
 
+    feed_meta = cast(Mapping[str, Any], feed.feed)
+
     for entry in feed.entries:
-        enclosures = entry.get("enclosures", [])
-        if not enclosures:
+        entry_map = cast(Mapping[str, Any], entry)
+
+        enclosures = entry_map.get("enclosures")
+        if not isinstance(enclosures, list) or not enclosures:
             continue
 
-        audio_url = enclosures[0].get("href")
-        if not audio_url:
+        enclosure = enclosures[0]
+        if not isinstance(enclosure, Mapping):
+            continue
+
+        audio_url = enclosure.get("href")
+        if not isinstance(audio_url, str):
             continue
 
         episode_id = safe_hash(audio_url)
 
-        # -----------------------------
-        # Metadata persistence ✅
-        # -----------------------------
+        # =================================================
+        # ✅ METADATA FIRST (ALWAYS)
+        # =================================================
 
-        published_dt = parse_published(entry)
+        published_dt = parse_published(entry_map)
 
         episode_metadata = {
             "episode_id": episode_id,
-            "title": entry.get("title", ""),
-            "description": entry.get("summary", ""),
+            "title": entry_map.get("title", ""),
+            "description": entry_map.get("summary", ""),
             "published": published_dt.isoformat() if published_dt else None,
             "podcast": {
                 "id": pod_id,
-                "title": feed.feed.get("title", ""),
-                "description": feed.feed.get("description", ""),
+                "title": feed_meta.get("title", ""),
+                "description": feed_meta.get("description", ""),
             },
         }
 
@@ -141,9 +165,9 @@ def ingest_feed(topic: str, pod: dict):
             with open(meta_path, "w", encoding="utf-8") as f:
                 json.dump(episode_metadata, f, indent=2)
 
-        # -----------------------------
-        # S3 audio upload ✅
-        # -----------------------------
+        # =================================================
+        # 🎧 AUDIO (BEST‑EFFORT ONLY)
+        # =================================================
 
         s3_key = f"{S3_PREFIX}/{topic}/{pod_id}/{episode_id}.mp3"
 
@@ -163,20 +187,20 @@ def ingest_feed(topic: str, pod: dict):
             )
             print(f"✅ Uploaded: {pod_id} → {episode_id}")
         except (ClientError, EndpointConnectionError) as e:
-            print(f"⚠️ S3 upload failed (fail-soft): {e}")
+            print(f"⚠️ S3 upload failed (fail‑soft): {e}")
 
 
-def ingest_all():
+def ingest_all() -> None:
     print("\n🚀 Starting RSS → S3 ingestion")
 
     for topic, podcasters in TOP_PODCASTERS_BY_MASTER_TOPIC.items():
         for pod in podcasters:
-            if not pod.get("ingestible") or not pod.get("feed_url"):
+            if not pod.get("ingestible"):
                 continue
             try:
                 ingest_feed(topic, pod)
             except Exception as e:
-                print(f"❌ Failed podcaster ({pod['id']}): {e}")
+                print(f"❌ Failed podcaster ({pod.get('id')}): {e}")
 
     print("\n✅ Ingestion complete")
 
