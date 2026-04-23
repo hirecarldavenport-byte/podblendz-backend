@@ -26,7 +26,10 @@ OUTPUT_DIR = Path("scoring/output")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # Default cross-topic discovery query
-DEFAULT_QUERY = "general discovery"
+DEFAULT_QUERY = (
+    "artificial intelligence technology science health "
+    "education business politics culture media"
+)
 
 
 # =================================================
