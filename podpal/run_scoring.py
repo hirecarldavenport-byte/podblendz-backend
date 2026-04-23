@@ -5,6 +5,10 @@ Run scoring over ingested episode metadata.
 - Normalizes fields for scoring (e.g., published dates)
 - Scores episodes using podpal.scoring
 - Writes ranked results to disk
+
+NOTE:
+This script is for ANALYSIS and DIAGNOSTICS.
+It should NOT be used for episode selection or blending.
 """
 
 from pathlib import Path
@@ -25,11 +29,14 @@ EPISODE_METADATA_DIR = Path("ingestion/episode_metadata")
 OUTPUT_DIR = Path("scoring/output")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-# Default cross-topic discovery query
+# Broad discovery query (intentionally generic)
 DEFAULT_QUERY = (
     "artificial intelligence technology science health "
     "education business politics culture media"
 )
+
+# Optional: minimum score to include (diagnostic filter)
+MIN_SCORE = 0.0
 
 
 # =================================================
@@ -78,7 +85,6 @@ def run_scoring(query: str = DEFAULT_QUERY) -> List[Dict[str, Any]]:
     scored: List[Dict[str, Any]] = []
 
     for ep in episodes:
-        # ✅ Normalize published date for scoring
         normalize_published_date(ep)
 
         podcast = ep.get("podcast")
@@ -90,26 +96,31 @@ def run_scoring(query: str = DEFAULT_QUERY) -> List[Dict[str, Any]]:
             query=query,
         )
 
-        score, metadata = score_episode(
+        episode_score, metadata = score_episode(
             episode=ep,
             query=query,
             podcast_score=podcast_score,
         )
 
-        if score <= 0:
+        if episode_score <= MIN_SCORE:
             continue
 
         scored.append({
             "episode_id": ep.get("episode_id"),
             "podcast_id": podcast.get("id"),
+            "podcast_title": podcast.get("title"),
             "title": ep.get("title"),
             "published": ep.get("published"),
-            "score": round(score, 4),
-            "matched_master_topics": metadata.get("matched_master_topics", []),
-            "metadata": metadata,
+            "podcast_score": round(podcast_score, 4),
+            "episode_score": round(episode_score, 4),
+            "total_score": round(podcast_score + episode_score, 4),
+            "matched_master_topics": metadata.get(
+                "matched_master_topics", []
+            ),
+            "matched_terms": metadata.get("matched_terms", []),
         })
 
-    scored.sort(key=lambda x: x["score"], reverse=True)
+    scored.sort(key=lambda x: x["total_score"], reverse=True)
     return scored
 
 
