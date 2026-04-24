@@ -194,18 +194,15 @@ def ingest_feed(
 
 def run(dry_run: bool = False) -> None:
     print("▶ Starting RSS → S3 ingestion")
-    print("DEBUG: Listing ingestible podcasters")
+ 
 
     found_any = False
 
     for master_topic, podcaster in iter_ingestible_podcasters():
         found_any = True
 
-        print(
-            f"DEBUG: {master_topic} | "
-            f"{podcaster['id']} | "
-            f"feed_url={podcaster.get('feed_url')}"
-        )
+
+
 
         feed_url = podcaster.get("feed_url")
         if not feed_url:
