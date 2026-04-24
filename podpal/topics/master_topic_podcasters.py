@@ -76,7 +76,7 @@ TOP_PODCASTERS_BY_MASTER_TOPIC: Dict[str, List[CanonicalPodcaster]] = {
             "ingestible": True,
             "primary_topic": "education_learning",
             "allow_cross_topic": False,
-            "feed_url": None,
+            "feed_url": "https://feeds.feedburner.com/TEDTalks_audio",
         },
     ],
 
