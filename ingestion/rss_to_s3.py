@@ -12,6 +12,7 @@ DESIGN:
 - Resumable (safe to re-run)
 - Deterministic S3 layout:
     s3://{bucket}/{prefix}/{master_topic}/{podcaster_id}/{episode_id}.mp3
+- Explicit media access control (direct vs blocked)
 """
 
 from pathlib import Path
@@ -176,16 +177,14 @@ def ingest_feed(
         }
 
         if dry_run:
-            print(
-                f"[DRY-RUN] Would write metadata for {episode_id}"
-            )
+            print(f"[DRY-RUN] Would write metadata for {episode_id}")
         else:
             metadata_path = metadata_dir / f"{episode_id}.json"
             metadata_path.write_text(str(metadata_payload))
 
         print(
-            f"✅ Ingested "
-            f"{master_topic}/{podcaster_id}/{episode_id}"
+            f"{'[DRY-RUN] ' if dry_run else ''}"
+            f"Ingested {master_topic}/{podcaster_id}/{episode_id}"
         )
 
 # =================================================
@@ -194,17 +193,19 @@ def ingest_feed(
 
 def run(dry_run: bool = False) -> None:
     print("▶ Starting RSS → S3 ingestion")
- 
-
-    found_any = False
 
     for master_topic, podcaster in iter_ingestible_podcasters():
-        found_any = True
-
-
-
-
         feed_url = podcaster.get("feed_url")
+        media_access = podcaster.get("media_access")
+
+        # ---- Explicit media policy enforcement ----
+        if media_access != "direct":
+            print(
+                f"⚠️ Skipping {podcaster['id']} "
+                f"(media_access={media_access})"
+            )
+            continue
+
         if not feed_url:
             continue
 
@@ -225,9 +226,6 @@ def run(dry_run: bool = False) -> None:
                 f"❌ Feed ingestion failed for "
                 f"{podcaster['id']}: {exc}"
             )
-
-    if not found_any:
-        print("DEBUG: No ingestible podcasters found")
 
     print("✔ Ingestion complete")
 
