@@ -51,9 +51,7 @@ WITH scored AS (
 
     FROM episodes e
     WHERE e.podcast_id IN (
-        'hidden_brain',
-        '99_percent_invisible',
-        'ted_talks_daily'
+        'the_big_picture'
     )
 ),
 
