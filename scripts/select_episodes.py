@@ -2,9 +2,18 @@ import sqlite3
 import json
 from pathlib import Path
 
-DB_PATH = "podblendz.db"
-SQL_PATH = "sql/select_education_learning_candidates.sql"
-OUTPUT_PATH = Path("data/selected_episodes/education_learning.json")
+# =====================================================
+# CONFIG
+# =====================================================
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+DB_PATH = BASE_DIR / "podblendz.db"
+SQL_PATH = BASE_DIR / "sql" / "select_education_learning_candidates.sql"
+OUTPUT_PATH = BASE_DIR / "data" / "selected_episodes" / "education_learning.json"
+
+# =====================================================
+# MAIN
+# =====================================================
 
 def main():
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -24,6 +33,7 @@ def main():
         json.dump(episodes, f, indent=2)
 
     conn.close()
+
 
 if __name__ == "__main__":
     main()
