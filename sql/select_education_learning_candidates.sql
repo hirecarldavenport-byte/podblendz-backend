@@ -1,42 +1,72 @@
--- select_education_learning_candidates.sql
--- Selects the best candidate episodes for transcription
+-- Select candidate education/learning episodes based on title-only signals
+-- Schema-aligned with current episodes table
 
 WITH scored AS (
     SELECT
-        s.episode_id,
-        s.podcast_id,
-        s.title,
-        s.description,
-        s.published_at,
-        s.topic_score,
+        e.id AS episode_id,
+        e.podcast_id,
+        e.title,
+        e.published_at,
 
-        -- recency decay
-        exp(-1.0 * (julianday('now') - julianday(s.published_at)) / 45.0)
-            AS recency_score,
+        (
+          CASE WHEN lower(e.title) LIKE '%environment%'
+            OR lower(e.title) LIKE '%design%'
+            OR lower(e.title) LIKE '%system%'
+          THEN 1 ELSE 0 END
 
-        -- final relevance score
-        (0.6 * s.topic_score)
-        +
-        (0.4 * exp(-1.0 * (julianday('now') - julianday(s.published_at)) / 45.0))
-            AS relevance
+          +
 
-    FROM (
-        SELECT * FROM episodes
-        WHERE master_topic = 'education_learning'
-    ) s
+          CASE WHEN lower(e.title) LIKE '%habit%'
+            OR lower(e.title) LIKE '%routine%'
+            OR lower(e.title) LIKE '%behavior%'
+          THEN 1 ELSE 0 END
+
+          +
+
+          CASE WHEN lower(e.title) LIKE '%cognition%'
+            OR lower(e.title) LIKE '%attention%'
+            OR lower(e.title) LIKE '%focus%'
+            OR lower(e.title) LIKE '%thinking%'
+          THEN 1 ELSE 0 END
+
+          +
+
+          CASE WHEN lower(e.title) LIKE '%decision%'
+            OR lower(e.title) LIKE '%choice%'
+            OR lower(e.title) LIKE '%bias%'
+            OR lower(e.title) LIKE '%judgment%'
+          THEN 1 ELSE 0 END
+        ) / 4.0 AS topic_score,
+
+        exp(
+          -1.0 * (julianday('now') - julianday(e.published_at)) / 45.0
+        ) AS recency_score
+
+    FROM episodes e
+    WHERE e.podcast_id IN (
+        'hidden_brain',
+        '99_percent_invisible',
+        'ted_talks_daily'
+    )
 ),
 
 ranked AS (
     SELECT *,
+           (0.6 * topic_score + 0.4 * recency_score) AS relevance,
            ROW_NUMBER() OVER (
                PARTITION BY podcast_id
-               ORDER BY relevance DESC
+               ORDER BY (0.6 * topic_score + 0.4 * recency_score) DESC
            ) AS row_num
     FROM scored
-    WHERE relevance >= 0.30
+    WHERE topic_score > 0
 )
 
-SELECT *
+SELECT
+    episode_id,
+    podcast_id,
+    title,
+    published_at,
+    relevance
 FROM ranked
 WHERE
     (podcast_id = 'hidden_brain' AND row_num <= 10)
