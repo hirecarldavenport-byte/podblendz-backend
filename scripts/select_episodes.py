@@ -2,7 +2,7 @@ import sqlite3
 import json
 from pathlib import Path
 
-DB_PATH = "podcast.db"
+DB_PATH = "podblendz.db"
 SQL_PATH = "sql/select_education_learning_candidates.sql"
 OUTPUT_PATH = Path("data/selected_episodes/education_learning.json")
 
