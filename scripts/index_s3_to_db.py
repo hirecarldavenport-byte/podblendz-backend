@@ -34,47 +34,57 @@ conn.row_factory = sqlite3.Row
 # ============================================================
 
 def episode_exists(episode_id: str) -> bool:
-    row = conn.execute(
+    return conn.execute(
         "SELECT 1 FROM episodes WHERE id = ?",
         (episode_id,)
-    ).fetchone()
-    return row is not None
+    ).fetchone() is not None
 
 
-def insert_episode(episode_id, podcast_id, s3_key):
+def insert_episode(episode_id: str, podcast_id: str, s3_key: str):
+    """
+    Insert a new episode row.
+
+    NOTE:
+    - guid is required (NOT NULL), so we safely reuse episode_id
+    - published_at is intentionally left NULL (can be backfilled later)
+    """
     conn.execute(
         """
         INSERT INTO episodes (
             id,
+            guid,
             podcast_id,
             audio_s3_key,
             storage_tier,
-            transcript_status
+            transcript_status,
+            ingested_at,
+            updated_at
         )
-        VALUES (?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
         """,
         (
-            episode_id,
+            episode_id,   # id
+            episode_id,   # guid (safe stand-in)
             podcast_id,
             s3_key,
             "s3",
-            "pending"
+            "pending",
         )
     )
 
 
 # ============================================================
-# MAIN INDEXING LOGIC
+# INDEXING LOGIC
 # ============================================================
 
-def index_podcast(podcast_id):
+def index_podcast(podcast_id: str):
     prefix = f"{BASE_PREFIX}/{MASTER_TOPIC}/{podcast_id}/"
-    print(f"🔍 Scanning s3://{S3_BUCKET}/{prefix}")
+    print(f"\n🔍 Scanning s3://{S3_BUCKET}/{prefix}")
 
     paginator = s3.get_paginator("list_objects_v2")
     pages = paginator.paginate(
         Bucket=S3_BUCKET,
-        Prefix=prefix
+        Prefix=prefix,
     )
 
     inserted = 0
@@ -84,11 +94,10 @@ def index_podcast(podcast_id):
         for obj in page.get("Contents", []):
             key = obj["Key"]
 
-            # Skip non-audio files
+            # Ignore non-audio files
             if not key.lower().endswith(AUDIO_EXTENSION):
                 continue
 
-            # Episode ID is derived from filename
             episode_id = Path(key).stem
 
             if episode_exists(episode_id):
@@ -107,13 +116,13 @@ def index_podcast(podcast_id):
 
 
 def main():
-    print("🚀 Starting S3 → DB indexing")
+    print("🚀 Starting S3 → DB indexing (audio catalog backfill)")
 
     for podcast_id in PODCAST_IDS:
         index_podcast(podcast_id)
 
     conn.close()
-    print("✅ Indexing complete")
+    print("\n✅ Indexing complete — S3 and DB are now aligned")
 
 
 if __name__ == "__main__":
