@@ -1,27 +1,3 @@
-That trailing backticks block (` ``` `) is **not valid YAML**, and GitHub Actions is rejecting the file because of it.
-
-This often happens when YAML content is copied from a markdown editor or chat and the code fence accidentally gets saved into the file.
-
-✅ **Nothing else is wrong**  
-✅ **Secrets and image name are fine**  
-✅ **Docker login step is fine**
-
----
-
-## ✅ The Fix (Exact and Minimal)
-
-You only need to **remove the stray backticks** from the workflow file.
-
-Below is the **fully corrected, valid `build-transcription-worker.yml`**.  
-I strongly recommend you **replace the entire file** with this version to avoid hidden whitespace issues.
-
----
-
-## ✅ ✅ FINAL, CORRECT WORKFLOW FILE
-
-**File:** `.github/workflows/build-transcription-worker.yml`
-
-```yaml
 name: Build Transcription Worker
 
 on:
@@ -55,3 +31,4 @@ jobs:
           file: ./workers/transcription/Dockerfile
           push: true
           tags: hirecarldavenport/transcription-worker:latest
+``
