@@ -7,4 +7,4 @@ This directory contains:
 - Dockerfile
 - handler.py
 - Supporting documentation
-echo "CI trigger $(Get-Date)" >> workers\transcription\README.md
+echo "fix docker username $(Get-Date)" >> workers\transcription\README.md
