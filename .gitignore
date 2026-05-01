@@ -45,3 +45,4 @@ ingestion_output/
 
 # --- OS ---
 .DS_Store
+workspace/
