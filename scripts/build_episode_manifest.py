@@ -1,24 +1,38 @@
 import json
 import random
 from pathlib import Path
-from typing import Iterator
 from collections import defaultdict
+from typing import Iterator
 
 import boto3
 from tqdm import tqdm
 
 
 # =========================
-# CONFIG (INTENTIONAL)
+# CONFIG (EDITORIAL SCOPE)
 # =========================
 
 S3_BUCKET = "podblendz-episode-audio"
 S3_PREFIX = "raw_audio/"
 
-# Maximum number of episodes to include per podcast
+# MAX EPISODES PER PODCAST (CEILINGS, NOT TARGETS)
 PODCAST_LIMITS = {
     "lex_fridman": 300,
     "dna_today": 300,
+    "hidden_brain": 150,
+    "freakonomics_radio": 150,
+    "huberman_lab": 150,
+    "as_a_man_readeth": 37,
+    "jemele_hill": 222,
+    "short_wave": 100,
+    "serial": 118,
+    "in_the_dark": 43,
+    "gastropod": 150,
+    "diary_of_a_ceo": 150,
+    "filmspotting": 97,
+    "the_big_picture": 150,
+    "all_songs_considered": 150,
+    "life_kit": 250,
 }
 
 OUTPUT_FILE = "episode_manifest.jsonl"
@@ -26,7 +40,7 @@ OUTPUT_FILE = "episode_manifest.jsonl"
 DEFAULT_LANGUAGE = "en"
 DEFAULT_MODEL = "large-v3"
 
-# Filter out very small audio files (clips, trailers, previews)
+# Exclude clips, trailers, shorts, etc.
 MIN_SIZE_BYTES = 30 * 1024 * 1024  # 30 MB
 
 
@@ -43,8 +57,8 @@ s3 = boto3.client("s3")
 
 def iter_sampled_audio_files(bucket: str, prefix: str) -> Iterator[dict]:
     """
-    Discover audio files in S3, group by podcast, and sample
-    up to the configured per-podcast limits.
+    Discover MP3 audio files in S3, group by podcast_id,
+    and sample up to the configured per-podcast limits.
     """
     paginator = s3.get_paginator("list_objects_v2")
     per_podcast_files = defaultdict(list)
@@ -54,11 +68,9 @@ def iter_sampled_audio_files(bucket: str, prefix: str) -> Iterator[dict]:
         for obj in page.get("Contents", []):
             key = obj["Key"]
 
-            # Only MP3s
             if not key.lower().endswith(".mp3"):
                 continue
 
-            # Size filter
             if obj["Size"] < MIN_SIZE_BYTES:
                 continue
 
@@ -73,11 +85,11 @@ def iter_sampled_audio_files(bucket: str, prefix: str) -> Iterator[dict]:
 
             per_podcast_files[podcast_id].append(obj)
 
-    # Second pass: sample per podcast
+    # Second pass: sample up to limits
     for podcast_id, files in per_podcast_files.items():
         limit = PODCAST_LIMITS[podcast_id]
 
-        # Shuffle to get a representative mix
+        # Shuffle for representative mix (not chronological bias)
         random.shuffle(files)
 
         for obj in files[:limit]:
@@ -91,7 +103,7 @@ def iter_sampled_audio_files(bucket: str, prefix: str) -> Iterator[dict]:
 def derive_ids_from_path(key: str):
     """
     Expected S3 key format:
-      raw_audio/<category>/<podcast_id>/<filename>.mp3
+    raw_audio/<category>/<podcast_id>/<filename>.mp3
     """
     parts = key.split("/")
 
@@ -107,7 +119,7 @@ def derive_ids_from_path(key: str):
 
 
 # =========================
-# MAIN MANIFEST BUILDER
+# MANIFEST BUILDER
 # =========================
 
 def build_manifest():
@@ -136,7 +148,7 @@ def build_manifest():
                 "audio": {
                     "s3_url": f"s3://{S3_BUCKET}/{key}",
                     "format": "mp3",
-                    "duration_sec": None,  # populated later by Whisper
+                    "duration_sec": None,  # filled during transcription
                     "size_bytes": obj["Size"],
                 },
 
@@ -144,8 +156,8 @@ def build_manifest():
 
                 "transcription": {
                     "status": "pending",
-                    "model_hint": DEFAULT_MODEL
-                }
+                    "model_hint": DEFAULT_MODEL,
+                },
             }
 
             f.write(json.dumps(entry) + "\n")
