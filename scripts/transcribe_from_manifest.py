@@ -1,11 +1,12 @@
 """
-Batch transcription driver using faster-whisper.
+Robust batch transcription driver using faster-whisper.
 
-Design goals:
-- Manifest-driven (S3 JSONL manifest)
-- Resume-safe (append-only ledger)
-- Fault tolerant (bad episodes are skipped, not fatal)
-- Spot-GPU friendly (stop/restart anytime)
+Key guarantees:
+- Manifest-driven (no runtime guessing)
+- Resume-safe via append-only ledger
+- Per-episode fault isolation (one bad file never stops the run)
+- Explicit progress visibility (no silent exits)
+- Safe for long-running spot GPU jobs
 """
 
 import json
@@ -21,13 +22,16 @@ from tqdm import tqdm
 # CONFIGURATION
 # =========================
 
+# Manifest stored in S3 (already created earlier)
 MANIFEST_S3_URI = "s3://podblendz-episode-audio/manifests/episode_manifest_v1.jsonl"
 
+# Runtime workspace (RunPod convention)
 WORKSPACE_ROOT = Path("/workspace")
 AUDIO_DIR = WORKSPACE_ROOT / "audio"
 TRANSCRIPTS_DIR = WORKSPACE_ROOT / "transcripts"
 LEDGER_PATH = WORKSPACE_ROOT / "transcription_ledger.jsonl"
 
+# Whisper settings
 WHISPER_MODEL = "large-v3"
 DEVICE = "cuda"
 COMPUTE_TYPE = "float16"
@@ -35,7 +39,7 @@ LANGUAGE = "en"
 
 
 # =========================
-# AWS
+# AWS / S3
 # =========================
 
 s3 = boto3.client("s3")
@@ -76,7 +80,7 @@ def append_ledger(record: dict):
 
 
 # =========================
-# MANIFEST
+# MANIFEST LOADING
 # =========================
 
 def load_manifest() -> list:
@@ -104,9 +108,11 @@ def transcribe_episode(model: WhisperModel, episode: dict):
     json_out = TRANSCRIPTS_DIR / podcast_id / f"{episode_id}.json"
     txt_out = TRANSCRIPTS_DIR / podcast_id / f"{episode_id}.txt"
 
+    # Download audio if missing
     if not audio_path.exists():
         download_s3_file(audio_uri, audio_path)
 
+    # Run Whisper
     segments, _ = model.transcribe(
         str(audio_path),
         language=LANGUAGE,
@@ -127,6 +133,7 @@ def transcribe_episode(model: WhisperModel, episode: dict):
 
     json_out.parent.mkdir(parents=True, exist_ok=True)
 
+    # Write structured transcript
     with open(json_out, "w", encoding="utf-8") as f:
         json.dump(
             {
@@ -140,19 +147,13 @@ def transcribe_episode(model: WhisperModel, episode: dict):
             indent=2,
         )
 
+    # Write plain text transcript
     with open(txt_out, "w", encoding="utf-8") as f:
         f.write("\n".join(plain_text))
 
-    append_ledger({
-        "episode_id": episode_id,
-        "podcast_id": podcast_id,
-        "status": "done",
-        "timestamp": time.time(),
-    })
-
 
 # =========================
-# MAIN
+# MAIN DRIVER
 # =========================
 
 def main():
@@ -164,28 +165,55 @@ def main():
     print(f"✅ Episodes already completed: {len(completed)}", flush=True)
     print(f"📦 Episodes in manifest: {len(manifest)}", flush=True)
 
+    # Initialize Whisper once
     model = WhisperModel(
         WHISPER_MODEL,
         device=DEVICE,
         compute_type=COMPUTE_TYPE,
     )
 
-    for episode in tqdm(manifest, desc="Transcribing episodes"):
-        if episode["episode_id"] in completed:
+    for idx, episode in enumerate(
+        tqdm(manifest, desc="Transcribing episodes"),
+        start=1
+    ):
+        episode_id = episode["episode_id"]
+        podcast_id = episode["podcast_id"]
+
+        if episode_id in completed:
             continue
+
+        print(
+            f"▶️ Starting episode {idx}/{len(manifest)}: {podcast_id} / {episode_id}",
+            flush=True,
+        )
+
+        append_ledger({
+            "episode_id": episode_id,
+            "podcast_id": podcast_id,
+            "status": "started",
+            "timestamp": time.time(),
+        })
 
         try:
             transcribe_episode(model, episode)
+
+            append_ledger({
+                "episode_id": episode_id,
+                "podcast_id": podcast_id,
+                "status": "done",
+                "timestamp": time.time(),
+            })
+
         except Exception as e:
             append_ledger({
-                "episode_id": episode["episode_id"],
-                "podcast_id": episode["podcast_id"],
+                "episode_id": episode_id,
+                "podcast_id": podcast_id,
                 "status": "error",
                 "error": str(e),
                 "timestamp": time.time(),
             })
             print(
-                f"⚠️ Skipping episode {episode['episode_id']} due to error: {e}",
+                f"⚠️ Error on episode {episode_id}: {e}",
                 flush=True,
             )
             continue
