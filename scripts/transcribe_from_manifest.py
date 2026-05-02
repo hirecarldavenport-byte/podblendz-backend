@@ -1,16 +1,18 @@
 """
-Robust batch transcription driver using faster-whisper.
+Fully hardened batch transcription driver using faster-whisper.
 
-Key guarantees:
-- Manifest-driven (no runtime guessing)
-- Resume-safe via append-only ledger
-- Per-episode fault isolation (one bad file never stops the run)
-- Explicit progress visibility (no silent exits)
-- Safe for long-running spot GPU jobs
+Guarantees:
+- Manifest-driven
+- Resume-safe (append-only ledger)
+- Explicit episode lifecycle: started → done | error
+- No silent exits
+- Early decode / FFmpeg failures are caught
+- Safe for long-running spot-GPU jobs
 """
 
 import json
 import time
+import traceback
 from pathlib import Path
 
 import boto3
@@ -22,16 +24,13 @@ from tqdm import tqdm
 # CONFIGURATION
 # =========================
 
-# Manifest stored in S3 (already created earlier)
 MANIFEST_S3_URI = "s3://podblendz-episode-audio/manifests/episode_manifest_v1.jsonl"
 
-# Runtime workspace (RunPod convention)
 WORKSPACE_ROOT = Path("/workspace")
 AUDIO_DIR = WORKSPACE_ROOT / "audio"
 TRANSCRIPTS_DIR = WORKSPACE_ROOT / "transcripts"
 LEDGER_PATH = WORKSPACE_ROOT / "transcription_ledger.jsonl"
 
-# Whisper settings
 WHISPER_MODEL = "large-v3"
 DEVICE = "cuda"
 COMPUTE_TYPE = "float16"
@@ -59,19 +58,8 @@ def download_s3_file(uri: str, destination: Path):
 
 
 # =========================
-# LEDGER (RESUME SAFETY)
+# LEDGER
 # =========================
-
-def load_completed_episode_ids() -> set:
-    completed = set()
-    if LEDGER_PATH.exists():
-        with open(LEDGER_PATH, "r", encoding="utf-8") as f:
-            for line in f:
-                record = json.loads(line)
-                if record.get("status") == "done":
-                    completed.add(record["episode_id"])
-    return completed
-
 
 def append_ledger(record: dict):
     LEDGER_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -79,8 +67,19 @@ def append_ledger(record: dict):
         f.write(json.dumps(record) + "\n")
 
 
+def load_completed_episode_ids() -> set:
+    completed = set()
+    if LEDGER_PATH.exists():
+        with open(LEDGER_PATH, "r", encoding="utf-8") as f:
+            for line in f:
+                rec = json.loads(line)
+                if rec.get("status") == "done":
+                    completed.add(rec["episode_id"])
+    return completed
+
+
 # =========================
-# MANIFEST LOADING
+# MANIFEST
 # =========================
 
 def load_manifest() -> list:
@@ -108,11 +107,11 @@ def transcribe_episode(model: WhisperModel, episode: dict):
     json_out = TRANSCRIPTS_DIR / podcast_id / f"{episode_id}.json"
     txt_out = TRANSCRIPTS_DIR / podcast_id / f"{episode_id}.txt"
 
-    # Download audio if missing
+    # Download audio
     if not audio_path.exists():
         download_s3_file(audio_uri, audio_path)
 
-    # Run Whisper
+    # Transcribe (FFmpeg + Whisper)
     segments, _ = model.transcribe(
         str(audio_path),
         language=LANGUAGE,
@@ -133,7 +132,6 @@ def transcribe_episode(model: WhisperModel, episode: dict):
 
     json_out.parent.mkdir(parents=True, exist_ok=True)
 
-    # Write structured transcript
     with open(json_out, "w", encoding="utf-8") as f:
         json.dump(
             {
@@ -147,7 +145,6 @@ def transcribe_episode(model: WhisperModel, episode: dict):
             indent=2,
         )
 
-    # Write plain text transcript
     with open(txt_out, "w", encoding="utf-8") as f:
         f.write("\n".join(plain_text))
 
@@ -165,16 +162,19 @@ def main():
     print(f"✅ Episodes already completed: {len(completed)}", flush=True)
     print(f"📦 Episodes in manifest: {len(manifest)}", flush=True)
 
-    # Initialize Whisper once
-    model = WhisperModel(
-        WHISPER_MODEL,
-        device=DEVICE,
-        compute_type=COMPUTE_TYPE,
-    )
+    try:
+        model = WhisperModel(
+            WHISPER_MODEL,
+            device=DEVICE,
+            compute_type=COMPUTE_TYPE,
+        )
+    except Exception as e:
+        print("❌ Whisper model failed to initialize", flush=True)
+        raise
 
     for idx, episode in enumerate(
         tqdm(manifest, desc="Transcribing episodes"),
-        start=1
+        start=1,
     ):
         episode_id = episode["episode_id"]
         podcast_id = episode["podcast_id"]
@@ -210,8 +210,10 @@ def main():
                 "podcast_id": podcast_id,
                 "status": "error",
                 "error": str(e),
+                "traceback": traceback.format_exc(),
                 "timestamp": time.time(),
             })
+
             print(
                 f"⚠️ Error on episode {episode_id}: {e}",
                 flush=True,
