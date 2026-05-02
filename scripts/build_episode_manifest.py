@@ -16,7 +16,7 @@ S3_PREFIX = "raw_audio/"
 # ONLY include podcasts you actually want to transcribe
 INCLUDE_PODCASTS = {
     "lex_fridman",
-    "genepod",
+    "dna_today",
     # add more here explicitly
 }
 
