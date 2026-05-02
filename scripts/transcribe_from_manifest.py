@@ -1,12 +1,11 @@
 """
-Transcribe podcast episodes from an S3-hosted episode manifest
-using faster-whisper on a GPU.
+Batch transcription driver using faster-whisper.
 
 Design goals:
-- Manifest-driven (no runtime decisions)
-- Resume-safe via append-only ledger
+- Manifest-driven (S3 JSONL manifest)
+- Resume-safe (append-only ledger)
+- Fault tolerant (bad episodes are skipped, not fatal)
 - Spot-GPU friendly (stop/restart anytime)
-- No interactive editing required
 """
 
 import json
@@ -22,16 +21,13 @@ from tqdm import tqdm
 # CONFIGURATION
 # =========================
 
-# Manifest location (already uploaded by you)
 MANIFEST_S3_URI = "s3://podblendz-episode-audio/manifests/episode_manifest_v1.jsonl"
 
-# Local workspace layout (RunPod)
 WORKSPACE_ROOT = Path("/workspace")
 AUDIO_DIR = WORKSPACE_ROOT / "audio"
 TRANSCRIPTS_DIR = WORKSPACE_ROOT / "transcripts"
 LEDGER_PATH = WORKSPACE_ROOT / "transcription_ledger.jsonl"
 
-# Whisper settings
 WHISPER_MODEL = "large-v3"
 DEVICE = "cuda"
 COMPUTE_TYPE = "float16"
@@ -39,14 +35,15 @@ LANGUAGE = "en"
 
 
 # =========================
-# AWS CLIENT
+# AWS
 # =========================
 
 s3 = boto3.client("s3")
 
 
 def parse_s3_uri(uri: str):
-    assert uri.startswith("s3://")
+    if not uri.startswith("s3://"):
+        raise ValueError(f"Invalid S3 URI: {uri}")
     bucket, key = uri.replace("s3://", "").split("/", 1)
     return bucket, key
 
@@ -61,7 +58,7 @@ def download_s3_file(uri: str, destination: Path):
 # LEDGER (RESUME SAFETY)
 # =========================
 
-def load_completed_episode_ids() -> set[str]:
+def load_completed_episode_ids() -> set:
     completed = set()
     if LEDGER_PATH.exists():
         with open(LEDGER_PATH, "r", encoding="utf-8") as f:
@@ -79,10 +76,10 @@ def append_ledger(record: dict):
 
 
 # =========================
-# MANIFEST LOADING
+# MANIFEST
 # =========================
 
-def load_manifest() -> list[dict]:
+def load_manifest() -> list:
     local_manifest = WORKSPACE_ROOT / "episode_manifest_v1.jsonl"
 
     if not local_manifest.exists():
@@ -118,7 +115,7 @@ def transcribe_episode(model: WhisperModel, episode: dict):
     )
 
     transcript_segments = []
-    plain_lines = []
+    plain_text = []
 
     for seg in segments:
         transcript_segments.append({
@@ -126,7 +123,7 @@ def transcribe_episode(model: WhisperModel, episode: dict):
             "end": seg.end,
             "text": seg.text.strip(),
         })
-        plain_lines.append(seg.text.strip())
+        plain_text.append(seg.text.strip())
 
     json_out.parent.mkdir(parents=True, exist_ok=True)
 
@@ -144,7 +141,7 @@ def transcribe_episode(model: WhisperModel, episode: dict):
         )
 
     with open(txt_out, "w", encoding="utf-8") as f:
-        f.write("\n".join(plain_lines))
+        f.write("\n".join(plain_text))
 
     append_ledger({
         "episode_id": episode_id,
@@ -155,7 +152,7 @@ def transcribe_episode(model: WhisperModel, episode: dict):
 
 
 # =========================
-# ENTRYPOINT
+# MAIN
 # =========================
 
 def main():
@@ -176,7 +173,22 @@ def main():
     for episode in tqdm(manifest, desc="Transcribing episodes"):
         if episode["episode_id"] in completed:
             continue
-        transcribe_episode(model, episode)
+
+        try:
+            transcribe_episode(model, episode)
+        except Exception as e:
+            append_ledger({
+                "episode_id": episode["episode_id"],
+                "podcast_id": episode["podcast_id"],
+                "status": "error",
+                "error": str(e),
+                "timestamp": time.time(),
+            })
+            print(
+                f"⚠️ Skipping episode {episode['episode_id']} due to error: {e}",
+                flush=True,
+            )
+            continue
 
 
 if __name__ == "__main__":
