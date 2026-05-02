@@ -1,18 +1,19 @@
 """
 Fully hardened batch transcription driver using faster-whisper.
 
-Guarantees:
+Production guarantees:
 - Manifest-driven
 - Resume-safe (append-only ledger)
-- Explicit episode lifecycle: started → done | error
-- No silent exits
-- Early decode / FFmpeg failures are caught
-- Safe for long-running spot-GPU jobs
+- Explicit per-episode lifecycle: started → done | error
+- FFmpeg decode guarded with timeout (no hangs)
+- Zero silent exits
+- Safe for long-running spot GPU jobs
 """
 
 import json
 import time
 import traceback
+import subprocess
 from pathlib import Path
 
 import boto3
@@ -35,6 +36,9 @@ WHISPER_MODEL = "large-v3"
 DEVICE = "cuda"
 COMPUTE_TYPE = "float16"
 LANGUAGE = "en"
+
+# FFmpeg guardrail
+FFMPEG_PROBE_TIMEOUT_SEC = 45
 
 
 # =========================
@@ -94,6 +98,33 @@ def load_manifest() -> list:
 
 
 # =========================
+# FFmpeg SAFETY GUARD
+# =========================
+
+def ffmpeg_probe_or_fail(audio_path: Path):
+    """
+    Run a fast FFmpeg probe to ensure the file is decodable.
+    Prevents infinite hangs on malformed / huge MP3s.
+    """
+    try:
+        subprocess.run(
+            [
+                "ffmpeg",
+                "-v", "error",
+                "-i", str(audio_path),
+                "-f", "null",
+                "-"
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=FFMPEG_PROBE_TIMEOUT_SEC,
+            check=True,
+        )
+    except Exception as e:
+        raise RuntimeError(f"FFmpeg probe failed or timed out: {e}")
+
+
+# =========================
 # TRANSCRIPTION
 # =========================
 
@@ -111,7 +142,10 @@ def transcribe_episode(model: WhisperModel, episode: dict):
     if not audio_path.exists():
         download_s3_file(audio_uri, audio_path)
 
-    # Transcribe (FFmpeg + Whisper)
+    # 🔒 Guard against FFmpeg hangs
+    ffmpeg_probe_or_fail(audio_path)
+
+    # Whisper inference
     segments, _ = model.transcribe(
         str(audio_path),
         language=LANGUAGE,
@@ -162,15 +196,11 @@ def main():
     print(f"✅ Episodes already completed: {len(completed)}", flush=True)
     print(f"📦 Episodes in manifest: {len(manifest)}", flush=True)
 
-    try:
-        model = WhisperModel(
-            WHISPER_MODEL,
-            device=DEVICE,
-            compute_type=COMPUTE_TYPE,
-        )
-    except Exception as e:
-        print("❌ Whisper model failed to initialize", flush=True)
-        raise
+    model = WhisperModel(
+        WHISPER_MODEL,
+        device=DEVICE,
+        compute_type=COMPUTE_TYPE,
+    )
 
     for idx, episode in enumerate(
         tqdm(manifest, desc="Transcribing episodes"),
@@ -223,3 +253,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
