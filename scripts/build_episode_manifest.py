@@ -17,28 +17,28 @@ S3_PREFIX = "raw_audio/"
 
 # MAX EPISODES PER PODCAST (CEILINGS, NOT TARGETS)
 PODCAST_LIMITS = {
-    "lex_fridman": 300,
-    "dna_today": 300,
-    "hidden_brain": 150,
-    "freakonomics_radio": 150,
-    "huberman_lab": 150,
-    "as_a_man_readeth": 37,
-    "jemele_hill": 222,
-    "short_wave": 100,
-    "serial": 118,
-    "in_the_dark": 43,
-    "gastropod": 150,
-    "diary_of_a_ceo": 150,
-    "filmspotting": 97,
-    "the_big_picture": 150,
-    "all_songs_considered": 150,
-    "life_kit": 250,
+    "lex_fridman": 80,
+    "dna_today": 20,
+    "hidden_brain": 60,
+    "freakonomics_radio": 60,
+    "huberman_lab": 80,
+    "as_a_man_readeth": 10,
+    "jemele_hill": 50,
+    "short_wave": 30,
+    "serial": 40,
+    "in_the_dark": 40,
+    "gastropod": 50,
+    "diary_of_a_ceo": 50,
+    "filmspotting": 20,
+    "the_big_picture": 20,
+    "all_songs_considered": 30,
+    "life_kit": 30,
 }
 
-OUTPUT_FILE = "episode_manifest.jsonl"
+OUTPUT_FILE = "episode_manifest_phase1.jsonl"
 
 DEFAULT_LANGUAGE = "en"
-DEFAULT_MODEL = "large-v3"
+DEFAULT_MODEL = "medium"
 
 # Exclude clips, trailers, shorts, etc.
 MIN_SIZE_BYTES = 30 * 1024 * 1024  # 30 MB
