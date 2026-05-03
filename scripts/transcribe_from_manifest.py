@@ -26,7 +26,7 @@ from tqdm import tqdm
 # =========================
 
 # ✅ CHANGE 1: Point to PHASE-1 manifest (local file)
-MANIFEST_PATH = Path("/workspace/episode_manifest_phase1.jsonl")
+MANIFEST_PATH = Path("/workspace/podblendz-backend/episode_manifest_phase1.jsonl")
 
 WORKSPACE_ROOT = Path("/workspace")
 AUDIO_DIR = WORKSPACE_ROOT / "audio"
