@@ -25,14 +25,17 @@ from tqdm import tqdm
 # CONFIGURATION
 # =========================
 
-MANIFEST_S3_URI = "s3://podblendz-episode-audio/manifests/episode_manifest_v1.jsonl"
+# ✅ CHANGE 1: Point to PHASE-1 manifest (local file)
+MANIFEST_PATH = Path("/workspace/episode_manifest_phase1.jsonl")
 
 WORKSPACE_ROOT = Path("/workspace")
 AUDIO_DIR = WORKSPACE_ROOT / "audio"
 TRANSCRIPTS_DIR = WORKSPACE_ROOT / "transcripts"
 LEDGER_PATH = WORKSPACE_ROOT / "transcription_ledger.jsonl"
 
-WHISPER_MODEL = "large-v3"
+# ✅ CHANGE 2: Switch to MEMORY-SAFE MODEL
+WHISPER_MODEL = "medium"
+
 DEVICE = "cuda"
 COMPUTE_TYPE = "float16"
 LANGUAGE = "en"
@@ -40,25 +43,15 @@ LANGUAGE = "en"
 # FFmpeg guardrail
 FFMPEG_PROBE_TIMEOUT_SEC = 45
 
+# 🟡 OPTIONAL HARD GUARD
+MAX_ALLOWED_EPISODES = 700
+
 
 # =========================
 # AWS / S3
 # =========================
 
 s3 = boto3.client("s3")
-
-
-def parse_s3_uri(uri: str):
-    if not uri.startswith("s3://"):
-        raise ValueError(f"Invalid S3 URI: {uri}")
-    bucket, key = uri.replace("s3://", "").split("/", 1)
-    return bucket, key
-
-
-def download_s3_file(uri: str, destination: Path):
-    bucket, key = parse_s3_uri(uri)
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    s3.download_file(bucket, key, str(destination))
 
 
 # =========================
@@ -87,14 +80,23 @@ def load_completed_episode_ids() -> set:
 # =========================
 
 def load_manifest() -> list:
-    local_manifest = WORKSPACE_ROOT / "episode_manifest_v1.jsonl"
+    if not MANIFEST_PATH.exists():
+        raise RuntimeError(
+            f"Manifest file not found: {MANIFEST_PATH}\n"
+            "You must generate episode_manifest_phase1.jsonl before transcription."
+        )
 
-    if not local_manifest.exists():
-        print(f"⬇️  Downloading manifest from {MANIFEST_S3_URI}", flush=True)
-        download_s3_file(MANIFEST_S3_URI, local_manifest)
+    with MANIFEST_PATH.open("r", encoding="utf-8") as f:
+        manifest = [json.loads(line) for line in f]
 
-    with open(local_manifest, "r", encoding="utf-8") as f:
-        return [json.loads(line) for line in f]
+    # 🟡 SAFETY GUARD
+    if len(manifest) > MAX_ALLOWED_EPISODES:
+        raise RuntimeError(
+            f"Manifest contains {len(manifest)} episodes, which exceeds the safety limit "
+            f"of {MAX_ALLOWED_EPISODES}. Aborting to avoid accidental full-archive run."
+        )
+
+    return manifest
 
 
 # =========================
@@ -138,14 +140,13 @@ def transcribe_episode(model: WhisperModel, episode: dict):
     json_out = TRANSCRIPTS_DIR / podcast_id / f"{episode_id}.json"
     txt_out = TRANSCRIPTS_DIR / podcast_id / f"{episode_id}.txt"
 
-    # Download audio
     if not audio_path.exists():
-        download_s3_file(audio_uri, audio_path)
+        AUDIO_DIR.mkdir(parents=True, exist_ok=True)
+        bucket, key = audio_uri.replace("s3://", "").split("/", 1)
+        s3.download_file(bucket, key, str(audio_path))
 
-    # 🔒 Guard against FFmpeg hangs
     ffmpeg_probe_or_fail(audio_path)
 
-    # Whisper inference
     segments, _ = model.transcribe(
         str(audio_path),
         language=LANGUAGE,
