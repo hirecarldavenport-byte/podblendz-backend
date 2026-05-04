@@ -7,7 +7,8 @@ Production guarantees:
 - Explicit per-episode lifecycle: started → done | error
 - FFmpeg decode guarded with timeout (no hangs)
 - Zero silent exits
-- Safe for long-running spot GPU jobs
+- Safe for long-running GPU jobs
+- Robust handling of real-world S3 filenames
 """
 
 import json
@@ -15,6 +16,7 @@ import time
 import traceback
 import subprocess
 from pathlib import Path
+from urllib.parse import urlparse
 
 import boto3
 from faster_whisper import WhisperModel
@@ -25,33 +27,37 @@ from tqdm import tqdm
 # CONFIGURATION
 # =========================
 
-# ✅ CHANGE 1: Point to PHASE-1 manifest (local file)
-MANIFEST_PATH = Path("/workspace/podblendz-backend/episode_manifest_phase1.jsonl")
+WORKSPACE_ROOT = Path("/workspace/podblendz-backend")
 
-WORKSPACE_ROOT = Path("/workspace")
+MANIFEST_PATH = WORKSPACE_ROOT / "episode_manifest_phase1.jsonl"
 AUDIO_DIR = WORKSPACE_ROOT / "audio"
 TRANSCRIPTS_DIR = WORKSPACE_ROOT / "transcripts"
 LEDGER_PATH = WORKSPACE_ROOT / "transcription_ledger.jsonl"
 
-# ✅ CHANGE 2: Switch to MEMORY-SAFE MODEL
-WHISPER_MODEL = "medium"
-
+WHISPER_MODEL = "medium"          # memory-safe
 DEVICE = "cuda"
 COMPUTE_TYPE = "float16"
 LANGUAGE = "en"
 
-# FFmpeg guardrail
 FFMPEG_PROBE_TIMEOUT_SEC = 45
-
-# 🟡 OPTIONAL HARD GUARD
-MAX_ALLOWED_EPISODES = 700
+MAX_ALLOWED_EPISODES = 750        # hard safety guard
 
 
 # =========================
-# AWS / S3
+# AWS
 # =========================
 
 s3 = boto3.client("s3")
+
+
+def parse_s3_uri(uri: str):
+    """
+    Parse s3://bucket/key into components.
+    """
+    parsed = urlparse(uri)
+    if parsed.scheme != "s3":
+        raise ValueError(f"Invalid S3 URI: {uri}")
+    return parsed.netloc, parsed.path.lstrip("/")
 
 
 # =========================
@@ -83,47 +89,42 @@ def load_manifest() -> list:
     if not MANIFEST_PATH.exists():
         raise RuntimeError(
             f"Manifest file not found: {MANIFEST_PATH}\n"
-            "You must generate episode_manifest_phase1.jsonl before transcription."
+            "Generate episode_manifest_phase1.jsonl before transcription."
         )
 
     with MANIFEST_PATH.open("r", encoding="utf-8") as f:
         manifest = [json.loads(line) for line in f]
 
-    # 🟡 SAFETY GUARD
     if len(manifest) > MAX_ALLOWED_EPISODES:
         raise RuntimeError(
-            f"Manifest contains {len(manifest)} episodes, which exceeds the safety limit "
-            f"of {MAX_ALLOWED_EPISODES}. Aborting to avoid accidental full-archive run."
+            f"Manifest contains {len(manifest)} episodes — exceeds safety limit "
+            f"of {MAX_ALLOWED_EPISODES}."
         )
 
     return manifest
 
 
 # =========================
-# FFmpeg SAFETY GUARD
+# FFMPEG GUARD
 # =========================
 
 def ffmpeg_probe_or_fail(audio_path: Path):
     """
-    Run a fast FFmpeg probe to ensure the file is decodable.
-    Prevents infinite hangs on malformed / huge MP3s.
+    Fast probe to ensure the file is decodable.
     """
-    try:
-        subprocess.run(
-            [
-                "ffmpeg",
-                "-v", "error",
-                "-i", str(audio_path),
-                "-f", "null",
-                "-"
-            ],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            timeout=FFMPEG_PROBE_TIMEOUT_SEC,
-            check=True,
-        )
-    except Exception as e:
-        raise RuntimeError(f"FFmpeg probe failed or timed out: {e}")
+    subprocess.run(
+        [
+            "ffmpeg",
+            "-v", "error",
+            "-i", str(audio_path),
+            "-f", "null",
+            "-"
+        ],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        timeout=FFMPEG_PROBE_TIMEOUT_SEC,
+        check=True,
+    )
 
 
 # =========================
@@ -134,19 +135,26 @@ def transcribe_episode(model: WhisperModel, episode: dict):
     episode_id = episode["episode_id"]
     podcast_id = episode["podcast_id"]
 
-    audio_uri = episode["audio"]["s3_url"]
-    audio_path = AUDIO_DIR / podcast_id / f"{episode_id}.mp3"
+    s3_uri = episode["audio"]["s3_url"]
+    bucket, key = parse_s3_uri(s3_uri)
+
+    # ✅ CRITICAL FIX:
+    # Use the ACTUAL filename from S3, not a reconstructed one
+    filename = Path(key).name
+    audio_path = AUDIO_DIR / podcast_id / filename
 
     json_out = TRANSCRIPTS_DIR / podcast_id / f"{episode_id}.json"
     txt_out = TRANSCRIPTS_DIR / podcast_id / f"{episode_id}.txt"
 
+    # Download audio (idempotent)
     if not audio_path.exists():
-        AUDIO_DIR.mkdir(parents=True, exist_ok=True)
-        bucket, key = audio_uri.replace("s3://", "").split("/", 1)
+        audio_path.parent.mkdir(parents=True, exist_ok=True)
         s3.download_file(bucket, key, str(audio_path))
 
+    # Decode guard
     ffmpeg_probe_or_fail(audio_path)
 
+    # Whisper inference
     segments, _ = model.transcribe(
         str(audio_path),
         language=LANGUAGE,
@@ -185,7 +193,7 @@ def transcribe_episode(model: WhisperModel, episode: dict):
 
 
 # =========================
-# MAIN DRIVER
+# MAIN
 # =========================
 
 def main():
@@ -249,9 +257,9 @@ def main():
                 f"⚠️ Error on episode {episode_id}: {e}",
                 flush=True,
             )
-            continue
 
 
 if __name__ == "__main__":
     main()
+
 
