@@ -3,12 +3,10 @@ Fully hardened batch transcription driver using faster-whisper.
 
 Production guarantees:
 - Manifest-driven
-- Resume-safe (append-only ledger)
-- Explicit per-episode lifecycle: started → done | error
-- FFmpeg decode guarded with timeout (no hangs)
-- Zero silent exits
-- Safe for long-running GPU jobs
+- Resume-safe via append-only ledger
+- One episode failure never stops the batch
 - Robust handling of real-world S3 filenames
+- FFmpeg decode guarded with timeout
 """
 
 import json
@@ -34,13 +32,13 @@ AUDIO_DIR = WORKSPACE_ROOT / "audio"
 TRANSCRIPTS_DIR = WORKSPACE_ROOT / "transcripts"
 LEDGER_PATH = WORKSPACE_ROOT / "transcription_ledger.jsonl"
 
-WHISPER_MODEL = "medium"          # memory-safe
+WHISPER_MODEL = "medium"        # memory-safe
 DEVICE = "cuda"
 COMPUTE_TYPE = "float16"
 LANGUAGE = "en"
 
 FFMPEG_PROBE_TIMEOUT_SEC = 45
-MAX_ALLOWED_EPISODES = 750        # hard safety guard
+MAX_ALLOWED_EPISODES = 750      # hard safety guard
 
 
 # =========================
@@ -52,7 +50,7 @@ s3 = boto3.client("s3")
 
 def parse_s3_uri(uri: str):
     """
-    Parse s3://bucket/key into components.
+    Parse s3://bucket/key into (bucket, key)
     """
     parsed = urlparse(uri)
     if parsed.scheme != "s3":
@@ -88,7 +86,7 @@ def load_completed_episode_ids() -> set:
 def load_manifest() -> list:
     if not MANIFEST_PATH.exists():
         raise RuntimeError(
-            f"Manifest file not found: {MANIFEST_PATH}\n"
+            f"Manifest not found: {MANIFEST_PATH}\n"
             "Generate episode_manifest_phase1.jsonl before transcription."
         )
 
@@ -97,21 +95,18 @@ def load_manifest() -> list:
 
     if len(manifest) > MAX_ALLOWED_EPISODES:
         raise RuntimeError(
-            f"Manifest contains {len(manifest)} episodes — exceeds safety limit "
-            f"of {MAX_ALLOWED_EPISODES}."
+            f"Manifest contains {len(manifest)} episodes which exceeds safety "
+            f"limit of {MAX_ALLOWED_EPISODES}"
         )
 
     return manifest
 
 
 # =========================
-# FFMPEG GUARD
+# FFMPEG SAFETY GUARD
 # =========================
 
 def ffmpeg_probe_or_fail(audio_path: Path):
-    """
-    Fast probe to ensure the file is decodable.
-    """
     subprocess.run(
         [
             "ffmpeg",
@@ -138,20 +133,22 @@ def transcribe_episode(model: WhisperModel, episode: dict):
     s3_uri = episode["audio"]["s3_url"]
     bucket, key = parse_s3_uri(s3_uri)
 
-    # ✅ CRITICAL FIX:
-    # Use the ACTUAL filename from S3, not a reconstructed one
+    # ✅ CRITICAL: derive filename from the actual S3 key
     filename = Path(key).name
     audio_path = AUDIO_DIR / podcast_id / filename
 
+    # Outputs
     json_out = TRANSCRIPTS_DIR / podcast_id / f"{episode_id}.json"
     txt_out = TRANSCRIPTS_DIR / podcast_id / f"{episode_id}.txt"
 
-    # Download audio (idempotent)
+    # ✅ MUST happen before download
+    audio_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # Download if missing
     if not audio_path.exists():
-        audio_path.parent.mkdir(parents=True, exist_ok=True)
         s3.download_file(bucket, key, str(audio_path))
 
-    # Decode guard
+    # Guard against hangs / corrupt audio
     ffmpeg_probe_or_fail(audio_path)
 
     # Whisper inference
@@ -222,7 +219,8 @@ def main():
             continue
 
         print(
-            f"▶️ Starting episode {idx}/{len(manifest)}: {podcast_id} / {episode_id}",
+            f"▶️ Starting episode {idx}/{len(manifest)}: "
+            f"{podcast_id} / {episode_id}",
             flush=True,
         )
 
@@ -233,33 +231,6 @@ def main():
             "timestamp": time.time(),
         })
 
-        try:
-            transcribe_episode(model, episode)
 
-            append_ledger({
-                "episode_id": episode_id,
-                "podcast_id": podcast_id,
-                "status": "done",
-                "timestamp": time.time(),
-            })
-
-        except Exception as e:
-            append_ledger({
-                "episode_id": episode_id,
-                "podcast_id": podcast_id,
-                "status": "error",
-                "error": str(e),
-                "traceback": traceback.format_exc(),
-                "timestamp": time.time(),
-            })
-
-            print(
-                f"⚠️ Error on episode {episode_id}: {e}",
-                flush=True,
-            )
-
-
-if __name__ == "__main__":
-    main()
 
 
