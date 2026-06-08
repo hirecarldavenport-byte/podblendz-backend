@@ -1,10 +1,13 @@
 async function loadFeed() {
 
-  const response = await fetch("./data/guided_topic_cards.json");
+  const response =
+    await fetch("./data/guided_topic_cards.json");
 
-  const cards = await response.json();
+  const cards =
+    await response.json();
 
-  const feed = document.querySelector(".feed");
+  const feed =
+    document.querySelector(".feed");
 
   feed.innerHTML = "";
 
@@ -12,14 +15,16 @@ async function loadFeed() {
 
     const keywords = card.keywords
       .slice(0, 4)
-      .map(k => `<div class="tag">${k[0]}</div>`)
+      .map(
+        k => `<div class="tag">${k[0]}</div>`
+      )
       .join("");
 
     const phrase =
       card.phrases?.[0] ||
       "Semantic podcast blend";
 
-    const colorClasses = [
+    const colors = [
       "#9149ff",
       "#46c7b8",
       "#ff7b54",
@@ -28,13 +33,14 @@ async function loadFeed() {
     ];
 
     const accent =
-      colorClasses[index % colorClasses.length];
+      colors[index % colors.length];
 
     const html = `
 
-      <div 
-      class="card"
-      onclick="openBlend('${encodeURIComponent(card.topic)}'
+      <div
+        class="card"
+        onclick="openBlend('${encodeURIComponent(card.topic)}')"
+        style="cursor:pointer;"
       >
 
         <div class="card-top">
@@ -126,7 +132,9 @@ async function loadFeed() {
 
           <div class="actions-left">
 
-            <div>🧠 ${card.phrases.length}</div>
+            <div>
+              🧠 ${card.phrases.length}
+            </div>
 
             <div>
               🎙 ${card.related_segment_count}
@@ -151,10 +159,11 @@ async function loadFeed() {
 
 }
 
-loadFeed();
-
 function openBlend(topic) {
-   window.location.href =
-     `./blend.html?topic=${topic}`;
 
-    }
+  window.location.href =
+    `./blend.html?topic=${topic}`;
+
+}
+
+loadFeed();
