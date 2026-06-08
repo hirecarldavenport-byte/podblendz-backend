@@ -1,7 +1,7 @@
 [
   {
     "topic": "future of artificial intelligence",
-    "title": "Future Intelligence Artificial Artificial Intelligence",
+    "title": "Future Of Artificial Intelligence",
     "keywords": [
       [
         "future",
@@ -90,7 +90,7 @@
   },
   {
     "topic": "AI agents and automation",
-    "title": "Agents Agent Agent Shows Agent Shows Exactly",
+    "title": "Ai Agents And Automation",
     "keywords": [
       [
         "agents",
@@ -179,7 +179,7 @@
   },
   {
     "topic": "humanoid robotics systems",
-    "title": "Humanoid Robot Robots Humanoid Robot",
+    "title": "Humanoid Robotics Systems",
     "keywords": [
       [
         "humanoid",
@@ -268,7 +268,7 @@
   },
   {
     "topic": "machine learning platforms",
-    "title": "Learning Machine Machine Learning Models",
+    "title": "Machine Learning Platforms",
     "keywords": [
       [
         "learning",
@@ -357,7 +357,7 @@
   },
   {
     "topic": "startup funding ecosystems",
-    "title": "Funding Companies Startup Startups",
+    "title": "Startup Funding Ecosystems",
     "keywords": [
       [
         "funding",
@@ -446,7 +446,7 @@
   },
   {
     "topic": "venture capital investing",
-    "title": "Venture Capital Venture Capital Private",
+    "title": "Venture Capital Investing",
     "keywords": [
       [
         "venture",
@@ -535,7 +535,7 @@
   },
   {
     "topic": "future of remote work",
-    "title": "Future Remote Working Remote Work",
+    "title": "Future Of Remote Work",
     "keywords": [
       [
         "future",
@@ -624,7 +624,7 @@
   },
   {
     "topic": "creator economy monetization",
-    "title": "Create Creative Creator Monetize",
+    "title": "Creator Economy Monetization",
     "keywords": [
       [
         "create",
@@ -713,7 +713,7 @@
   },
   {
     "topic": "productivity systems",
-    "title": "Productivity Productive Multiplier Productivity Multiplier",
+    "title": "Productivity Systems",
     "keywords": [
       [
         "productivity",
@@ -802,7 +802,7 @@
   },
   {
     "topic": "mental health and wellness",
-    "title": "Health Mental Mental Health Human",
+    "title": "Mental Health And Wellness",
     "keywords": [
       [
         "health",
@@ -891,7 +891,7 @@
   },
   {
     "topic": "nutrition and metabolism",
-    "title": "Nutrition Metabolism Nutritional Metabolic",
+    "title": "Nutrition And Metabolism",
     "keywords": [
       [
         "nutrition",
@@ -980,7 +980,7 @@
   },
   {
     "topic": "longevity research",
-    "title": "Longevity Research Aging Human",
+    "title": "Longevity Research",
     "keywords": [
       [
         "longevity",
@@ -1069,7 +1069,7 @@
   },
   {
     "topic": "bitcoin and crypto markets",
-    "title": "Bitcoin Crypto Cryptocurrency Market",
+    "title": "Bitcoin And Crypto Markets",
     "keywords": [
       [
         "bitcoin",
@@ -1085,38 +1085,34 @@
       ],
       [
         "market",
-        14.0
+        15.0
       ],
       [
         "cryptocurrencies",
         11.0
       ],
       [
-        "currency",
-        8.0
-      ],
-      [
-        "digital",
-        8.0
-      ],
-      [
         "stocks",
-        8.0
+        9.0
+      ],
+      [
+        "space",
+        7.0
       ],
       [
         "currencies",
         6.0
       ],
       [
-        "digital currency",
+        "currency",
         6.0
       ],
       [
-        "financial",
+        "digital",
         6.0
       ],
       [
-        "space",
+        "stock",
         6.0
       ],
       [
@@ -1124,41 +1120,45 @@
         6.0
       ],
       [
-        "assets",
+        "blockchain",
         5.0
       ],
       [
-        "bitcoin cryptocurrency",
+        "economics",
+        5.0
+      ],
+      [
+        "financial",
         5.0
       ]
     ],
     "phrases": [
       "crypto economics economics bitcoin",
-      "bitcoin dollar versus versus crypto",
       "cryptocurrencies stay bitcoin",
       "embrace cryptocurrencies bitcoin",
       "opening crypto stocks",
       "addressable market bitcoin",
       "bitcoin blockchain anybody",
-      "bitcoin cornered market"
+      "bitcoin cornered market",
+      "bitcoin ethereum coins"
     ],
-    "related_segment_count": 107,
+    "related_segment_count": 106,
     "sample_segments": [
       "segments/ai_tech/lex_fridman_podcast/5cf47f81d263fa499472bec29dad992c.json_1327",
       "segments/ai_tech/lex_fridman_podcast/5cf47f81d263fa499472bec29dad992c.json_320",
       "segments/education_learning/hidden_brain/46bd0f99513b4c0aa68dfa8f08a05a28.json_748",
       "segments/education_learning/hidden_brain/30f45955c2de9ee2d1d6db4c7ae500b5.json_4779",
       "segments/education_learning/hidden_brain/16d3c5cbaca4cc2cf06229da89608bbe.json_9436",
-      "segments/education_learning/hidden_brain/36057beee72ed06b48113c8eb1e75059.json_1028",
       "segments/education_learning/hidden_brain/27580bfee0e8739ae803ba5271bcf3c5.json_62",
-      "segments/ai_tech/lex_fridman_podcast/059c2a7d5c3bd273bf47ce3bdee0fac2.json_82",
+      "segments/education_learning/hidden_brain/36057beee72ed06b48113c8eb1e75059.json_1028",
       "segments/ai_tech/lex_fridman/16d3c5cbaca4cc2cf06229da89608bbe.json_3965",
-      "segments/education_learning/hidden_brain/46bd0f99513b4c0aa68dfa8f08a05a28.json_765"
+      "segments/education_learning/hidden_brain/46bd0f99513b4c0aa68dfa8f08a05a28.json_765",
+      "segments/ai_tech/lex_fridman_podcast/059c2a7d5c3bd273bf47ce3bdee0fac2.json_82"
     ]
   },
   {
     "topic": "cybersecurity threats",
-    "title": "Security Cyber Attacks Vulnerabilities",
+    "title": "Cybersecurity Threats",
     "keywords": [
       [
         "security",
@@ -1247,7 +1247,7 @@
   },
   {
     "topic": "modern relationships",
-    "title": "Relationships Relationship Romantic Human",
+    "title": "Modern Relationships",
     "keywords": [
       [
         "relationships",
@@ -1336,7 +1336,7 @@
   },
   {
     "topic": "climate change innovation",
-    "title": "Climate Change Climate Change Innovation",
+    "title": "Climate Change Innovation",
     "keywords": [
       [
         "climate",
@@ -1425,7 +1425,7 @@
   },
   {
     "topic": "space exploration technology",
-    "title": "Space Exploration Space Exploration Exploring",
+    "title": "Space Exploration Technology",
     "keywords": [
       [
         "space",
@@ -1514,7 +1514,7 @@
   },
   {
     "topic": "education technology platforms",
-    "title": "Education Platforms Technology Learning",
+    "title": "Education Technology Platforms",
     "keywords": [
       [
         "education",
@@ -1603,7 +1603,7 @@
   },
   {
     "topic": "brain science and neuroscience",
-    "title": "Brain Neuroscience Human Level",
+    "title": "Brain Science And Neuroscience",
     "keywords": [
       [
         "brain",
@@ -1692,7 +1692,7 @@
   },
   {
     "topic": "business growth strategy",
-    "title": "Business Businesses Growth Strategy",
+    "title": "Business Growth Strategy",
     "keywords": [
       [
         "business",
@@ -1781,7 +1781,7 @@
   },
   {
     "topic": "software engineering systems",
-    "title": "Engineering Software Systems Software Engineering",
+    "title": "Software Engineering Systems",
     "keywords": [
       [
         "engineering",
@@ -1870,7 +1870,7 @@
   },
   {
     "topic": "AI replacing labor",
-    "title": "Organization Organization Producing Organization Producing Real Producing",
+    "title": "Ai Replacing Labor",
     "keywords": [
       [
         "organization",
@@ -1959,7 +1959,7 @@
   },
   {
     "topic": "economic systems and markets",
-    "title": "Economic Market Markets Systems",
+    "title": "Economic Systems And Markets",
     "keywords": [
       [
         "economic",
@@ -2048,7 +2048,7 @@
   },
   {
     "topic": "global geopolitics",
-    "title": "Geopolitics Geopolitical World Politics",
+    "title": "Global Geopolitics",
     "keywords": [
       [
         "geopolitics",
@@ -2137,7 +2137,7 @@
   },
   {
     "topic": "fitness and performance",
-    "title": "Performance Fitness Health Peak Performance",
+    "title": "Fitness And Performance",
     "keywords": [
       [
         "performance",
@@ -2226,7 +2226,7 @@
   },
   {
     "topic": "biohacking optimization",
-    "title": "Optimization Optimize Optimizing Optimized",
+    "title": "Biohacking Optimization",
     "keywords": [
       [
         "optimization",
@@ -2315,7 +2315,7 @@
   },
   {
     "topic": "podcasting and media",
-    "title": "Podcasting Podcast Podcasts Interviews",
+    "title": "Podcasting And Media",
     "keywords": [
       [
         "podcasting",
@@ -2404,7 +2404,7 @@
   },
   {
     "topic": "social media influence",
-    "title": "Media Social Social Media Influence",
+    "title": "Social Media Influence",
     "keywords": [
       [
         "media",
@@ -2493,7 +2493,7 @@
   },
   {
     "topic": "marketing and brand strategy",
-    "title": "Marketing Brand Strategy Market",
+    "title": "Marketing And Brand Strategy",
     "keywords": [
       [
         "marketing",
