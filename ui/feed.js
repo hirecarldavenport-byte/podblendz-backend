@@ -32,7 +32,9 @@ async function loadFeed() {
 
     const html = `
 
-      <div class="card">
+      <div 
+      class="card"
+      onclick="openBlend('${encodeURIComponent(card.topic)}'
 
         <div class="card-top">
 
@@ -149,3 +151,9 @@ async function loadFeed() {
 }
 
 loadFeed();
+
+function openBlend(topic) {
+   window.location.href =
+     `./blend.html?topic=${topic}`;
+
+    }
