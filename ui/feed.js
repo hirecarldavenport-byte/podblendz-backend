@@ -35,6 +35,7 @@ async function loadFeed() {
       <div 
       class="card"
       onclick="openBlend('${encodeURIComponent(card.topic)}'
+      >
 
         <div class="card-top">
 
