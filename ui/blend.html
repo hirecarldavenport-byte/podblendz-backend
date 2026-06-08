@@ -148,43 +148,64 @@
 
   <script>
 
-    const params =
-      new URLSearchParams(window.location.search);
+async function loadBlend() {
 
-    const topic =
-      decodeURIComponent(
-        params.get("topic") || ""
-      );
+  const params =
+    new URLSearchParams(window.location.search);
 
-    document.getElementById(
-      "blendTitle"
-    ).innerText = topic;
+  const topic =
+    decodeURIComponent(
+      params.get("topic") || ""
+    );
 
-    document.getElementById(
-      "blendDescription"
-    ).innerText =
-      "An AI-guided blend generated from semantic podcast intelligence.";
+  const response =
+    await fetch("./data/guided_topic_cards.json");
 
-    const tags =
-      topic.split(" ");
+  const cards =
+    await response.json();
 
-    const tagContainer =
-      document.getElementById("tags");
+  const blend =
+    cards.find(
+      c => c.topic === topic
+    );
 
-    tags.forEach(tag => {
+  if (!blend) return;
+
+  document.getElementById(
+    "blendTitle"
+  ).innerText = blend.title;
+
+  document.getElementById(
+    "blendDescription"
+  ).innerText =
+    blend.phrases?.[0] ||
+    "AI-generated semantic blend.";
+
+  const tagContainer =
+    document.getElementById("tags");
+
+  tagContainer.innerHTML = "";
+
+  blend.keywords
+    .slice(0, 8)
+    .forEach(keyword => {
 
       const div =
         document.createElement("div");
 
       div.className = "tag";
 
-      div.innerText = tag;
+      div.innerText = keyword[0];
 
       tagContainer.appendChild(div);
 
     });
 
-  </script>
+}
+
+loadBlend();
+
+</script>
 
 </body>
 </html>
