@@ -208,9 +208,15 @@
       Generating semantic blend...
     </div>
 
-    <div class="play-button">
-      ▶
-    </div>
+    <audio
+        id="audioPlayer"
+        controls
+        style="
+          width:100%;
+          margin-bottom:2rem;
+          "
+          ></audio>
+
 
     <div id="playerStatus">
       Ready to play semantic blend.
@@ -269,6 +275,11 @@
         );
 
       if (!blend) return;
+      const audioPlayer =
+      document.getElementById("audioPlayer");
+      if (blend.audio_file) {
+        audioPlayer.src = blend.audio_file;
+        }
 
       document.getElementById(
         "blendTitle"
