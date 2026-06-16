@@ -5,7 +5,7 @@ if (typeof BLENDS === "undefined") {
   console.error("BLENDS is not defined");
 }
 
-// ✅ Run AFTER DOM is ready (important safety fix)
+// ✅ Run AFTER DOM is ready
 document.addEventListener("DOMContentLoaded", () => {
   renderFeed();
 });
@@ -35,10 +35,18 @@ function renderFeed() {
         </div>
       </div>
 
+      <!-- Tags -->
       <div class="tags">
         ${(b.tags || []).map(tag => `<span class="tag">${tag}</span>`).join("")}
       </div>
 
+      <!-- ✅ NEW: Sources -->
+      <div class="tags">
+        ${(b.sources || []).slice(0, 3).map(source => `<span class="tag">${source}
+          </span>`).join("")}
+      </div>
+
+      <!-- Actions -->
       <div class="actions">
         <div class="actions-left">
           <span>🎧 ${b.clips || 0} clips</span>
@@ -50,6 +58,6 @@ function renderFeed() {
 }
 
 function openBlend(id) {
-  console.log("Opening blend:", id); // ✅ debug visibility
+  console.log("Opening blend:", id);
   window.location.href = `/ui/blend.html?id=${id}`;
 }
