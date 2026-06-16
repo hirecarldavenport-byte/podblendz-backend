@@ -1,284 +1,290 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PodBlendz Feed</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PodBlendz Feed</title>
 
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-    /* ✅ CLEAN BASE */
-    body {
-      margin: 0;
-      background: #eaeaea;
-    }
+/* ✅ FIXED BODY (THIS IS THE KEY) */
+body {
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
 
-    /* ✅ TRUE CENTER (NO FLEX, NO BUGS) */
-    .app {
-      width: 100%;
-      max-width: 430px;
-      min-height: 100vh;
+  background: #eaeaea;
+  min-height: 100vh;
 
-      position: fixed;
-      top: 0;
-      left: 50%; 
-      transform: translateX(-50%);
+  margin: 0;
 
-      background: #f7f4ef;
+  display: flex;              /* ✅ ADDED */
+  justify-content: center;    /* ✅ ADDED */
+}
 
-      border-radius: 24px;
-      overflow: hidden;
-    }
+/* ✅ CLEAN APP CONTAINER */
+.app {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100vh;
 
-    /* ================= HEADER ================= */
-    .app-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+  background: #f7f4ef;
 
-      padding: 1.2rem 1rem 0.8rem;
-    }
+  border-radius: 24px;
+  overflow: hidden;
+}
 
-    .logo {
-      font-size: 1.15rem;
-      font-weight: 700;
-      letter-spacing: 0.18em;
-    }
+/* ================= HEADER ================= */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 
-    .header-right {
-      display: flex;
-      gap: 1rem;
-      align-items: center;
-    }
+  padding: 1.2rem 1rem 0.8rem;
+}
 
-    .profile-avatar {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
+.logo {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+}
 
-    /* ================= COMPOSER ================= */
-    .composer {
-      background: white;
-      margin: 0 1rem;
-      padding: 0.8rem;
+.header-right {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
 
-      border-radius: 20px;
+.profile-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+}
 
-      display: flex;
-      align-items: center;
-      gap: 0.8rem;
+/* ================= COMPOSER ================= */
+.composer {
+  background: white;
+  margin: 0 1rem;
+  padding: 0.8rem;
 
-      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
-    }
+  border-radius: 20px;
 
-    .composer-avatar {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-    }
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
 
-    .composer input {
-      flex: 1;
-      border: none;
-      outline: none;
-      font-size: 0.95rem;
-    }
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+}
 
-    .blend-btn {
-      background: #cfa85c;
-      border: none;
+.composer-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+}
 
-      padding: 0.7rem 1rem;
-      border-radius: 999px;
+.composer input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 0.95rem;
+}
 
-      font-weight: 600;
-      cursor: pointer;
-    }
+.blend-btn {
+  background: #cfa85c;
+  border: none;
 
-    /* ================= TABS ================= */
-    .tabs {
-      display: flex;
-      gap: 0.7rem;
-      overflow-x: auto;
+  padding: 0.7rem 1rem;
+  border-radius: 999px;
 
-      padding: 1rem 1rem 0.5rem;
-    }
+  font-weight: 600;
+  cursor: pointer;
+}
 
-    .tabs::-webkit-scrollbar {
-      display: none;
-    }
+/* ================= TABS ================= */
+.tabs {
+  display: flex;
+  gap: 0.7rem;
 
-    .tab {
-      border: none;
-      background: #ece7df;
+  overflow-x: auto;
 
-      padding: 0.6rem 1rem;
-      border-radius: 999px;
+  padding: 1rem 1rem 0.5rem;
+}
 
-      white-space: nowrap;
-    }
+.tabs::-webkit-scrollbar {
+  display: none;
+}
 
-    .tab.active {
-      background: #17152e;
-      color: white;
-    }
+.tab {
+  border: none;
+  background: #ece7df;
 
-    /* ================= FEED ================= */
-    .feed {
-      padding: 0.6rem 1rem 7rem;
-    }
+  padding: 0.6rem 1rem;
+  border-radius: 999px;
+}
 
-    /* ================= CARD ================= */
-    .card {
-      background: white;
-      border-radius: 26px;
+.tab.active {
+  background: #17152e;
+  color: white;
+}
 
-      padding: 1rem;
-      margin-bottom: 1.1rem;
+/* ================= FEED ================= */
+.feed {
+  padding: 0.6rem 1rem 7rem;
+}
 
-      box-shadow: 0 4px 18px rgba(0,0,0,0.05);
-    }
+/* ================= CARD ================= */
+.card {
+  background: white;
+  border-radius: 26px;
 
-    .card-title {
-      font-size: 1.6rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-    }
+  padding: 1rem;
+  margin-bottom: 1.1rem;
 
-    .card-description {
-      color: #555;
-      font-size: 0.95rem;
-      margin-bottom: 0.8rem;
-    }
+  box-shadow: 0 4px 18px rgba(0,0,0,0.05);
+}
 
-    /* TAGS + SOURCES */
-    .tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-bottom: 0.8rem;
-    }
+.card-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
 
-    .tag {
-      background: #f1ede8;
-      padding: 0.4rem 0.75rem;
-      border-radius: 999px;
-      font-size: 0.8rem;
-    }
+.card-description {
+  color: #555;
+  font-size: 0.95rem;
+  margin-bottom: 0.8rem;
+}
 
-    /* ACTIONS */
-    .actions {
-      font-size: 0.9rem;
-      color: #666;
-    }
+/* TAGS + SOURCES */
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.8rem;
+}
 
-    /* ================= NAV ================= */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
+.tag {
+  background: #f1ede8;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+}
 
-      width: 100%;
-      max-width: 430px;
+/* ACTIONS */
+.actions {
+  font-size: 0.9rem;
+  color: #666;
+}
 
-      left: 50%;
-      transform: translateX(-50%);
+/* ================= NAV ================= */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
 
-      background: white;
-      border-top: 1px solid #e5dfd7;
+  width: 100%;
+  max-width: 430px;
 
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
+  left: 50%;
+  transform: translateX(-50%);
 
-      padding: 0.9rem 0;
-    }
+  background: white;
+  border-top: 1px solid #e5dfd7;
 
-    .nav-item {
-      font-size: 0.82rem;
-      color: #666;
-    }
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
 
-    .nav-plus {
-      width: 54px;
-      height: 54px;
+  padding: 0.9rem 0;
+}
 
-      border-radius: 50%;
+.nav-item {
+  font-size: 0.82rem;
+  color: #666;
+}
 
-      background: #cfa85c;
-      color: white;
+.nav-plus {
+  width: 54px;
+  height: 54px;
 
-      display: flex;
-      justify-content: center;
-      align-items: center;
+  border-radius: 50%;
 
-      font-size: 2rem;
-      margin-top: -32px;
-    }
+  background: #cfa85c;
+  color: white;
 
-    /* MOBILE */
-    @media (max-width: 520px) {
-      .card-title {
-        font-size: 1.4rem;
-      }
-    }
-  </style>
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 2rem;
+  margin-top: -32px;
+}
+
+/* MOBILE */
+@media (max-width: 520px) {
+  .card-title {
+    font-size: 1.4rem;
+  }
+}
+</style>
 </head>
 
 <body>
 
-  <div class="app">
+<div class="app">
 
-    <!-- HEADER -->
-    <div class="app-header">
-      <div class="logo">PODBLENDZ</div>
+  <!-- HEADER -->
+  <div class="app-header">
+    <div class="logo">PODBLENDZ</div>
 
-      <div class="header-right">
-        🔔
-        <img class="profile-avatar" src="https://i.pravatar.cc/100?img=12"/>
-      </div>
+    <div class="header-right">
+      🔔
+      <img class="profile-avatar" src="https://i.pravatar.cc/100?img=12"/>
     </div>
-
-    <!-- COMPOSER -->
-    <div class="composer">
-      <img class="composer-avatar" src="https://i.pravatar.cc/100?img=15"/>
-      <input placeholder="Share a blend, a lesson, a shift..." />
-      <button class="blend-btn">Blend</button>
-    </div>
-
-    <!-- TABS -->
-    <div class="tabs">
-      <button class="tab active">Top Blends</button>
-      <button class="tab">Following</button>
-      <button class="tab">Recent</button>
-      <button class="tab">All Intents</button>
-    </div>
-
-    <!-- ✅ FEED target -->
-    <div class="feed" id="feed"></div>
-
-    <!-- NAV -->
-    <div class="bottom-nav">
-      <div class="nav-item">Home</div>
-      <div class="nav-item">Boards</div>
-      <div class="nav-plus">+</div>
-      <div class="nav-item">Explore</div>
-      <div class="nav-item">Profile</div>
-    </div>
-
   </div>
 
-  <!-- DATA FIRST -->
-  <script src="scripts/blends.js"></script>
+  <!-- COMPOSER -->
+  <div class="composer">
+    <img class="composer-avatar" src="https://i.pravatar.cc/100?img=15"/>
+    <input placeholder="Share a blend, a lesson, a shift..." />
+    <button class="blend-btn">Blend</button>
+  </div>
 
-  <!-- THEN LOGIC -->
-  <script src="scripts/feed.js"></script>
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active">Top Blends</button>
+    <button class="tab">Following</button>
+    <button class="tab">Recent</button>
+    <button class="tab">All Intents</button>
+  </div>
+
+  <!-- ✅ FEED (JS injects cards here) -->
+  <div class="feed" id="feed"></div>
+
+  <!-- NAV -->
+  <div class="bottom-nav">
+    <div class="nav-item">Home</div>
+    <div class="nav-item">Boards</div>
+    <div class="nav-plus">+</div>
+    <div class="nav-item">Explore</div>
+    <div class="nav-item">Profile</div>
+  </div>
+
+</div>
+
+<!-- ✅ LOAD DATA FIRST -->
+<script src="scripts/blends.js"></script>
+
+<!-- ✅ THEN LOAD LOGIC -->
+<script src="scripts/feed.js"></script>
 
 </body>
 </html>
