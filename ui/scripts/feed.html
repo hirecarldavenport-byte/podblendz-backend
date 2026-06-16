@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>PodBlendz Feed</title>
+
+  <style>
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        sans-serif;
+        background: #111;
+        display: flex;
+        
+justify-content: center;
+
+
+      background: #f7f4ef;
+      color: #111;
+      min-height: 100vh;
+    }
+
+    img {
+      display: block;
+    }
+
+    .app {
+     width: 100%;
+      max-width: 430px;
+      min-height: 100vh;
+
+      margin: 0 auto;
+
+      background: #f7f4ef;
+      position: relative;
+    }
+
+    /* =========================================
+       HEADER
+    ========================================= */
+
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      padding:
+        1.2rem
+        1rem
+        0.8rem;
+    }
+
+    .logo {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .bell {
+      font-size: 1.2rem;
+    }
+
+    .profile-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    /* =========================================
+       COMPOSER
+    ========================================= */
+
+    .composer {
+      background: white;
+
+      margin: 0 1rem;
+
+      border-radius: 20px;
+
+      padding: 0.8rem;
+
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+
+      box-shadow:
+        0 2px 12px rgba(0,0,0,0.05);
+    }
+
+    .composer-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .composer input {
+      flex: 1;
+
+      border: none;
+      outline: none;
+
+      background: transparent;
+
+      font-size: 0.95rem;
+    }
+
+    .blend-btn {
+      border: none;
+
+      background: #cfa85c;
+
+      padding:
+        0.7rem
+        1rem;
+
+      border-radius: 999px;
+
+      font-weight: 600;
+
+      cursor: pointer;
+    }
+
+    /* =========================================
+       TABS
+    ========================================= */
+
+    .tabs {
+      display: flex;
+      gap: 0.7rem;
+
+      overflow-x: auto;
+
+      padding:
+        1rem
+        1rem
+        0.5rem;
+    }
+
+    .tabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tab {
+      border: none;
+
+      background: #ece7df;
+
+      padding:
+        0.6rem
+        1rem;
+
+      border-radius: 999px;
+
+      white-space: nowrap;
+
+      cursor: pointer;
+    }
+
+    .tab.active {
+      background: #17152e;
+      color: white;
+    }
+
+    /* =========================================
+       FEED
+    ========================================= */
+
+    .feed {
+      padding:
+        0.6rem
+        1rem
+        7rem;
+    }
+
+    /* =========================================
+       CARD
+    ========================================= */
+
+    .card {
+      background: white;
+
+      border-radius: 26px;
+
+      padding: 1rem;
+
+      margin-bottom: 1.1rem;
+
+      box-shadow:
+        0 4px 18px rgba(0,0,0,0.05);
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+
+      margin-bottom: 1rem;
+    }
+
+    .card-user {
+      display: flex;
+      gap: 0.8rem;
+    }
+
+    .card-user img {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .card-meta h4 {
+      font-size: 1rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .card-meta p {
+      font-size: 0.86rem;
+      color: #666;
+    }
+
+    .card-time {
+      font-size: 0.82rem;
+      color: #777;
+    }
+
+    /* =========================================
+       CARD CONTENT
+    ========================================= */
+
+    .card-content {
+      display: grid;
+      grid-template-columns: 1fr 120px;
+      gap: 1rem;
+
+      margin-bottom: 1rem;
+    }
+
+    .card-title {
+      font-size: 1.7rem;
+      line-height: 1.08;
+      margin-bottom: 0.8rem;
+      font-weight: 700;
+    }
+
+    .card-description {
+      color: #555;
+      line-height: 1.45;
+      font-size: 0.95rem;
+    }
+
+    .card-cover {
+      width: 100%;
+      height: 140px;
+
+      object-fit: cover;
+
+      border-radius: 18px;
+    }
+
+    /* =========================================
+       PLAYER
+    ========================================= */
+
+    .player {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+
+      margin-bottom: 1rem;
+    }
+
+    .play-btn {
+      width: 42px;
+      height: 42px;
+
+      border-radius: 50%;
+
+      border: 2px solid #9149ff;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      color: #9149ff;
+
+      flex-shrink: 0;
+    }
+
+    .waveform {
+      flex: 1;
+
+      height: 42px;
+
+      border-radius: 999px;
+
+      background:
+        repeating-linear-gradient(
+          to right,
+          #9149ff,
+          #9149ff 2px,
+          transparent 2px,
+          transparent 6px
+        );
+
+      opacity: 0.45;
+    }
+
+    .duration {
+      font-size: 0.82rem;
+      color: #777;
+    }
+
+    /* =========================================
+       TAGS
+    ========================================= */
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.55rem;
+
+      margin-bottom: 1rem;
+    }
+
+    .tag {
+      background: #f1ede8;
+
+      padding:
+        0.4rem
+        0.75rem;
+
+      border-radius: 999px;
+
+      font-size: 0.82rem;
+      color: #666;
+    }
+
+    /* =========================================
+       ACTIONS
+    ========================================= */
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    .actions-left {
+      display: flex;
+      gap: 1.2rem;
+    }
+
+    /* =========================================
+       BOTTOM NAV
+    ========================================= */
+
+    .bottom-nav {
+      position: fixed;
+
+      bottom: 0;
+
+      width: 100%;
+      max-width: 480px;
+
+      background: white;
+
+      border-top:
+        1px solid #e5dfd7;
+
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+
+      padding:
+        0.9rem
+        0;
+
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .nav-item {
+      font-size: 0.82rem;
+      color: #666;
+    }
+
+    .nav-plus {
+      width: 54px;
+      height: 54px;
+
+      border-radius: 50%;
+
+      background: #cfa85c;
+
+      color: white;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      font-size: 2rem;
+
+      margin-top: -32px;
+
+      box-shadow:
+        0 10px 25px rgba(0,0,0,0.12);
+    }
+
+    /* =========================================
+       MOBILE
+    ========================================= */
+
+    @media (max-width: 520px) {
+
+      .card-content {
+        grid-template-columns: 1fr;
+      }
+
+      .card-cover {
+        height: 220px;
+      }
+
+      .card-title {
+        font-size: 1.45rem;
+      }
+
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <div class="app">
+
+    <!-- HEADER -->
+
+    <div class="app-header">
+
+      <div class="logo">
+        PODBLENDZ
+      </div>
+
+      <div class="header-right">
+
+        <div class="bell">
+          🔔
+        </div>
+
+        <img
+          class="profile-avatar"
+          src="https://i.pravatar.cc/100?img=12"
+          alt="profile"
+        />
+
+      </div>
+
+    </div>
+
+    <!-- COMPOSER -->
+
+    <div class="composer">
+
+      <img
+        class="composer-avatar"
+        src="https://i.pravatar.cc/100?img=15"
+        alt="avatar"
+      />
+
+      <input
+        type="text"
+        placeholder="Share a blend, a lesson, a shift..."
+      />
+
+      <button class="blend-btn">
+        Blend
+      </button>
+
+    </div>
+
+    <!-- TABS -->
+
+    <div class="tabs">
+
+      <button class="tab active">
+        Top Blends
+      </button>
+
+      <button class="tab">
+        Following
+      </button>
+
+      <button class="tab">
+        Recent
+      </button>
+
+      <button class="tab">
+        All Intents
+      </button>
+
+    </div>
+
+    <!-- FEED -->
+
+        <div class="feed" id="feed"></div>
+
+
+    <!-- BOTTOM NAV -->
+
+    <div class="bottom-nav">
+
+      <div class="nav-item">
+        Home
+      </div>
+
+      <div class="nav-item">
+        Boards
+      </div>
+
+      <div class="nav-plus">
+        +
+      </div>
+
+      <div class="nav-item">
+        Explore
+      </div>
+
+      <div class="nav-item">
+        Profile
+      </div>
+
+    </div>
+
+  </div>
+ <script src="scripts/blends.js"></script>
+  <script src="scripts/feed.js"></script>
+
+</body>
+</html>
