@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>PodBlendz Feed</title>
 
   <style>
@@ -13,9 +13,7 @@
       box-sizing: border-box;
     }
 
-    /* ✅ CRITICAL FIX */
-    html,
-    body {
+    html, body {
       width: 100%;
       margin: 0;
       padding: 0;
@@ -35,7 +33,6 @@
       justify-content: center;
     }
 
-    /* ✅ CLEAN APP CONTAINER */
     .app {
       width: 100%;
       max-width: 430px;
@@ -47,7 +44,7 @@
       overflow: hidden;
     }
 
-    /* ================= HEADER ================= */
+    /* HEADER */
     .app-header {
       display: flex;
       justify-content: space-between;
@@ -74,7 +71,7 @@
       object-fit: cover;
     }
 
-    /* ================= COMPOSER ================= */
+    /* COMPOSER */
     .composer {
       background: white;
       margin: 0 1rem;
@@ -85,7 +82,7 @@
       align-items: center;
       gap: 0.8rem;
 
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
     }
 
     .composer-avatar {
@@ -110,7 +107,7 @@
       cursor: pointer;
     }
 
-    /* ================= TABS ================= */
+    /* TABS */
     .tabs {
       display: flex;
       gap: 0.7rem;
@@ -135,18 +132,18 @@
       color: white;
     }
 
-    /* ================= FEED ================= */
+    /* FEED */
     .feed {
       padding: 0.6rem 1rem 7rem;
     }
 
-    /* ================= CARD ================= */
+    /* CARD */
     .card {
       background: white;
       border-radius: 26px;
       padding: 1rem;
       margin-bottom: 1.1rem;
-      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 4px 18px rgba(0,0,0,0.05);
     }
 
     .card-title {
@@ -165,7 +162,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 0.5rem;
-      margin-bottom: 0.8rem;
+      margin-bottom: 0.6rem;
     }
 
     .tag {
@@ -173,6 +170,11 @@
       padding: 0.4rem 0.75rem;
       border-radius: 999px;
       font-size: 0.8rem;
+      cursor: pointer;
+    }
+
+    .tag:hover {
+      background: #e0dbd3;
     }
 
     .actions {
@@ -180,13 +182,12 @@
       color: #666;
     }
 
-    /* ================= NAV ================= */
+    /* NAV */
     .bottom-nav {
       position: fixed;
       bottom: 0;
       width: 100%;
       max-width: 430px;
-
       left: 50%;
       transform: translateX(-50%);
 
@@ -218,61 +219,65 @@
       font-size: 2rem;
       margin-top: -32px;
     }
-
-    @media (max-width: 520px) {
-      .card-title {
-        font-size: 1.4rem;
-      }
-    }
   </style>
 </head>
 
 <body>
 
-  <div class="app">
+<div class="app">
 
-    <!-- HEADER -->
-    <div class="app-header">
-      <div class="logo">PODBLENDZ</div>
-      <div class="header-right">
-        🔔
-        <img class="profile-avatar" src="https://i.pravatar.cc/100?img=12" />
-      </div>
+  <!-- HEADER -->
+  <div class="app-header">
+    <div class="logo">PODBLENDZ</div>
+    <div class="header-right">
+      🔔
+      <img class="profile-avatar" src="https://i.pravatar.cc/100?img=12" />
     </div>
-
-    <!-- COMPOSER -->
-    <div class="composer">
-      <img class="composer-avatar" src="https://i.pravatar.cc/100?img=15" />
-      <input placeholder="Share a blend, a lesson, a shift..." />
-      <button class="blend-btn">Blend</button>
-    </div>
-
-    <!-- TABS -->
-    <div class="tabs">
-      <button class="tab active">Top Blends</button>
-      <button class="tab">Following</button>
-      <button class="tab">Recent</button>
-      <button class="tab">All Intents</button>
-    </div>
-
-    <!-- ✅ FEED -->
-    <div class="feed" id="feed"></div>
-
-    <!-- NAV -->
-    <div class="bottom-nav">
-      <div class="nav-item">Home</div>
-      <div class="nav-item">Boards</div>
-      <div class="nav-plus">+</div>
-      <div class="nav-item">Explore</div>
-      <div class="nav-item">Profile</div>
-    </div>
-
   </div>
 
-  <!-- ✅ LOAD ORDER MATTERS -->
-  <script src="scripts/blends.js"></script>
-  <script src="scripts/feed.js"></script>
+  <!-- COMPOSER -->
+  <div class="composer">
+    <img class="composer-avatar" src="https://i.pravatar.cc/100?img=15" />
+    <input placeholder="Share a blend, a lesson, a shift..." />
+    <button class="blend-btn">Blend</button>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active">Top Blends</button>
+    <button class="tab">Following</button>
+    <button class="tab">Recent</button>
+    <button class="tab">All Intents</button>
+  </div>
+
+  <!-- FEED -->
+  <div class="feed" id="feed"></div>
+
+  <!-- NAV -->
+  <div class="bottom-nav">
+    <div class="nav-item">Home</div>
+    <div class="nav-item">Boards</div>
+    <div class="nav-plus">+</div>
+    <div class="nav-item">Explore</div>
+    <div class="nav-item">Profile</div>
+  </div>
+
+</div>
+
+<!-- ✅ DATA FIRST -->
+<script src="scripts/blends.js"></script>
+
+<!-- ✅ LOGIC SECOND -->
+<script src="scripts/feed.js"></script>
+
+<script>
+/* ✅ STEP 2: SOURCE NAVIGATION */
+function goToSource(name, event) {
+  event.stopPropagation();
+  window.location.href =
+    '/ui/source.html?name=' + encodeURIComponent(name);
+}
+</script>
 
 </body>
-
 </html>
