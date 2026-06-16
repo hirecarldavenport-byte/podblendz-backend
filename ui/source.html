@@ -57,14 +57,14 @@
       color: #666;
     }
 
-    /* ✅ COUNT BADGE */
+    /* ✅ COUNT */
     .count {
       margin-top: 6px;
       font-size: 0.75rem;
       color: #999;
     }
 
-    /* ✅ SECTION LABEL */
+    /* ✅ SECTION TITLE */
     .section-title {
       padding: 1rem 1rem 0.5rem;
       font-size: 0.9rem;
@@ -85,7 +85,6 @@
       margin-bottom: 1rem;
 
       box-shadow: 0 4px 16px rgba(0,0,0,0.05);
-
       transition: transform 0.15s ease;
     }
 
@@ -117,7 +116,7 @@
 
 <div class="app">
 
-  <!-- ✅ CREATOR HEADER -->
+  <!-- ✅ HEADER -->
   <div class="creator-header">
     <img 
       class="creator-avatar"
@@ -131,12 +130,12 @@
     </div>
   </div>
 
-  <!-- ✅ SECTION TITLE -->
+  <!-- ✅ SECTION -->
   <div class="section-title">
     Blends from this creator
   </div>
 
-  <!-- ✅ RESULTS -->
+  <!-- ✅ FEED -->
   <div class="feed" id="feed"></div>
 
 </div>
@@ -145,16 +144,56 @@
 <script src="scripts/blends.js"></script>
 
 <script>
-  // ✅ GET CREATOR NAME
+
   const params = new URLSearchParams(window.location.search);
+
+  // ✅ FIX 1: decode URL
   const name = decodeURIComponent(params.get("name") || "");
 
-  document.getElementById("creatorName").innerText = name;
+  // ✅ SET NAME
+  document.getElementById("creatorName").innerText =
+    name || "Creator";
 
-  // ✅ FILTER BLENDS
+  // ✅ FIX 2: FLEXIBLE FILTER
   const filtered = BLENDS.filter(b =>
-    (b.sources || []).includes(name)
+    (b.sources || []).some(s =>
+      s.toLowerCase().trim() === name.toLowerCase().trim()
+    )
   );
 
-  // ✅ COUNT LABEL
+  // ✅ COUNT
+  document.getElementById("blendCount").innerText =
+    filtered.length + " blend" + (filtered.length !== 1 ? "s" : "");
+
+  const container = document.getElementById("feed");
+
+  // ✅ EMPTY STATE
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <p style="padding: 1rem; color:#777;">
+        No blends found for this creator yet.
+      </p>
+    `;
+  } else {
+
+    // ✅ RENDER CARDS
+    container.innerHTML = filtered.map(b => `
+      <div class="card" onclick="openBlend('${b.id}')">
+        <div class="card-title">${b.title}</div>
+        <div class="card-desc">${b.subtitle}</div>
+        <div class="card-meta">🎧 ${b.clips} clips</div>
+      </div>
+    `).join("");
+
+  }
+
+  // ✅ NAVIGATION
+  function openBlend(id) {
+    window.location.href = '/ui/blend.html?id=' + id;
+  }
+
+</script>
+
+</body>
+</html>
 
