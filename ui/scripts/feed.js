@@ -18,7 +18,7 @@ function renderFeed() {
     return;
   }
 
-  // ✅ Check if BLENDS is usable
+  // ✅ Validate BLENDS
   if (!Array.isArray(BLENDS) || BLENDS.length === 0) {
     console.warn("BLENDS is empty or not an array");
     container.innerHTML = "<p>No blends available</p>";
@@ -35,18 +35,24 @@ function renderFeed() {
         </div>
       </div>
 
-      <!-- Tags -->
+      <!-- ✅ TAGS -->
       <div class="tags">
-        ${(b.tags || []).map(tag => `<span class="tag">${tag}</span>`).join("")}
+        ${(b.tags || []).map(tag => `
+          <span class="tag">${tag}</span>
+        `).join("")}
       </div>
 
-      <!-- ✅ NEW: Sources -->
+      <!-- ✅ ✅ FIXED SOURCES (CLICKABLE) -->
       <div class="tags">
-        ${(b.sources || []).slice(0, 3).map(source => `<span class="tag">${source}
-          </span>`).join("")}
+        ${(b.sources || []).slice(0, 3).map(source => `
+          <span class="tag"
+                onclick="goToSource('${source}', event)">
+            ${source}
+          </span>
+        `).join("")}
       </div>
 
-      <!-- Actions -->
+      <!-- ✅ ACTIONS -->
       <div class="actions">
         <div class="actions-left">
           <span>🎧 ${b.clips || 0} clips</span>
@@ -57,6 +63,7 @@ function renderFeed() {
   `).join("");
 }
 
+// ✅ Open blend page
 function openBlend(id) {
   console.log("Opening blend:", id);
   window.location.href = `/ui/blend.html?id=${id}`;
