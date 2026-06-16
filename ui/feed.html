@@ -1,287 +1,290 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>PodBlendz Feed</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PodBlendz Feed</title>
 
-<style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-/* ✅ FIXED: CLEAN CENTERING */
-body {
-  font-family:
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    sans-serif;
+    /* ✅ CLEAN BASE */
+    body {
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        sans-serif;
 
-  background: #eaeaea;
-  min-height: 100vh;
+      background: #eaeaea;
+      min-height: 100vh;
+      margin: 0;
+    }
 
-  margin: 0;
-}
+    /* ✅ TRUE CENTER (NO FLEX, NO BUGS) */
+    .app {
+      width: 100%;
+      max-width: 430px;
+      min-height: 100vh;
 
-/* ✅ MAIN APP (CENTERED PROPERLY) */
-.app > * {
-  width: 100%;
-  
-  max-width: 430px;
-  min-height: 100vh;
+      margin: 0 auto;
 
-  margin: 0 auto;   /* ✅ THIS is the correct centering */
+      background: #f7f4ef;
+      position: relative;
 
-  background: #f7f4ef;
-  position: relative;
+      border-radius: 24px;
+      overflow: hidden;
+    }
 
-  border-radius: 24px;
-  overflow: hidden;
-}
-/* ========================= HEADER ========================= */
-.app-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+    /* ================= HEADER ================= */
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
 
-  padding: 1.2rem 1rem 0.8rem;
-}
+      padding: 1.2rem 1rem 0.8rem;
+    }
 
-.logo {
-  font-size: 1.15rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-}
+    .logo {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+    }
 
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
+    .header-right {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
 
-.profile-avatar {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  object-fit: cover;
-}
+    .profile-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
 
-/* ========================= COMPOSER ========================= */
-.composer {
-  background: white;
-  margin: 0 1rem;
-  border-radius: 20px;
+    /* ================= COMPOSER ================= */
+    .composer {
+      background: white;
+      margin: 0 1rem;
+      padding: 0.8rem;
 
-  padding: 0.8rem;
+      border-radius: 20px;
 
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
 
-  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
-}
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
 
-.composer-avatar {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-}
+    .composer-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+    }
 
-.composer input {
-  flex: 1;
-  border: none;
-  outline: none;
-  font-size: 0.95rem;
-}
+    .composer input {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-size: 0.95rem;
+    }
 
-.blend-btn {
-  background: #cfa85c;
-  border: none;
+    .blend-btn {
+      background: #cfa85c;
+      border: none;
 
-  padding: 0.7rem 1rem;
-  border-radius: 999px;
+      padding: 0.7rem 1rem;
+      border-radius: 999px;
 
-  font-weight: 600;
-}
+      font-weight: 600;
+      cursor: pointer;
+    }
 
-/* ========================= TABS ========================= */
-.tabs {
-  display: flex;
-  gap: 0.7rem;
+    /* ================= TABS ================= */
+    .tabs {
+      display: flex;
+      gap: 0.7rem;
+      overflow-x: auto;
 
-  overflow-x: auto;
+      padding: 1rem 1rem 0.5rem;
+    }
 
-  padding: 1rem 1rem 0.5rem;
-}
+    .tabs::-webkit-scrollbar {
+      display: none;
+    }
 
-.tabs::-webkit-scrollbar {
-  display: none;
-}
+    .tab {
+      border: none;
+      background: #ece7df;
 
-.tab {
-  border: none;
-  background: #ece7df;
+      padding: 0.6rem 1rem;
+      border-radius: 999px;
 
-  padding: 0.6rem 1rem;
-  border-radius: 999px;
-}
+      white-space: nowrap;
+    }
 
-.tab.active {
-  background: #17152e;
-  color: white;
-}
+    .tab.active {
+      background: #17152e;
+      color: white;
+    }
 
-/* ========================= FEED ========================= */
-.feed {
-  padding: 0.6rem 1rem 7rem;
-}
+    /* ================= FEED ================= */
+    .feed {
+      padding: 0.6rem 1rem 7rem;
+    }
 
-/* ========================= CARD ========================= */
-.card {
-  background: white;
-  border-radius: 26px;
+    /* ================= CARD ================= */
+    .card {
+      background: white;
+      border-radius: 26px;
 
-  padding: 1rem;
-  margin-bottom: 1.1rem;
+      padding: 1rem;
+      margin-bottom: 1.1rem;
 
-  box-shadow: 0 4px 18px rgba(0,0,0,0.05);
-}
+      box-shadow: 0 4px 18px rgba(0,0,0,0.05);
+    }
 
-/* CONTENT */
-.card-title {
-  font-size: 1.7rem;
-  font-weight: 700;
-  margin-bottom: 0.6rem;
-}
+    .card-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
 
-.card-description {
-  color: #555;
-  font-size: 0.95rem;
-  margin-bottom: 0.8rem;
-}
+    .card-description {
+      color: #555;
+      font-size: 0.95rem;
+      margin-bottom: 0.8rem;
+    }
 
-/* TAGS */
-.tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 0.8rem;
-}
+    /* TAGS + SOURCES */
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 0.8rem;
+    }
 
-.tag {
-  background: #f1ede8;
-  padding: 0.4rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.8rem;
-}
+    .tag {
+      background: #f1ede8;
+      padding: 0.4rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+    }
 
-/* ACTIONS */
-.actions {
-  font-size: 0.9rem;
-  color: #666;
-}
+    /* ACTIONS */
+    .actions {
+      font-size: 0.9rem;
+      color: #666;
+    }
 
-/* ========================= NAV ========================= */
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
+    /* ================= NAV ================= */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
 
-  width: 100%;
-  max-width: 430px;
+      width: 100%;
+      max-width: 430px;
 
-  left: 50%;
-  transform: translateX(-50%);
+      left: 50%;
+      transform: translateX(-50%);
 
-  background: white;
-  border-top: 1px solid #e5dfd7;
+      background: white;
+      border-top: 1px solid #e5dfd7;
 
-  display: flex;
-  justify-content: space-around;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
 
-  padding: 0.9rem 0;
-}
+      padding: 0.9rem 0;
+    }
 
-.nav-plus {
-  width: 54px;
-  height: 54px;
-  border-radius: 50%;
+    .nav-item {
+      font-size: 0.82rem;
+      color: #666;
+    }
 
-  background: #cfa85c;
-  color: white;
+    .nav-plus {
+      width: 54px;
+      height: 54px;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+      border-radius: 50%;
 
-  font-size: 2rem;
-  margin-top: -32px;
-}
+      background: #cfa85c;
+      color: white;
 
-.nav-item {
-  font-size: 0.82rem;
-  color: #666;
-}
+      display: flex;
+      justify-content: center;
+      align-items: center;
 
-/* MOBILE */
-@media (max-width: 520px) {
-  .card-title {
-    font-size: 1.45rem;
-  }
-}
-</style>
+      font-size: 2rem;
+      margin-top: -32px;
+    }
+
+    /* MOBILE */
+    @media (max-width: 520px) {
+      .card-title {
+        font-size: 1.4rem;
+      }
+    }
+  </style>
 </head>
 
 <body>
 
-<div class="app">
+  <div class="app">
 
-  <!-- HEADER -->
-  <div class="app-header">
-    <div class="logo">PODBLENDZ</div>
+    <!-- HEADER -->
+    <div class="app-header">
+      <div class="logo">PODBLENDZ</div>
 
-    <div class="header-right">
-      🔔
-      <img class="profile-avatar" src="https://i.pravatar.cc/100?img=12"/>
+      <div class="header-right">
+        🔔
+        <img class="profile-avatar" src="https://i.pravatar.cc/100?img=12"/>
+      </div>
     </div>
+
+    <!-- COMPOSER -->
+    <div class="composer">
+      <img class="composer-avatar" src="https://i.pravatar.cc/100?img=15"/>
+      <input placeholder="Share a blend, a lesson, a shift..." />
+      <button class="blend-btn">Blend</button>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab active">Top Blends</button>
+      <button class="tab">Following</button>
+      <button class="tab">Recent</button>
+      <button class="tab">All Intents</button>
+    </div>
+
+    <!-- ✅ FEED target -->
+    <div class="feed" id="feed"></div>
+
+    <!-- NAV -->
+    <div class="bottom-nav">
+      <div class="nav-item">Home</div>
+      <div class="nav-item">Boards</div>
+      <div class="nav-plus">+</div>
+      <div class="nav-item">Explore</div>
+      <div class="nav-item">Profile</div>
+    </div>
+
   </div>
 
-  <!-- COMPOSER -->
-  <div class="composer">
-    <img class="composer-avatar" src="https://i.pravatar.cc/100?img=15"/>
+  <!-- DATA FIRST -->
+  <script src="scripts/blends.js"></script>
 
-    <input placeholder="Share a blend, a lesson, a shift..." />
-
-    <button class="blend-btn">Blend</button>
-  </div>
-
-  <!-- TABS -->
-  <div class="tabs">
-    <button class="tab active">Top Blends</button>
-    <button class="tab">Following</button>
-    <button class="tab">Recent</button>
-    <button class="tab">All Intents</button>
-  </div>
-
-  <!-- ✅ FEED (JS fills this) -->
-  <div class="feed" id="feed"></div>
-
-  <!-- NAV -->
-  <div class="bottom-nav">
-    <div class="nav-item">Home</div>
-    <div class="nav-item">Boards</div>
-    <div class="nav-plus">+</div>
-    <div class="nav-item">Explore</div>
-    <div class="nav-item">Profile</div>
-  </div>
-
-</div>
-
-<script src="scripts/blends.js"></script>
-<script src="scripts/feed.js"></script>
+  <!-- THEN LOGIC -->
+  <script src="scripts/feed.js"></script>
 
 </body>
 </html>
