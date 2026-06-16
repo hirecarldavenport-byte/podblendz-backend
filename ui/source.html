@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Creator Page</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
+      background: #eaeaea;
+      display: flex;
+      justify-content: center;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 430px;
+      min-height: 100vh;
+      background: #f7f4ef;
+      border-radius: 24px;
+      overflow: hidden;
+    }
+
+    /* ✅ CREATOR HEADER */
+    .creator-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 1rem;
+      background: white;
+      margin-bottom: 10px;
+    }
+
+    .creator-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+    }
+
+    .creator-header h2 {
+      font-size: 1.2rem;
+      margin-bottom: 4px;
+    }
+
+    .creator-header p {
+      font-size: 0.85rem;
+      color: #666;
+    }
+
+    /* ✅ FEED */
+    .feed {
+      padding: 1rem;
+    }
+
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .card-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .card-description {
+      font-size: 0.9rem;
+      color: #555;
+      margin-bottom: 8px;
+    }
+
+    .tag {
+      background: #f1ede8;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <!-- ✅ CREATOR HEADER -->
+  <div class="creator-header">
+    <img 
+      class="creator-avatar"
+      src="https://i.pravatar.cc/100?img=12"
+    />
+
+    <div>
+      <h2 id="creatorName">Creator</h2>
+      <p>Insights across multiple conversations</p>
+    </div>
+  </div>
+
+  <!-- ✅ BLEND LIST -->
+  <div class="feed" id="feed"></div>
+
+</div>
+
+<!-- ✅ LOAD DATA -->
+<script src="scripts/blends.js"></script>
+
+<script>
+  // ✅ GET NAME FROM URL
+  const params = new URLSearchParams(window.location.search);
+  const name = params.get("name");
+
+  document.getElementById("creatorName").innerText = name;
+
+  // ✅ FILTER BLENDS
+  const filtered = BLENDS.filter(b =>
+    (b.sources || []).includes(name)
+  );
+
+  const container = document.getElementById("feed");
+
+  // ✅ RENDER
+  container.innerHTML = filtered.map(b => `
+    <div class="card">
+      <div class="card-title">${b.title}</div>
+      <div class="card-description">${b.subtitle}</div>
+
+      <div class="tag">${b.clips} clips</div>
+    </div>
+  `).join("");
+</script>
+
+</body>
+</html>
