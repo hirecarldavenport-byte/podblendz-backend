@@ -29,15 +29,22 @@
       overflow: hidden;
     }
 
+    /* ✅ BACK BUTTON */
+    .back {
+      padding: 10px 14px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      color: #555;
+      background: #f7f4ef;
+    }
+
     /* ✅ CREATOR HEADER */
     .creator-header {
       background: white;
       padding: 1rem;
-
       display: flex;
       gap: 12px;
       align-items: center;
-
       border-bottom: 1px solid #eee;
     }
 
@@ -57,14 +64,13 @@
       color: #666;
     }
 
-    /* ✅ COUNT */
     .count {
       margin-top: 6px;
       font-size: 0.75rem;
       color: #999;
     }
 
-    /* ✅ SECTION TITLE */
+    /* ✅ SECTION */
     .section-title {
       padding: 1rem 1rem 0.5rem;
       font-size: 0.9rem;
@@ -86,6 +92,8 @@
 
       box-shadow: 0 4px 16px rgba(0,0,0,0.05);
       transition: transform 0.15s ease;
+
+      cursor: pointer;
     }
 
     .card:active {
@@ -109,6 +117,12 @@
       color: #888;
     }
 
+    .with {
+      font-size: 0.7rem;
+      color: #999;
+      margin-top: 6px;
+    }
+
   </style>
 </head>
 
@@ -116,12 +130,14 @@
 
 <div class="app">
 
+  <!-- ✅ BACK -->
+  <div class="back" onclick="window.history.back()">
+    ← Back
+  </div>
+
   <!-- ✅ HEADER -->
   <div class="creator-header">
-    <img 
-      class="creator-avatar"
-      src="https://i.pravatar.cc/100?img=32"
-    />
+    <img class="creator-avatar" src="" id="avatar" />
 
     <div class="creator-info">
       <h2 id="creatorName">Creator</h2>
@@ -147,27 +163,32 @@
 
   const params = new URLSearchParams(window.location.search);
 
-  // ✅ FIX 1: decode URL
+  // ✅ Decode name from URL
   const name = decodeURIComponent(params.get("name") || "");
 
-  // ✅ SET NAME
+  // ✅ Set creator name
   document.getElementById("creatorName").innerText =
     name || "Creator";
 
-  // ✅ FIX 2: FLEXIBLE FILTER
+  // ✅ Dynamic avatar (nice touch)
+  const avatarUrl =
+    "https://i.pravatar.cc/100?u=" + encodeURIComponent(name);
+  document.getElementById("avatar").src = avatarUrl;
+
+  // ✅ Filter blends (robust)
   const filtered = BLENDS.filter(b =>
     (b.sources || []).some(s =>
       s.toLowerCase().trim() === name.toLowerCase().trim()
     )
   );
 
-  // ✅ COUNT
+  // ✅ Count
   document.getElementById("blendCount").innerText =
     filtered.length + " blend" + (filtered.length !== 1 ? "s" : "");
 
   const container = document.getElementById("feed");
 
-  // ✅ EMPTY STATE
+  // ✅ Empty state
   if (filtered.length === 0) {
     container.innerHTML = `
       <p style="padding: 1rem; color:#777;">
@@ -176,18 +197,27 @@
     `;
   } else {
 
-    // ✅ RENDER CARDS
-    container.innerHTML = filtered.map(b => `
-      <div class="card" onclick="openBlend('${b.id}')">
-        <div class="card-title">${b.title}</div>
-        <div class="card-desc">${b.subtitle}</div>
-        <div class="card-meta">🎧 ${b.clips} clips</div>
-      </div>
-    `).join("");
+    // ✅ Render cards
+    container.innerHTML = filtered.map(b => {
 
+      const otherSources = (b.sources || [])
+        .filter(s => s !== name)
+        .map(s => `with ${s}`)
+        .join(", ");
+
+      return `
+        <div class="card" onclick="openBlend('${b.id}')">
+          <div class="card-title">${b.title}</div>
+          <div class="card-desc">${b.subtitle}</div>
+          <div class="card-meta">🎧 ${b.clips} clips</div>
+
+          ${otherSources ? `<div class="with">${otherSources}</div>` : ""}
+        </div>
+      `;
+    }).join("");
   }
 
-  // ✅ NAVIGATION
+  // ✅ Navigate to blend
   function openBlend(id) {
     window.location.href = '/ui/blend.html?id=' + id;
   }
