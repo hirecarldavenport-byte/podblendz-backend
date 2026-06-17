@@ -29,7 +29,6 @@
       overflow: hidden;
     }
 
-    /* BACK */
     .back {
       padding: 10px 14px;
       font-size: 0.9rem;
@@ -38,7 +37,6 @@
       background: #f7f4ef;
     }
 
-    /* HEADER */
     .creator-header {
       background: white;
       padding: 1rem;
@@ -46,12 +44,6 @@
       gap: 12px;
       align-items: center;
       border-bottom: 1px solid #eee;
-    }
-
-    .creator-avatar {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
     }
 
     .creator-info h2 {
@@ -70,7 +62,6 @@
       color: #999;
     }
 
-    /* SECTION */
     .section-title {
       padding: 1rem 1rem 0.5rem;
       font-size: 0.9rem;
@@ -82,7 +73,6 @@
       padding: 0 1rem 1rem;
     }
 
-    /* CARD */
     .card {
       background: white;
       padding: 1rem;
@@ -114,7 +104,6 @@
       color: #888;
     }
 
-    /* CREATOR LINKS */
     .with {
       margin-top: 6px;
       font-size: 0.75rem;
@@ -142,8 +131,6 @@
 
   <!-- HEADER -->
   <div class="creator-header">
-    
-
     <div class="creator-info">
       <h2 id="creatorName">Creator</h2>
       <p>Insights across multiple conversations</p>
@@ -169,28 +156,24 @@
 const params = new URLSearchParams(window.location.search);
 const name = decodeURIComponent(params.get("name") || "");
 
-// SET NAME
-document.getElementById("creatorName").innerText = name || "Creator";
+// ✅ SET NAME
+document.getElementById("creatorName").innerText =
+  name || "Creator";
 
-// AVATAR
-const avatarUrl =
-  "https://i.pravatar.cc/100?u=" + encodeURIComponent(name);
-document.getElementById("avatar").src = avatarUrl;
-
-// FILTER BLENDS
+// ✅ ✅ FIXED FILTER (THIS IS THE KEY)
 const filtered = BLENDS.filter(b =>
   (b.sources || []).some(s =>
-    s.toLowerCase().trim() === name.toLowerCase().trim()
+    s.toLowerCase().includes(name.toLowerCase())
   )
 );
 
-// COUNT
+// ✅ COUNT
 document.getElementById("blendCount").innerText =
   filtered.length + " blend" + (filtered.length !== 1 ? "s" : "");
 
 const container = document.getElementById("feed");
 
-// RENDER BLENDS
+// ✅ RENDER BLENDS
 if (filtered.length === 0) {
   container.innerHTML = `
     <p style="padding: 1rem; color:#777;">
@@ -205,7 +188,7 @@ if (filtered.length === 0) {
       .filter(s => s !== name)
       .map(s => `
         <span class="with-link"
-              onclick="goToCreator('${s}', event)">
+          onclick="goToCreator('${s}', event)">
           ${s}
         </span>
       `)
@@ -217,20 +200,18 @@ if (filtered.length === 0) {
         <div class="card-desc">${b.subtitle}</div>
         <div class="card-meta">🎧 ${b.clips} clips</div>
 
-        ${otherSources ? `
-          <div class="with">with ${otherSources}</div>
-        ` : ""}
+        ${otherSources ? `<div class="with">with ${otherSources}</div>` : ""}
       </div>
     `;
   }).join("");
 }
 
-// ✅ RELATED CREATORS (NEW)
+// ✅ RELATED CREATORS
 const relatedSet = new Set();
 
 filtered.forEach(b => {
   (b.sources || []).forEach(s => {
-    if (s !== name) {
+    if (!s.toLowerCase().includes(name.toLowerCase())) {
       relatedSet.add(s);
     }
   });
