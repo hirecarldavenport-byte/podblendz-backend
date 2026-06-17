@@ -5,11 +5,48 @@ if (typeof BLENDS === "undefined") {
   console.error("BLENDS is not defined");
 }
 
-// ✅ Run AFTER DOM is ready
+// ✅ On load
 document.addEventListener("DOMContentLoaded", () => {
+  renderTopCreators();   // ✅ NEW
   renderFeed();
 });
 
+
+// ✅ ✅ TOP CREATORS (RANKING LAYER)
+function renderTopCreators() {
+  const container = document.getElementById("topCreators");
+
+  if (!container) {
+    console.warn("Top creators container not found");
+    return;
+  }
+
+  const counts = {};
+
+  // ✅ Count appearances per creator
+  BLENDS.forEach(b => {
+    (b.sources || []).forEach(source => {
+      counts[source] = (counts[source] || 0) + 1;
+    });
+  });
+
+  // ✅ Convert to array + sort descending
+  const sorted = Object.entries(counts)
+    .sort((a, b) => b[1] - a[1]);
+
+  // ✅ Render
+  container.innerHTML = sorted.map(([name, count]) => `
+    <div class="card" onclick="goToSource('${name}', event)">
+      <div class="card-title">${name}</div>
+      <div class="card-meta">
+        ${count} blend${count > 1 ? "s" : ""}
+      </div>
+    </div>
+  `).join("");
+}
+
+
+// ✅ ✅ FEED (UNCHANGED CORE)
 function renderFeed() {
   const container = document.getElementById("feed");
 
@@ -42,7 +79,7 @@ function renderFeed() {
         `).join("")}
       </div>
 
-      <!-- ✅ ✅ FIXED SOURCES (CLICKABLE) -->
+      <!-- ✅ CLICKABLE SOURCES -->
       <div class="tags">
         ${(b.sources || []).slice(0, 3).map(source => `
           <span class="tag"
@@ -63,8 +100,17 @@ function renderFeed() {
   `).join("");
 }
 
-// ✅ Open blend page
+
+// ✅ NAV TO BLEND
 function openBlend(id) {
   console.log("Opening blend:", id);
   window.location.href = `/ui/blend.html?id=${id}`;
+}
+
+
+// ✅ NAV TO CREATOR (used in BOTH feed + ranking)
+function goToSource(name, event) {
+  event.stopPropagation();
+  window.location.href =
+    '/ui/source.html?name=' + encodeURIComponent(name);
 }
