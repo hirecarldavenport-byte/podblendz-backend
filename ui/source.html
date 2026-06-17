@@ -29,7 +29,7 @@
       overflow: hidden;
     }
 
-    /* ✅ BACK BUTTON */
+    /* ✅ BACK */
     .back {
       padding: 10px 14px;
       font-size: 0.9rem;
@@ -38,13 +38,15 @@
       background: #f7f4ef;
     }
 
-    /* ✅ CREATOR HEADER */
+    /* ✅ HEADER */
     .creator-header {
       background: white;
       padding: 1rem;
+
       display: flex;
       gap: 12px;
       align-items: center;
+
       border-bottom: 1px solid #eee;
     }
 
@@ -117,10 +119,15 @@
       color: #888;
     }
 
-    .with {
-      font-size: 0.7rem;
-      color: #999;
-      margin-top: 6px;
+    /* ✅ CLICKABLE CREATOR LINKS */
+    .with-link {
+      color: #7a6ee6;
+      cursor: pointer;
+      font-size: 0.75rem;
+    }
+
+    .with-link:hover {
+      text-decoration: underline;
     }
 
   </style>
@@ -137,7 +144,11 @@
 
   <!-- ✅ HEADER -->
   <div class="creator-header">
-    <img class="creator-avatar" src="" id="avatar" />
+    <img 
+      id="avatar"
+      class="creator-avatar"
+      src=""
+    />
 
     <div class="creator-info">
       <h2 id="creatorName">Creator</h2>
@@ -163,32 +174,30 @@
 
   const params = new URLSearchParams(window.location.search);
 
-  // ✅ Decode name from URL
   const name = decodeURIComponent(params.get("name") || "");
 
-  // ✅ Set creator name
+  // ✅ SET NAME
   document.getElementById("creatorName").innerText =
     name || "Creator";
 
-  // ✅ Dynamic avatar (nice touch)
+  // ✅ DYNAMIC AVATAR
   const avatarUrl =
     "https://i.pravatar.cc/100?u=" + encodeURIComponent(name);
   document.getElementById("avatar").src = avatarUrl;
 
-  // ✅ Filter blends (robust)
+  // ✅ FILTER BLENDS
   const filtered = BLENDS.filter(b =>
     (b.sources || []).some(s =>
       s.toLowerCase().trim() === name.toLowerCase().trim()
     )
   );
 
-  // ✅ Count
+  // ✅ COUNT
   document.getElementById("blendCount").innerText =
     filtered.length + " blend" + (filtered.length !== 1 ? "s" : "");
 
   const container = document.getElementById("feed");
 
-  // ✅ Empty state
   if (filtered.length === 0) {
     container.innerHTML = `
       <p style="padding: 1rem; color:#777;">
@@ -197,12 +206,17 @@
     `;
   } else {
 
-    // ✅ Render cards
     container.innerHTML = filtered.map(b => {
 
+      // ✅ BUILD CLICKABLE CREATOR LINKS
       const otherSources = (b.sources || [])
         .filter(s => s !== name)
-        .map(s => `with ${s}`)
+        .map(s => `
+          <span class="with-link"
+                onclick="goToCreator('${s}', event)">
+            ${s}
+          </span>
+        `)
         .join(", ");
 
       return `
@@ -211,19 +225,27 @@
           <div class="card-desc">${b.subtitle}</div>
           <div class="card-meta">🎧 ${b.clips} clips</div>
 
-          ${otherSources ? `<div class="with">${otherSources}</div>` : ""}
+          ${otherSources ? `<div>${otherSources}</div>` : ""}
         </div>
       `;
     }).join("");
   }
 
-  // ✅ Navigate to blend
+  // ✅ NAV TO BLEND
   function openBlend(id) {
     window.location.href = '/ui/blend.html?id=' + id;
+  }
+
+  // ✅ NAV BETWEEN CREATORS (🔥 KEY FEATURE)
+  function goToCreator(name, event) {
+    event.stopPropagation(); // ✅ prevents card click
+    window.location.href =
+      '/ui/source.html?name=' + encodeURIComponent(name);
   }
 
 </script>
 
 </body>
 </html>
+
 
