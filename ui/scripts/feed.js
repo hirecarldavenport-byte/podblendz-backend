@@ -18,12 +18,10 @@ document.addEventListener("DOMContentLoaded", () => {
 function setView(view) {
   currentView = view;
 
-  // ✅ Update active tab
   document.querySelectorAll(".tab").forEach(btn =>
     btn.classList.remove("active")
   );
 
-  // ✅ Highlight clicked tab
   event.target.classList.add("active");
 
   renderCurrentView();
@@ -44,25 +42,17 @@ function renderCurrentView() {
 function renderTopCreators() {
   const container = document.getElementById("feed");
 
-  if (!container) {
-    console.warn("Feed container not found");
-    return;
-  }
-
   const counts = {};
 
-  // ✅ Count appearances
   BLENDS.forEach(b => {
     (b.sources || []).forEach(source => {
       counts[source] = (counts[source] || 0) + 1;
     });
   });
 
-  // ✅ Sort descending
   const sorted = Object.entries(counts)
     .sort((a, b) => b[1] - a[1]);
 
-  // ✅ Render
   container.innerHTML = sorted.map(([name, count]) => `
     <div class="card" onclick="goToSource('${name}', event)">
       <div class="card-title">${name}</div>
@@ -74,7 +64,60 @@ function renderTopCreators() {
 }
 
 
-// ✅ ✅ FEED (BLENDS VIEW)
+// ✅ ✅ AUTO-BLEND GENERATOR
+function generateAutoBlends() {
+  const pairCounts = {};
+
+  // ✅ Count co-occurrences
+  BLENDS.forEach(b => {
+    const sources = b.sources || [];
+
+    for (let i = 0; i < sources.length; i++) {
+      for (let j = i + 1; j < sources.length; j++) {
+        const key = [sources[i], sources[j]].sort().join("::");
+        pairCounts[key] = (pairCounts[key] || 0) + 1;
+      }
+    }
+  });
+
+  // ✅ Only strong overlaps
+  const pairs = Object.entries(pairCounts)
+    .filter(([_, count]) => count >= 2);
+
+  // ✅ Generate blends
+  const autoBlends = pairs.map(([key, count], index) => {
+    const [a, b] = key.split("::");
+
+    return {
+      id: "auto-" + index,
+      title: generateTitle(a, b),
+      subtitle: "Emerging patterns across conversations",
+      clips: Math.floor(Math.random() * 60 + 20),
+      tags: ["auto", "insight"],
+      sources: [a, b],
+      isAuto: true
+    };
+  });
+
+  return autoBlends;
+}
+
+
+// ✅ AUTO TITLE GENERATOR
+function generateTitle(a, b) {
+  const templates = [
+    `${a} & ${b}: Shared Perspectives`,
+    `Conversations Between ${a} and ${b}`,
+    `Where ${a} Meets ${b}`,
+    `${a} x ${b}: Cross Ideas`,
+    `${a} and ${b} on the Same Signal`
+  ];
+
+  return templates[Math.floor(Math.random() * templates.length)];
+}
+
+
+// ✅ ✅ FEED (BLENDS VIEW + AUTO GENERATION)
 function renderFeed() {
   const container = document.getElementById("feed");
 
@@ -83,16 +126,24 @@ function renderFeed() {
     return;
   }
 
-  // ✅ Validate BLENDS
   if (!Array.isArray(BLENDS) || BLENDS.length === 0) {
-    console.warn("BLENDS is empty or not an array");
     container.innerHTML = "<p>No blends available</p>";
     return;
   }
 
-  container.innerHTML = BLENDS.map((b) => `
+  // ✅ Generate + merge
+  const autoBlends = generateAutoBlends();
+  const combined = [...autoBlends, ...BLENDS];
+
+  container.innerHTML = combined.map((b) => `
     <div class="card" onclick="openBlend('${b.id}')">
-      
+
+      ${b.isAuto ? `
+        <div style="font-size:0.7rem; color:#cfa85c; margin-bottom:6px;">
+          ✨ Generated Insight
+        </div>
+      ` : ""}
+
       <div class="card-content">
         <div>
           <div class="card-title">${b.title}</div>
@@ -100,16 +151,16 @@ function renderFeed() {
         </div>
       </div>
 
-      <!-- ✅ TAGS -->
+      <!-- TAGS -->
       <div class="tags">
         ${(b.tags || []).map(tag => `
           <span class="tag">${tag}</span>
         `).join("")}
       </div>
 
-      <!-- ✅ CLICKABLE SOURCES -->
+      <!-- SOURCES -->
       <div class="tags">
-        ${(b.sources || []).slice(0, 3).map(source => `
+        ${(b.sources || []).map(source => `
           <span class="tag"
                 onclick="goToSource('${source}', event)">
             ${source}
@@ -117,11 +168,9 @@ function renderFeed() {
         `).join("")}
       </div>
 
-      <!-- ✅ ACTIONS -->
+      <!-- META -->
       <div class="actions">
-        <div class="actions-left">
-          <span>🎧 ${b.clips || 0} clips</span>
-        </div>
+        <span>🎧 ${b.clips || 0} clips</span>
       </div>
 
     </div>
