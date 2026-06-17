@@ -29,7 +29,7 @@
       overflow: hidden;
     }
 
-    /* ✅ BACK */
+    /* BACK */
     .back {
       padding: 10px 14px;
       font-size: 0.9rem;
@@ -38,15 +38,13 @@
       background: #f7f4ef;
     }
 
-    /* ✅ HEADER */
+    /* HEADER */
     .creator-header {
       background: white;
       padding: 1rem;
-
       display: flex;
       gap: 12px;
       align-items: center;
-
       border-bottom: 1px solid #eee;
     }
 
@@ -72,7 +70,7 @@
       color: #999;
     }
 
-    /* ✅ SECTION */
+    /* SECTION */
     .section-title {
       padding: 1rem 1rem 0.5rem;
       font-size: 0.9rem;
@@ -80,22 +78,19 @@
       font-weight: 600;
     }
 
-    /* ✅ FEED */
     .feed {
-      padding: 0 1rem 6rem;
+      padding: 0 1rem 1rem;
     }
 
-    /* ✅ CARD */
+    /* CARD */
     .card {
       background: white;
       padding: 1rem;
       border-radius: 20px;
       margin-bottom: 1rem;
-
       box-shadow: 0 4px 16px rgba(0,0,0,0.05);
-      transition: transform 0.15s ease;
-
       cursor: pointer;
+      transition: transform 0.15s ease;
     }
 
     .card:active {
@@ -119,11 +114,16 @@
       color: #888;
     }
 
-    /* ✅ CLICKABLE CREATOR LINKS */
+    /* CREATOR LINKS */
+    .with {
+      margin-top: 6px;
+      font-size: 0.75rem;
+      color: #999;
+    }
+
     .with-link {
       color: #7a6ee6;
       cursor: pointer;
-      font-size: 0.75rem;
     }
 
     .with-link:hover {
@@ -137,18 +137,12 @@
 
 <div class="app">
 
-  <!-- ✅ BACK -->
-  <div class="back" onclick="window.history.back()">
-    ← Back
-  </div>
+  <!-- BACK -->
+  <div class="back" onclick="window.history.back()">← Back</div>
 
-  <!-- ✅ HEADER -->
+  <!-- HEADER -->
   <div class="creator-header">
-    <img 
-      id="avatar"
-      class="creator-avatar"
-      src=""
-    />
+    
 
     <div class="creator-info">
       <h2 id="creatorName">Creator</h2>
@@ -157,91 +151,111 @@
     </div>
   </div>
 
-  <!-- ✅ SECTION -->
-  <div class="section-title">
-    Blends from this creator
-  </div>
-
-  <!-- ✅ FEED -->
+  <!-- BLENDS -->
+  <div class="section-title">Blends from this creator</div>
   <div class="feed" id="feed"></div>
+
+  <!-- RELATED -->
+  <div class="section-title">Related Creators</div>
+  <div class="feed" id="relatedCreators"></div>
 
 </div>
 
-<!-- ✅ LOAD DATA -->
+<!-- LOAD DATA -->
 <script src="scripts/blends.js"></script>
 
 <script>
 
-  const params = new URLSearchParams(window.location.search);
+const params = new URLSearchParams(window.location.search);
+const name = decodeURIComponent(params.get("name") || "");
 
-  const name = decodeURIComponent(params.get("name") || "");
+// SET NAME
+document.getElementById("creatorName").innerText = name || "Creator";
 
-  // ✅ SET NAME
-  document.getElementById("creatorName").innerText =
-    name || "Creator";
+// AVATAR
+const avatarUrl =
+  "https://i.pravatar.cc/100?u=" + encodeURIComponent(name);
+document.getElementById("avatar").src = avatarUrl;
 
-  // ✅ DYNAMIC AVATAR
-  const avatarUrl =
-    "https://i.pravatar.cc/100?u=" + encodeURIComponent(name);
-  document.getElementById("avatar").src = avatarUrl;
+// FILTER BLENDS
+const filtered = BLENDS.filter(b =>
+  (b.sources || []).some(s =>
+    s.toLowerCase().trim() === name.toLowerCase().trim()
+  )
+);
 
-  // ✅ FILTER BLENDS
-  const filtered = BLENDS.filter(b =>
-    (b.sources || []).some(s =>
-      s.toLowerCase().trim() === name.toLowerCase().trim()
-    )
-  );
+// COUNT
+document.getElementById("blendCount").innerText =
+  filtered.length + " blend" + (filtered.length !== 1 ? "s" : "");
 
-  // ✅ COUNT
-  document.getElementById("blendCount").innerText =
-    filtered.length + " blend" + (filtered.length !== 1 ? "s" : "");
+const container = document.getElementById("feed");
 
-  const container = document.getElementById("feed");
+// RENDER BLENDS
+if (filtered.length === 0) {
+  container.innerHTML = `
+    <p style="padding: 1rem; color:#777;">
+      No blends found for this creator yet.
+    </p>
+  `;
+} else {
 
-  if (filtered.length === 0) {
-    container.innerHTML = `
-      <p style="padding: 1rem; color:#777;">
-        No blends found for this creator yet.
-      </p>
+  container.innerHTML = filtered.map(b => {
+
+    const otherSources = (b.sources || [])
+      .filter(s => s !== name)
+      .map(s => `
+        <span class="with-link"
+              onclick="goToCreator('${s}', event)">
+          ${s}
+        </span>
+      `)
+      .join(", ");
+
+    return `
+      <div class="card" onclick="openBlend('${b.id}')">
+        <div class="card-title">${b.title}</div>
+        <div class="card-desc">${b.subtitle}</div>
+        <div class="card-meta">🎧 ${b.clips} clips</div>
+
+        ${otherSources ? `
+          <div class="with">with ${otherSources}</div>
+        ` : ""}
+      </div>
     `;
-  } else {
+  }).join("");
+}
 
-    container.innerHTML = filtered.map(b => {
+// ✅ RELATED CREATORS (NEW)
+const relatedSet = new Set();
 
-      // ✅ BUILD CLICKABLE CREATOR LINKS
-      const otherSources = (b.sources || [])
-        .filter(s => s !== name)
-        .map(s => `
-          <span class="with-link"
-                onclick="goToCreator('${s}', event)">
-            ${s}
-          </span>
-        `)
-        .join(", ");
+filtered.forEach(b => {
+  (b.sources || []).forEach(s => {
+    if (s !== name) {
+      relatedSet.add(s);
+    }
+  });
+});
 
-      return `
-        <div class="card" onclick="openBlend('${b.id}')">
-          <div class="card-title">${b.title}</div>
-          <div class="card-desc">${b.subtitle}</div>
-          <div class="card-meta">🎧 ${b.clips} clips</div>
+const relatedContainer = document.getElementById("relatedCreators");
 
-          ${otherSources ? `<div>${otherSources}</div>` : ""}
-        </div>
-      `;
-    }).join("");
-  }
+relatedContainer.innerHTML = Array.from(relatedSet).map(r => `
+  <div class="card"
+       onclick="goToCreator('${r}', event)">
+    <div class="card-title">${r}</div>
+    <div class="card-meta">Appears in shared blends</div>
+  </div>
+`).join("");
 
-  // ✅ NAV TO BLEND
-  function openBlend(id) {
-    window.location.href = '/ui/blend.html?id=' + id;
-  }
+// NAVIGATION
+function openBlend(id) {
+  window.location.href = '/ui/blend.html?id=' + id;
+}
 
-  // ✅ NAV BETWEEN CREATORS (🔥 KEY FEATURE)
-  function goToCreator(name, event) {
-    event.stopPropagation(); // ✅ prevents card click
-    window.location.href =
-      '/ui/source.html?name=' + encodeURIComponent(name);
-  }
+function goToCreator(name, event) {
+  event.stopPropagation();
+  window.location.href =
+    '/ui/source.html?name=' + encodeURIComponent(name);
+}
 
 </script>
 
