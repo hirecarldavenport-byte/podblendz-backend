@@ -244,15 +244,14 @@
 
   <!-- TABS -->
   <div class="tabs">
-    <button class="tab active">Top Blends</button>
-    <button class="tab">Following</button>
-    <button class="tab">Recent</button>
-    <button class="tab">All Intents</button>
+    <button class="tab active" onclick="setView('blends')">Top Blends</button>
+    <button class="tab" onclick="setView('creators')">Top Creators</button>
+    <button class="tab" onclick="setView('following')">Following</button>
+    <button class="tab" onclick="setView('recent')">Recent</button>
+    <button class="tab" onclick="setView('all')">All Intents</button>
   </div>
 
   <!-- FEED -->
-  <div class="section-title">Top Creators</div>
-  <div class="feed" id="topCreators"></div>
 
   <div class="section-title">Blends</div>
   <div class="feed" id="feed"></div>

@@ -5,32 +5,60 @@ if (typeof BLENDS === "undefined") {
   console.error("BLENDS is not defined");
 }
 
-// ✅ On load
+// ✅ STATE
+let currentView = "blends";
+
+// ✅ ON LOAD
 document.addEventListener("DOMContentLoaded", () => {
-  renderTopCreators();   // ✅ NEW
-  renderFeed();
+  renderCurrentView();
 });
 
 
-// ✅ ✅ TOP CREATORS (RANKING LAYER)
+// ✅ SWITCH VIEWS (TAB CLICK)
+function setView(view) {
+  currentView = view;
+
+  // ✅ Update active tab
+  document.querySelectorAll(".tab").forEach(btn =>
+    btn.classList.remove("active")
+  );
+
+  // ✅ Highlight clicked tab
+  event.target.classList.add("active");
+
+  renderCurrentView();
+}
+
+
+// ✅ MAIN VIEW ROUTER
+function renderCurrentView() {
+  if (currentView === "creators") {
+    renderTopCreators();
+  } else {
+    renderFeed();
+  }
+}
+
+
+// ✅ ✅ TOP CREATORS (RANKING VIEW)
 function renderTopCreators() {
-  const container = document.getElementById("topCreators");
+  const container = document.getElementById("feed");
 
   if (!container) {
-    console.warn("Top creators container not found");
+    console.warn("Feed container not found");
     return;
   }
 
   const counts = {};
 
-  // ✅ Count appearances per creator
+  // ✅ Count appearances
   BLENDS.forEach(b => {
     (b.sources || []).forEach(source => {
       counts[source] = (counts[source] || 0) + 1;
     });
   });
 
-  // ✅ Convert to array + sort descending
+  // ✅ Sort descending
   const sorted = Object.entries(counts)
     .sort((a, b) => b[1] - a[1]);
 
@@ -46,7 +74,7 @@ function renderTopCreators() {
 }
 
 
-// ✅ ✅ FEED (UNCHANGED CORE)
+// ✅ ✅ FEED (BLENDS VIEW)
 function renderFeed() {
   const container = document.getElementById("feed");
 
@@ -108,7 +136,7 @@ function openBlend(id) {
 }
 
 
-// ✅ NAV TO CREATOR (used in BOTH feed + ranking)
+// ✅ NAV TO CREATOR
 function goToSource(name, event) {
   event.stopPropagation();
   window.location.href =
