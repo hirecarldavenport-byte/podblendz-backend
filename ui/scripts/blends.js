@@ -1,5 +1,7 @@
 const BLENDS = [
 
+  // 🔥 CLUSTER: AI
+
   {
     id: "future-ai",
     title: "Future of Artificial Intelligence",
@@ -37,6 +39,27 @@ const BLENDS = [
   },
 
   {
+    id: "ai-creativity",
+    title: "AI and Human Creativity",
+    subtitle: "Will machines enhance or replace us?",
+    clips: 60,
+    tags: ["AI", "creativity"],
+    sources: ["Lex Fridman", "Sam Altman"]
+  },
+
+  {
+    id: "ai-consciousness",
+    title: "Can AI Become Conscious?",
+    subtitle: "Exploring intelligence and awareness",
+    clips: 45,
+    tags: ["AI", "philosophy"],
+    sources: ["Lex Fridman"]
+  },
+
+
+  // 💪 CLUSTER: DISCIPLINE / GROWTH
+
+  {
     id: "discipline",
     title: "Discipline Over Motivation",
     subtitle: "Consistency wins",
@@ -52,6 +75,33 @@ const BLENDS = [
     clips: 45,
     tags: ["mindset"],
     sources: ["David Goggins"]
+  },
+
+  {
+    id: "faith-discipline",
+    title: "Faith and Discipline",
+    subtitle: "Spiritual strength meets consistency",
+    clips: 38,
+    tags: ["mindset", "faith"],
+    sources: ["KevOnStage"]
+  },
+
+  {
+    id: "mental-toughness",
+    title: "Mental Toughness",
+    subtitle: "Training your mind to endure",
+    clips: 55,
+    tags: ["mindset"],
+    sources: ["David Goggins", "Lex Fridman"]
+  },
+
+  {
+    id: "purpose-driven",
+    title: "Purpose Driven Life",
+    subtitle: "Clarity creates momentum",
+    clips: 42,
+    tags: ["mindset", "purpose"],
+    sources: ["KevOnStage", "Lex Fridman"]
   }
 
 ];
