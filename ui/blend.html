@@ -244,6 +244,13 @@
       </div>
 
     </div>
+    <!-- ✅ SHARE BUTTONS (MINIMAL ADD) -->
+     <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
+      <button onclick="shareBlend()">Share</button>
+      <button onclick="shareTwitter()">X</button>
+      <button onclick="shareFacebook()">FB</button>
+      <button onclick="copyLink()">Copy</button>
+     </div>
 
   </div>
 
@@ -373,6 +380,40 @@
     loadBlend();
 
   </script>
-
+/ ✅ SHARE FUNCTIONS (MINIMAL ADD)
+const shareText = "Check out this Blend on PodBlendz";
+function shareBlend() {
+  const shareUrl = window.location.href;
+  if (navigator.share) {
+    navigator.share({
+      title: "PodBlendz",
+      text: shareText,
+      url: shareUrl
+      });
+      } else {
+        alert("Use copy link to share");
+        }
+        }
+        function shareTwitter() {
+          const shareUrl = window.location.href;
+          const url =
+          "https://twitter.com/intent/tweet?text=" +
+          encodeURIComponent(shareText) +
+          "&url=" +
+          encodeURIComponent(shareUrl);
+           window.open(url, "_blank");
+           }
+           function shareFacebook() {
+            const shareUrl = window.location.href;
+            const url =
+            "https://www.facebook.com/sharer/sharer.php?u=" +
+            encodeURIComponent(shareUrl);
+            window.open(url, "_blank");
+            }
+            function copyLink() {
+              const shareUrl = window.location.href;
+              navigator.clipboard.writeText(shareUrl);
+              alert("Link copied!");
+              }
 </body>
 </html>
