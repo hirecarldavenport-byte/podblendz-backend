@@ -1,4 +1,5 @@
 const BLENDS = [
+
   {
     id: "future-ai",
     title: "Future of Artificial Intelligence",
@@ -9,12 +10,21 @@ const BLENDS = [
   },
 
   {
-    id: "discipline",
-    title: "Discipline Over Motivation",
-    subtitle: "Consistency wins",
-    clips: 64,
-    tags: ["mindset"],
-    sources: ["KevOnStage", "David Goggins"]
+    id: "ai-society",
+    title: "AI and Society",
+    subtitle: "How AI reshapes human behavior",
+    clips: 80,
+    tags: ["AI"],
+    sources: ["Lex Fridman", "Sam Altman"]
+  },
+
+  {
+    id: "deep-learning",
+    title: "Deep Learning Breakthroughs",
+    subtitle: "How models are evolving",
+    clips: 70,
+    tags: ["AI"],
+    sources: ["Lex Fridman", "OpenAI Talks"]
   },
 
   {
@@ -27,21 +37,12 @@ const BLENDS = [
   },
 
   {
-    id: "deep-learning",
-    title: "Deep Learning Breakthroughs",
-    subtitle: "How models are evolving",
-    clips: 70,
-    tags: ["AI", "research"],
-    sources: ["Lex Fridman", "OpenAI Talks"]
-  },
-
-  {
-    id: "discipline-faith",
-    title: "Discipline, Faith, and Purpose",
-    subtitle: "Building strength through belief",
-    clips: 38,
-    tags: ["mindset", "faith"],
-    sources: ["KevOnStage"]
+    id: "discipline",
+    title: "Discipline Over Motivation",
+    subtitle: "Consistency wins",
+    clips: 64,
+    tags: ["mindset"],
+    sources: ["KevOnStage", "David Goggins"]
   },
 
   {
@@ -51,14 +52,6 @@ const BLENDS = [
     clips: 45,
     tags: ["mindset"],
     sources: ["David Goggins"]
-  },
-
-  {
-    id: "ai-society",
-    title: "AI and Society",
-    subtitle: "How AI reshapes human behavior",
-    clips: 80,
-    tags: ["AI"],
-    sources: ["Sam Altman", "Lex Fridman"]
   }
+
 ];
