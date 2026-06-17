@@ -18,86 +18,69 @@
       color: #ffffff;
     }
 
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    /* =========================
-       NAV
-    ========================== */
+    /* NAV */
     .nav {
-      position: absolute;
-      top: 0;
-      width: 100%;
-      z-index: 10;
-      padding: 1.5rem 3rem;
+      padding: 1rem 1.2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
     .logo {
-      font-size: 1.25rem;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-
-    .nav-links a {
-      margin-left: 1.8rem;
-      font-size: 0.95rem;
-      opacity: 0.9;
-    }
-
-    /* =========================
-       HERO (DESKTOP)
-    ========================== */
-    .hero {
-      position: relative;
-      height: 92vh;
-      display: grid;
-      grid-template-columns: 1.1fr 1fr;
-      overflow: hidden;
-      background: #000;
-    }
-
-    .hero-left {
-      position: relative;
-      z-index: 3;
-      padding: 9rem 3rem 4rem;
-      max-width: 640px;
-    }
-
-    .hero-left h1 {
-      font-size: clamp(2.7rem, 5vw, 3.7rem);
-      font-weight: 700;
-      line-height: 1.15;
-      margin-bottom: 1rem;
-      letter-spacing: -0.01em;
-    }
-
-    .hero-left p {
       font-size: 1.1rem;
-      opacity: 0.9;
-      margin-bottom: 2.3rem;
+      font-weight: 600;
     }
 
+    /* HERO */
+    .hero {
+      padding: 2rem 1.2rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.4rem;
+    }
+
+    .hero h1 {
+      font-size: clamp(2rem, 6vw, 2.4rem);
+      line-height: 1.1;
+      font-weight: 700;
+    }
+
+    .hero p {
+      font-size: 1rem;
+      opacity: 0.85;
+    }
+
+    /* IMAGE BELOW TEXT (KEY CHANGE) */
+    .hero-image-container {
+      margin-top: 0.5rem;
+      width: 100%;
+      height: 220px;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .hero-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* BUTTONS */
     .buttons {
       display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-      margin-bottom: 0.6rem;
+      flex-direction: column;
+      gap: 0.7rem;
+      margin-top: 0.8rem;
     }
 
     .btn {
-      padding: 0.85rem 1.9rem;
+      width: 100%;
+      padding: 0.9rem;
       border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.4);
+      border: 1px solid rgba(255,255,255,0.25);
       background: transparent;
       color: #fff;
-      cursor: pointer;
+      font-size: 0.95rem;
     }
 
     .btn-primary {
@@ -106,140 +89,63 @@
       font-weight: 600;
     }
 
-    .btn-primary:hover {
-      background: #ff8126;
-    }
-
     .cta-note {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       opacity: 0.7;
+      margin-top: 0.3rem;
     }
 
-    /* =========================
-       HERO IMAGE
-    ========================== */
-    .hero-right {
-      position: relative;
-      overflow: hidden;
-    }
-
-    .hero-image {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: right center;
-    }
-
-    .hero-gradient {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(
-        to right,
-        rgba(0,0,0,0.92) 0%,
-        rgba(0,0,0,0.70) 35%,
-        rgba(0,0,0,0.35) 60%,
-        rgba(0,0,0,0.00) 100%
-      );
-      z-index: 2;
-    }
-
-    /* =========================
-       TOPICS
-    ========================== */
+    /* TOPICS */
     .topics {
-      padding: 3rem;
+      padding: 1.8rem 1.2rem;
       background: #121212;
-      border-top: 1px solid rgba(255,255,255,0.06);
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-      gap: 1.4rem;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8rem;
     }
 
-    /* =========================
-       MOBILE (THE IMPORTANT PART)
-    ========================== */
-    @media (max-width: 900px) {
-      .nav {
-        padding: 1rem 1.5rem;
-      }
+    .tile {
+      background: #1a1a1a;
+      padding: 0.9rem;
+      border-radius: 14px;
+    }
 
-      .nav-links {
-        display: none;
-      }
+    .tile h3 {
+      font-size: 0.85rem;
+      margin-bottom: 4px;
+    }
 
-      /* Hero becomes layered, not stacked */
+    .tile p {
+      font-size: 0.75rem;
+      opacity: 0.7;
+    }
+
+    /* ===== DESKTOP ===== */
+    @media (min-width: 900px) {
+
       .hero {
-        position: relative;
-        display: block;
-        min-height: 100vh;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        align-items: center;
+        padding: 6rem 3rem;
       }
 
-      .hero-left {
-        position: relative;
-        z-index: 3;
-        padding: 2.5rem 1.5rem 9.5rem; /* space for image */
-        max-width: 100%;
-      }
-
-      .hero-left h1 {
-        font-size: clamp(2rem, 7vw, 2.4rem);
-        line-height: 1.1;
-      }
-
-      .hero-left p {
-        font-size: 1rem;
-        margin-bottom: 1.6rem;
+      .hero-image-container {
+        height: 420px;
       }
 
       .buttons {
-        flex-direction: column;
-        gap: 0.75rem;
+        max-width: 320px;
       }
 
-      .btn {
-        width: 100%;
-        text-align: center;
-      }
-
-      /* Image acts like "right side" */
-      .hero-right {
-        position: absolute;
-        right: 0;
-        bottom: 0;
-        width: 85%;
-        height: 55vh;
-        z-index: 1;
-        pointer-events: none;
-      }
-
-      .hero-image {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        object-position: right center;
-      }
-
-      .hero-gradient {
-        background: linear-gradient(
-          to top,
-          rgba(0,0,0,0.95) 0%,
-          rgba(0,0,0,0.6) 35%,
-          rgba(0,0,0,0.25) 60%,
-          rgba(0,0,0,0.0) 85%
-        );
-      }
-
-      .topics {
-        padding: 2rem 1.5rem;
+      .grid {
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
       }
     }
+
   </style>
 </head>
 
@@ -248,26 +154,20 @@
   <!-- NAV -->
   <div class="nav">
     <div class="logo">PodBlendz 🎧</div>
-    <div class="nav-links">
-      <a href="#">Explore</a>
-      <a href="#">My Blendz</a>
-      <a href="#">Create</a>
-      <a href="#">Sign Up</a>
-    </div>
   </div>
 
   <!-- HERO -->
   <section class="hero">
-    <div class="hero-left">
+
+    <div>
       <h1>Your Podcasts.<br>Your Blendz. Your Way.</h1>
-      <p>Listen Smarter. Share Deeper. Blend Ideas.</p>
+      <p>Listen smarter. Share deeper. Blend ideas.</p>
 
       <div class="buttons">
-        <button class="btn">Get Started</button>
-        <button class="btn">Watch Demo</button>
         <button class="btn btn-primary" id="generateBlendzBtn">
           Generate Your Blendz
         </button>
+        <button class="btn">Watch Demo</button>
       </div>
 
       <div class="cta-note">
@@ -275,37 +175,37 @@
       </div>
     </div>
 
-    <div class="hero-right">
+    <!-- ✅ CLEAN MOBILE IMAGE -->
+    <div class="hero-image-container">
       <img
         class="hero-image"
         src="/assets/black-lady-on-the-train.jpg"
-        alt="Podcast listener on transit"
+        alt="Podcast listening"
       />
-      <div class="hero-gradient"></div>
     </div>
+
   </section>
 
   <!-- TOPICS -->
   <section class="topics">
     <div class="grid">
-      <div class="tile"><h3>AI & Technology</h3><p>Trends shaping the future</p></div>
-      <div class="tile"><h3>Health & Fitness</h3><p>Mind, body, longevity</p></div>
-      <div class="tile"><h3>Finance</h3><p>Money, markets, strategy</p></div>
-      <div class="tile"><h3>Movies & Media</h3><p>Culture, film, storytelling</p></div>
-      <div class="tile"><h3>Entrepreneurship</h3><p>Startups and leadership</p></div>
-      <div class="tile"><h3>Science</h3><p>Discovery and research</p></div>
-      <div class="tile"><h3>True Crime</h3><p>Cases and investigations</p></div>
+
+      <div class="tile"><h3>AI & Tech</h3><p>Future insights</p></div>
+      <div class="tile"><h3>Health</h3><p>Mind + body</p></div>
+      <div class="tile"><h3>Finance</h3><p>Money + markets</p></div>
+      <div class="tile"><h3>Media</h3><p>Stories + culture</p></div>
+      <div class="tile"><h3>Startups</h3><p>Build + scale</p></div>
+      <div class="tile"><h3>Science</h3><p>Discovery</p></div>
+
     </div>
   </section>
 
-  <!-- ✅ JS WIRES THE CTA BACK UP -->
+  <!-- CTA LOGIC -->
   <script>
-    const generateBtn = document.getElementById("generateBlendzBtn");
-    if (generateBtn) {
-      generateBtn.addEventListener("click", () => {
+    document.getElementById("generateBlendzBtn")
+      .addEventListener("click", () => {
         window.location.href = "/onboard/topics.html";
       });
-    }
   </script>
 
 </body>
