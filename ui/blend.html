@@ -12,7 +12,6 @@
   <title>PodBlendz Blend</title>
 
   <style>
-
     * {
       margin: 0;
       padding: 0;
@@ -20,7 +19,6 @@
     }
 
     body {
-
       font-family:
         -apple-system,
         BlinkMacSystemFont,
@@ -30,7 +28,6 @@
 
       background: #f7f4ef;
       color: #111;
-
       padding: 1.5rem;
     }
 
@@ -40,118 +37,59 @@
     }
 
     .back {
-
       margin-bottom: 2rem;
-
       display: inline-block;
-
       text-decoration: none;
-
       color: #666;
-
       font-size: 0.95rem;
     }
 
     .title {
-
       font-size: 2.8rem;
-
       line-height: 1.05;
-
       margin-bottom: 1rem;
-
       font-weight: 700;
     }
 
     .description {
-
       color: #555;
-
       margin-bottom: 2rem;
-
       line-height: 1.5;
-
       font-size: 1.05rem;
     }
 
-    .play-button {
-
-      width: 80px;
-      height: 80px;
-
-      border-radius: 50%;
-
-      background: #cfa85c;
-
-      color: white;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      font-size: 2rem;
-
-      margin-bottom: 1.5rem;
-
-      cursor: pointer;
-
-      box-shadow:
-        0 8px 24px rgba(0,0,0,0.1);
-    }
-
     #playerStatus {
-
       margin-bottom: 2rem;
-
       color: #666;
-
       font-size: 0.95rem;
     }
 
     .section-title {
-
       font-size: 1rem;
-
       margin-bottom: 1rem;
-
       margin-top: 2rem;
-
       font-weight: 600;
     }
 
     .tags {
-
       display: flex;
       flex-wrap: wrap;
-
       gap: 0.6rem;
     }
 
     .tag {
-
       background: #ece7df;
-
-      padding:
-        0.5rem
-        0.9rem;
-
+      padding: 0.5rem 0.9rem;
       border-radius: 999px;
-
       font-size: 0.85rem;
     }
 
     .clip {
-
       background: white;
-
       padding: 1rem;
-
       border-radius: 18px;
-
       margin-bottom: 1rem;
-
-      box-shadow:
-        0 2px 10px rgba(0,0,0,0.05);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     }
 
     .clip-title {
@@ -167,18 +105,12 @@
     }
 
     .stats {
-
       display: flex;
-
       gap: 1.5rem;
-
       margin-top: 2rem;
-
       color: #666;
-
       font-size: 0.95rem;
     }
-
   </style>
 
 </head>
@@ -187,36 +119,21 @@
 
   <div class="container">
 
-    <a
-      class="back"
-      href="./feed.html"
-    >
-      ← Back
-    </a>
+    ./feed.html← Back</a>
 
-    <div
-      class="title"
-      id="blendTitle"
-    >
+    <div class="title" id="blendTitle">
       Loading...
     </div>
 
-    <div
-      class="description"
-      id="blendDescription"
-    >
+    <div class="description" id="blendDescription">
       Generating semantic blend...
     </div>
 
     <audio
-        id="audioPlayer"
-        controls
-        style="
-          width:100%;
-          margin-bottom:2rem;
-          "
-          ></audio>
-
+      id="audioPlayer"
+      controls
+      style="width:100%; margin-bottom:2rem;"
+    ></audio>
 
     <div id="playerStatus">
       Ready to play semantic blend.
@@ -224,33 +141,22 @@
 
     <div id="clipList"></div>
 
-    <div class="section-title">
-      Blend Topics
-    </div>
+    <div class="section-title">Blend Topics</div>
 
-    <div
-      class="tags"
-      id="tags"
-    ></div>
+    <div class="tags" id="tags"></div>
 
     <div class="stats">
-
-      <div id="headphoneCount">
-        🎧 0
-      </div>
-
-      <div id="segmentCount">
-        🎙 0 clips
-      </div>
-
+      <div id="headphoneCount">🎧 0</div>
+      <div id="segmentCount">🎙 0 clips</div>
     </div>
-    <!-- ✅ SHARE BUTTONS (MINIMAL ADD) -->
-     <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
+
+    <!-- ✅ SHARE BUTTONS -->
+    <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
       <button onclick="shareBlend()">Share</button>
       <button onclick="shareTwitter()">X</button>
       <button onclick="shareFacebook()">FB</button>
       <button onclick="copyLink()">Copy</button>
-     </div>
+    </div>
 
   </div>
 
@@ -258,162 +164,111 @@
 
     async function loadBlend() {
 
-      const params =
-        new URLSearchParams(
-          window.location.search
-        );
+      const params = new URLSearchParams(window.location.search);
 
-      const topic =
-        decodeURIComponent(
-          params.get("topic") || ""
-        );
+      const topic = decodeURIComponent(params.get("topic") || "");
 
-      const response =
-        await fetch(
-          "./data/guided_topic_cards.json"
-        );
+      const response = await fetch("./data/guided_topic_cards.json");
 
-      const cards =
-        await response.json();
+      const cards = await response.json();
 
-      const blend =
-        cards.find(
-          c => c.topic === topic
-        );
-
+      const blend = cards.find(c => c.topic === topic);
       if (!blend) return;
-      const audioPlayer =
-      document.getElementById("audioPlayer");
+
+      const audioPlayer = document.getElementById("audioPlayer");
+
       if (blend.audio_file) {
-        audioPlayer.src = 
-        `./${blend.audio_file}`;
-        }
+        audioPlayer.src = `./${blend.audio_file}`;
+      }
 
-      document.getElementById(
-        "blendTitle"
-      ).innerText = blend.title;
+      document.getElementById("blendTitle").innerText = blend.title;
 
-      document.getElementById(
-        "blendDescription"
-      ).innerText =
-        blend.phrases?.[0] ||
-        "AI-generated semantic blend.";
+      document.getElementById("blendDescription").innerText =
+        blend.phrases?.[0] || "AI-generated semantic blend.";
 
-      document.getElementById(
-        "headphoneCount"
-      ).innerText =
+      document.getElementById("headphoneCount").innerText =
         `🎧 ${blend.related_segment_count}`;
 
-      document.getElementById(
-        "segmentCount"
-      ).innerText =
+      document.getElementById("segmentCount").innerText =
         `🎙 ${blend.related_segment_count} clips`;
 
-      const tagContainer =
-        document.getElementById("tags");
-
+      const tagContainer = document.getElementById("tags");
       tagContainer.innerHTML = "";
 
-      blend.keywords
-        .slice(0, 8)
-        .forEach(keyword => {
+      blend.keywords.slice(0, 8).forEach(keyword => {
+        const div = document.createElement("div");
+        div.className = "tag";
+        div.innerText = keyword[0];
+        tagContainer.appendChild(div);
+      });
 
-          const div =
-            document.createElement("div");
+      const status = document.getElementById("playerStatus");
+      const clipList = document.getElementById("clipList");
 
-          div.className = "tag";
+      blend.sample_segments.slice(0, 5).forEach(segment => {
+        const div = document.createElement("div");
+        div.className = "clip";
+        div.innerHTML = `
+          <div class="clip-title">Semantic Clip</div>
+          <div class="clip-text">${segment}</div>
+        `;
+        clipList.appendChild(div);
+      });
 
-          div.innerText = keyword[0];
-
-          tagContainer.appendChild(div);
-
-        });
-
-      const playButton =
-        document.querySelector(".play-button");
-
-      const status =
-        document.getElementById("playerStatus");
-
-      const clipList =
-        document.getElementById("clipList");
-
-      playButton.onclick = () => {
-
-        status.innerText =
-          "Generating AI semantic blend...";
-
-        clipList.innerHTML = "";
-
-        blend.sample_segments
-          .slice(0, 5)
-          .forEach(segment => {
-
-            const div =
-              document.createElement("div");
-
-            div.className = "clip";
-
-            div.innerHTML = `
-
-              <div class="clip-title">
-                Semantic Clip
-              </div>
-
-              <div class="clip-text">
-                ${segment}
-              </div>
-
-            `;
-
-            clipList.appendChild(div);
-
-          });
-
-        status.innerText =
-          "Semantic blend loaded.";
-
-      };
-
+      status.innerText = "Semantic blend loaded.";
     }
 
     loadBlend();
 
-  </script>
-/ ✅ SHARE FUNCTIONS (MINIMAL ADD)
-const shareText = "Check out this Blend on PodBlendz";
-function shareBlend() {
-  const shareUrl = window.location.href;
-  if (navigator.share) {
-    navigator.share({
-      title: "PodBlendz",
-      text: shareText,
-      url: shareUrl
-      });
+
+    // ✅ ✅ SHARE FUNCTIONS (FIXED + INSIDE SCRIPT)
+
+    const shareText = "Check out this Blend on PodBlendz";
+
+    function shareBlend() {
+      const shareUrl = window.location.href;
+
+      if (navigator.share) {
+        navigator.share({
+          title: "PodBlendz",
+          text: shareText,
+          url: shareUrl
+        });
       } else {
         alert("Use copy link to share");
-        }
-        }
-        function shareTwitter() {
-          const shareUrl = window.location.href;
-          const url =
-          "https://twitter.com/intent/tweet?text=" +
-          encodeURIComponent(shareText) +
-          "&url=" +
-          encodeURIComponent(shareUrl);
-           window.open(url, "_blank");
-           }
-           function shareFacebook() {
-            const shareUrl = window.location.href;
-            const url =
-            "https://www.facebook.com/sharer/sharer.php?u=" +
-            encodeURIComponent(shareUrl);
-            window.open(url, "_blank");
-            }
-            function copyLink() {
-              const shareUrl = window.location.href;
-              navigator.clipboard.writeText(shareUrl);
-              alert("Link copied!");
-              }
+      }
+    }
+
+    function shareTwitter() {
+      const shareUrl = window.location.href;
+
+      const url =
+        "https://twitter.com/intent/tweet?text=" +
+        encodeURIComponent(shareText) +
+        "&url=" +
+        encodeURIComponent(shareUrl);
+
+      window.open(url, "_blank");
+    }
+
+    function shareFacebook() {
+      const shareUrl = window.location.href;
+
+      const url =
+        "https://www.facebook.com/sharer/sharer.php?u=" +
+        encodeURIComponent(shareUrl);
+
+      window.open(url, "_blank");
+    }
+
+    function copyLink() {
+      const shareUrl = window.location.href;
+
+      navigator.clipboard.writeText(shareUrl);
+      alert("Link copied!");
+    }
+
+  </script>
+
 </body>
 </html>
