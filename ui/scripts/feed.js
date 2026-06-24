@@ -10,7 +10,7 @@ let currentView = "blends";
 
 // ✅ ON LOAD
 document.addEventListener("DOMContentLoaded", () => {
-  renderCurrentView();
+  console.log("feed.js ready");
 });
 
 

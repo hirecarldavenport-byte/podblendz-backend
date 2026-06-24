@@ -1,107 +1,104 @@
-const BLENDS = [
+// =====================================
+// PodBlendz Live Feed
+// =====================================
 
-  // 🔥 CLUSTER: AI
+let BLENDS = [];
 
-  {
-    id: "future-ai",
-    title: "Future of Artificial Intelligence",
-    subtitle: "Where intelligence is heading",
-    clips: 101,
-    tags: ["AI", "future"],
-    sources: ["Lex Fridman", "Sam Altman", "OpenAI Talks"]
-  },
+async function loadBlends() {
 
-  {
-    id: "ai-society",
-    title: "AI and Society",
-    subtitle: "How AI reshapes human behavior",
-    clips: 80,
-    tags: ["AI"],
-    sources: ["Lex Fridman", "Sam Altman"]
-  },
+  try {
 
-  {
-    id: "deep-learning",
-    title: "Deep Learning Breakthroughs",
-    subtitle: "How models are evolving",
-    clips: 70,
-    tags: ["AI"],
-    sources: ["Lex Fridman", "OpenAI Talks"]
-  },
+    console.log("Loading Blendz...");
 
-  {
-    id: "ai-safety",
-    title: "AI Safety & Alignment",
-    subtitle: "Keeping intelligence beneficial",
-    clips: 52,
-    tags: ["AI", "ethics"],
-    sources: ["Sam Altman", "OpenAI Talks"]
-  },
+    const response = await fetch(
+      "http://localhost:8000/blends"
+    );
 
-  {
-    id: "ai-creativity",
-    title: "AI and Human Creativity",
-    subtitle: "Will machines enhance or replace us?",
-    clips: 60,
-    tags: ["AI", "creativity"],
-    sources: ["Lex Fridman", "Sam Altman"]
-  },
+    if (!response.ok) {
+      throw new Error(
+        `HTTP ${response.status}`
+      );
+    }
 
-  {
-    id: "ai-consciousness",
-    title: "Can AI Become Conscious?",
-    subtitle: "Exploring intelligence and awareness",
-    clips: 45,
-    tags: ["AI", "philosophy"],
-    sources: ["Lex Fridman"]
-  },
+    const data = await response.json();
 
+    BLENDS = data.map(blend => ({
 
-  // 💪 CLUSTER: DISCIPLINE / GROWTH
+      id: blend.id,
 
-  {
-    id: "discipline",
-    title: "Discipline Over Motivation",
-    subtitle: "Consistency wins",
-    clips: 64,
-    tags: ["mindset"],
-    sources: ["KevOnStage", "David Goggins"]
-  },
+      title: blend.title,
 
-  {
-    id: "pain-growth",
-    title: "Pain Drives Growth",
-    subtitle: "Hardship creates transformation",
-    clips: 45,
-    tags: ["mindset"],
-    sources: ["David Goggins"]
-  },
+      subtitle:
+        blend.summary ||
+        blend.description ||
+        "Discover what the world's leading experts collectively think about any topic.",
 
-  {
-    id: "faith-discipline",
-    title: "Faith and Discipline",
-    subtitle: "Spiritual strength meets consistency",
-    clips: 38,
-    tags: ["mindset", "faith"],
-    sources: ["KevOnStage"]
-  },
+      clips:
+        blend.clip_count || 0,
 
-  {
-    id: "mental-toughness",
-    title: "Mental Toughness",
-    subtitle: "Training your mind to endure",
-    clips: 55,
-    tags: ["mindset"],
-    sources: ["David Goggins", "Lex Fridman"]
-  },
+      tags: ["blend"],
 
-  {
-    id: "purpose-driven",
-    title: "Purpose Driven Life",
-    subtitle: "Clarity creates momentum",
-    clips: 42,
-    tags: ["mindset", "purpose"],
-    sources: ["KevOnStage", "Lex Fridman"]
+      sources: [],
+
+      duration_ms:
+        blend.duration_ms,
+
+      audio_file:
+        blend.audio_file,
+
+      confidence_label:
+        blend.confidence_label,
+
+      created_at:
+        blend.created_at
+
+    }));
+
+    console.log(
+      `✅ Loaded ${BLENDS.length} Blendz`
+    );
+
+    if (
+      typeof renderCurrentView === "function"
+    ) {
+      renderCurrentView();
+    }
+
+  } catch (error) {
+
+    console.error(
+      "❌ Failed to load blends:",
+      error
+    );
+
+    BLENDS = [];
+
+    const feed =
+      document.getElementById("feed");
+
+    if (feed) {
+
+      feed.innerHTML = `
+        <div class="card">
+          <div class="card-title">
+            Unable to load Blendz
+          </div>
+
+          <div class="card-description">
+            Make sure the PodBlendz backend is running.
+          </div>
+        </div>
+      `;
+    }
   }
+}
 
-];
+
+// =====================================
+// Load on Startup
+// =====================================
+
+document.addEventListener(
+  "DOMContentLoaded",
+  loadBlends
+);
