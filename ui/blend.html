@@ -202,12 +202,12 @@
     async function loadBlend() {
 
       const params = new URLSearchParams(window.location.search);
-      const topic = decodeURIComponent(params.get("topic") || "");
+      
 
       const response = await fetch("./data/guided_topic_cards.json");
-      const cards = await response.json();
+     
 
-      const blend = cards.find(c => c.topic === topic);
+      
       if (!blend) return;
 
       const audioPlayer = document.getElementById("audioPlayer");
@@ -222,39 +222,32 @@
         blend.phrases?.[0] || "AI-generated semantic blend.";
 
       document.getElementById("headphoneCount").innerText =
-        `🎧 ${blend.related_segment_count}`;
+        `🎧 ${blend.clip_count}`;
 
       document.getElementById("segmentCount").innerText =
-        `🎙 ${blend.related_segment_count} clips`;
+        `🎙 ${blend.clip_count} clips`;
+
 
       const tagContainer = document.getElementById("tags");
       tagContainer.innerHTML = "";
-
-      blend.keywords.slice(0, 8).forEach(keyword => {
-        const div = document.createElement("div");
-        div.className = "tag";
-        div.innerText = keyword[0];
-        tagContainer.appendChild(div);
-      });
+      const tag = document.createElement("div");
+      tag.className = "tag";
+      tag.innerText = "blend";
+      tagContainer.appendChild(tag);
 
       const status = document.getElementById("playerStatus");
-      const clipList = document.getElementById("clipList");
+      status.innerText =
+          "Blend loaded.";
 
-      blend.sample_segments.slice(0, 5).forEach(segment => {
-        const div = document.createElement("div");
-        div.className = "clip";
-        div.innerHTML = `
-          <div class="clip-title">Semantic Clip</div>
-          <div class="clip-text">${segment}</div>
-        `;
-        clipList.appendChild(div);
-      });
-
-      status.innerText = "Semantic blend loaded.";
     }
 
-    loadBlend();
 
+
+
+      status.innerText = "Semantic blend loaded.";
+  
+
+    loadBlend();
 
     // ✅ SHARE FUNCTIONS
 
