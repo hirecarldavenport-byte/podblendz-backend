@@ -338,10 +338,10 @@
         if (blend.audio_file) {
 
           audioPlayer.src =
-            blend.audio_file.replaceAll(
-              "\\",
-              "/"
-            );
+           `http://localhost:8000/audio/${blend.audio_file
+           .replaceAll("\\", "/")
+           .replace("media/", "")}`;
+            
 
           document.getElementById(
             "playerStatus"
