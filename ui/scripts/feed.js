@@ -181,8 +181,8 @@ function renderFeed() {
 // ✅ NAV TO BLEND
 function openBlend(id) {
   console.log("Opening blend:", id);
-  window.location.href = `/ui/blend.html?id=${id}`;
-}
+  window.location.href = `./blend.html?id=${id}`;}
+
 
 
 // ✅ NAV TO CREATOR
