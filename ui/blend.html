@@ -7,6 +7,7 @@
   <title>PodBlendz Blend</title>
 
   <style>
+
     * {
       margin: 0;
       padding: 0;
@@ -14,6 +15,7 @@
     }
 
     body {
+
       font-family:
         -apple-system,
         BlinkMacSystemFont,
@@ -27,124 +29,124 @@
     }
 
     .container {
-      max-width: 600px;
+      max-width: 700px;
       margin: 0 auto;
     }
 
     .back {
+
       display: inline-block;
       margin-bottom: 1rem;
+
       text-decoration: none;
       color: #666;
       font-size: 0.9rem;
     }
 
-    .back:hover {
-      color: #111;
-    }
-
-    /* ✅ HERO CARD */
     .hero {
-      background: #ffffff;
+
+      background: white;
+
       border-radius: 20px;
+
       padding: 1.5rem;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.05);
+
+      box-shadow:
+        0 4px 18px rgba(0,0,0,0.05);
+
       margin-bottom: 1.5rem;
     }
 
     .meta-label {
-      font-size: 0.75rem;
+
       color: #cfa85c;
-      margin-bottom: 0.4rem;
+      font-size: 0.8rem;
+
+      margin-bottom: 0.5rem;
     }
 
     .title {
-      font-size: 2.4rem;
-      line-height: 1.1;
-      margin-bottom: 0.6rem;
+
+      font-size: 2.2rem;
       font-weight: 700;
+
+      margin-bottom: 0.75rem;
     }
 
     .description {
+
+      line-height: 1.6;
       color: #555;
-      margin-bottom: 1.2rem;
-      line-height: 1.5;
-      font-size: 1.05rem;
+
+      margin-bottom: 1rem;
     }
 
     #playerStatus {
-      margin-top: 0.6rem;
+
+      margin-top: 0.75rem;
       font-size: 0.85rem;
-      color: #777;
+      color: #666;
     }
 
     .section-title {
-      font-size: 0.9rem;
-      margin-bottom: 0.7rem;
-      margin-top: 1.6rem;
+
+      margin-top: 1.25rem;
+      margin-bottom: 0.75rem;
+
       font-weight: 600;
     }
 
     .tags {
+
       display: flex;
       flex-wrap: wrap;
       gap: 0.5rem;
     }
 
     .tag {
+
       background: #ece7df;
-      padding: 0.45rem 0.8rem;
+
+      padding:
+        0.45rem
+        0.8rem;
+
       border-radius: 999px;
+
       font-size: 0.8rem;
     }
 
-    .clip {
-      background: white;
-      padding: 1rem;
-      border-radius: 16px;
-      margin-bottom: 0.8rem;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    }
-
-    .clip-title {
-      font-weight: 600;
-      margin-bottom: 0.3rem;
-    }
-
-    .clip-text {
-      color: #666;
-      font-size: 0.9rem;
-      line-height: 1.5;
-    }
-
     .stats {
+
       display: flex;
-      gap: 1.2rem;
+      gap: 1rem;
+
       margin-top: 1rem;
+
       color: #666;
-      font-size: 0.9rem;
     }
 
-    /* ✅ SHARE STYLING */
     .share-row {
-      margin-top: 0.7rem;
+
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
+
+      margin-top: 0.75rem;
     }
 
     .share-btn {
+
       background: #ece7df;
       border: none;
-      padding: 0.45rem 0.8rem;
-      border-radius: 999px;
-      font-size: 0.75rem;
-      cursor: pointer;
-      transition: transform 0.1s ease;
-    }
 
-    .share-btn:active {
-      transform: scale(0.95);
+      padding:
+        0.45rem
+        0.8rem;
+
+      border-radius: 999px;
+
+      cursor: pointer;
     }
 
   </style>
@@ -155,44 +157,91 @@
 
   <div class="container">
 
-    <a class="back" href="./feed.html">← Back to Feed</a>
+    <a class="back" href="./feed.html">
+      ← Back to Feed
+    </a>
 
-    <!-- ✅ HERO BLOCK -->
     <div class="hero">
 
-      <div class="meta-label">✨ Generated Insight</div>
-
-      <div class="title" id="blendTitle">Loading...</div>
-
-      <div class="description" id="blendDescription">
-        Generating semantic blend...
+      <div class="meta-label">
+        ✨ Generated Insight
       </div>
 
-      <audio id="audioPlayer" controls style="width:100%;"></audio>
+      <div
+        id="blendTitle"
+        class="title">
+        Loading...
+      </div>
+
+      <div
+        id="blendDescription"
+        class="description">
+        Loading blend...
+      </div>
+
+      <audio
+        id="audioPlayer"
+        controls
+        style="width:100%;">
+      </audio>
 
       <div id="playerStatus">
-        Ready to play semantic blend.
+        Loading blend...
+      </div>
+
+      <div class="stats">
+
+        <div id="headphoneCount">
+          🎧 0
+        </div>
+
+        <div id="segmentCount">
+          🎙 0 clips
+        </div>
+
       </div>
 
     </div>
 
-    <div id="clipList"></div>
-
-    <div class="section-title">Blend Topics</div>
-    <div class="tags" id="tags"></div>
-
-    <div class="stats">
-      <div id="headphoneCount">🎧 0</div>
-      <div id="segmentCount">🎙 0 clips</div>
+    <div class="section-title">
+      Blend Topics
     </div>
 
-    <div class="section-title">Share this Blend</div>
+    <div
+      class="tags"
+      id="tags">
+    </div>
+
+    <div class="section-title">
+      Share this Blend
+    </div>
 
     <div class="share-row">
-      <button class="share-btn" onclick="shareBlend()">Share</button>
-      <button class="share-btn" onclick="shareTwitter()">X</button>
-      <button class="share-btn" onclick="shareFacebook()">FB</button>
-      <button class="share-btn" onclick="copyLink()">Copy</button>
+
+      <button
+        class="share-btn"
+        onclick="shareBlend()">
+        Share
+      </button>
+
+      <button
+        class="share-btn"
+        onclick="shareTwitter()">
+        X
+      </button>
+
+      <button
+        class="share-btn"
+        onclick="shareFacebook()">
+        FB
+      </button>
+
+      <button
+        class="share-btn"
+        onclick="copyLink()">
+        Copy
+      </button>
+
     </div>
 
   </div>
@@ -201,99 +250,212 @@
 
     async function loadBlend() {
 
-      const params = new URLSearchParams(window.location.search);
-      
+      try {
 
-      const response = await fetch("./data/guided_topic_cards.json");
-     
+        const params =
+          new URLSearchParams(
+            window.location.search
+          );
 
-      
-      if (!blend) return;
+        const id =
+          params.get("id");
 
-      const audioPlayer = document.getElementById("audioPlayer");
+        if (!id) {
 
-      if (blend.audio_file) {
-        audioPlayer.src = `./${blend.audio_file}`;
+          document.getElementById(
+            "playerStatus"
+          ).innerText =
+            "No Blend ID provided.";
+
+          return;
+        }
+
+        const response =
+          await fetch(
+            `http://localhost:8000/blend/${id}`
+          );
+
+        if (!response.ok) {
+
+          throw new Error(
+            `HTTP ${response.status}`
+          );
+        }
+
+        const blend =
+          await response.json();
+
+        document.getElementById(
+          "blendTitle"
+        ).innerText =
+          blend.title ||
+          "Untitled Blend";
+
+        document.getElementById(
+          "blendDescription"
+        ).innerText =
+          blend.summary ||
+          blend.description ||
+          "No summary available.";
+
+        document.getElementById(
+          "headphoneCount"
+        ).innerText =
+          `🎧 ${blend.clip_count}`;
+
+        document.getElementById(
+          "segmentCount"
+        ).innerText =
+          `🎙 ${blend.clip_count} clips`;
+
+        const tagContainer =
+          document.getElementById(
+            "tags"
+          );
+
+        tagContainer.innerHTML = "";
+
+        const tag =
+          document.createElement(
+            "div"
+          );
+
+        tag.className =
+          "tag";
+
+        tag.innerText =
+          "blend";
+
+        tagContainer.appendChild(
+          tag
+        );
+
+        const audioPlayer =
+          document.getElementById(
+            "audioPlayer"
+          );
+
+        if (blend.audio_file) {
+
+          audioPlayer.src =
+            blend.audio_file.replaceAll(
+              "\\",
+              "/"
+            );
+
+          document.getElementById(
+            "playerStatus"
+          ).innerText =
+            "Blend loaded.";
+        }
+        else {
+
+          document.getElementById(
+            "playerStatus"
+          ).innerText =
+            "Audio file unavailable.";
+        }
+
       }
+      catch (error) {
 
-      document.getElementById("blendTitle").innerText = blend.title;
+        console.error(
+          error
+        );
 
-      document.getElementById("blendDescription").innerText =
-        blend.phrases?.[0] || "AI-generated semantic blend.";
-
-      document.getElementById("headphoneCount").innerText =
-        `🎧 ${blend.clip_count}`;
-
-      document.getElementById("segmentCount").innerText =
-        `🎙 ${blend.clip_count} clips`;
-
-
-      const tagContainer = document.getElementById("tags");
-      tagContainer.innerHTML = "";
-      const tag = document.createElement("div");
-      tag.className = "tag";
-      tag.innerText = "blend";
-      tagContainer.appendChild(tag);
-
-      const status = document.getElementById("playerStatus");
-      status.innerText =
-          "Blend loaded.";
-
+        document.getElementById(
+          "playerStatus"
+        ).innerText =
+          "Failed to load Blend.";
+      }
     }
-
-
-
-
-      status.innerText = "Semantic blend loaded.";
-  
 
     loadBlend();
 
-    // ✅ SHARE FUNCTIONS
-
-    const shareText = "Check out this Blend on PodBlendz";
+    const shareText =
+      "Check out this Blend on PodBlendz";
 
     function shareBlend() {
-      const shareUrl = window.location.href;
+
+      const shareUrl =
+        window.location.href;
 
       if (navigator.share) {
+
         navigator.share({
-          title: "PodBlendz",
-          text: shareText,
-          url: shareUrl
+
+          title:
+            "PodBlendz",
+
+          text:
+            shareText,
+
+          url:
+            shareUrl
+
         });
-      } else {
-        alert("Use copy link to share");
+      }
+      else {
+
+        alert(
+          "Use copy link to share"
+        );
       }
     }
 
     function shareTwitter() {
-      const shareUrl = window.location.href;
+
+      const shareUrl =
+        window.location.href;
 
       const url =
-        "https://twitter.com/intent/tweet?text=" +
-        encodeURIComponent(shareText) +
-        "&url=" +   // ✅ FIXED PROPERLY
-        encodeURIComponent(shareUrl);
 
-      window.open(url, "_blank");
+        "https://twitter.com/intent/tweet?text=" +
+
+        encodeURIComponent(
+          shareText
+        ) +
+
+        "&url=" +
+
+        encodeURIComponent(
+          shareUrl
+        );
+
+      window.open(
+        url,
+        "_blank"
+      );
     }
 
     function shareFacebook() {
-      const shareUrl = window.location.href;
+
+      const shareUrl =
+        window.location.href;
 
       const url =
-        "https://www.facebook.com/sharer/sharer.php?u=" +
-        encodeURIComponent(shareUrl);
 
-      window.open(url, "_blank");
+        "https://www.facebook.com/sharer/sharer.php?u=" +
+
+        encodeURIComponent(
+          shareUrl
+        );
+
+      window.open(
+        url,
+        "_blank"
+      );
     }
 
     function copyLink() {
-      const shareUrl = window.location.href;
 
-      navigator.clipboard.writeText(shareUrl);
-      alert("Link copied!");
+      navigator.clipboard.writeText(
+        window.location.href
+      );
+
+      alert(
+        "Link copied!"
+      );
     }
 
   </script>
