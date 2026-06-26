@@ -338,9 +338,7 @@
         if (blend.audio_file) {
 
           audioPlayer.src =
-           `http://localhost:8000/audio/${blend.audio_file
-           .replaceAll("\\", "/")
-           .replace("media/", "")}`;
+           `http://localhost:8000/audio/blends/${blend.id}/final.mp3`;
             
 
           document.getElementById(
