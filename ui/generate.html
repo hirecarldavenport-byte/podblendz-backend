@@ -1,211 +1,327 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Generating Your Blendz | PodBlendz</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8" />
+<title>Creating Your Blendz DNA | PodBlendz</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <style>
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #0f0f0f;
-      color: #ffffff;
-    }
+<style>
 
-    .container {
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 4rem 1.5rem 3rem;
-      text-align: center;
-    }
+body {
+  margin: 0;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
 
-    h1 {
-      font-size: 2.3rem;
-      margin-bottom: 0.75rem;
-    }
+  background: #0f0f0f;
+  color: #ffffff;
+}
 
-    .subtitle {
-      opacity: 0.85;
-      max-width: 640px;
-      margin: 0 auto 2.5rem;
-      line-height: 1.5;
-    }
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 6rem 1.5rem 4rem;
+  text-align: center;
+}
 
-    .summary {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-      margin-bottom: 3rem;
-    }
+h1 {
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  margin-bottom: 1rem;
+  line-height: 1.05;
+}
 
-    .pill {
-      background: #1c1c1c;
-      border-radius: 999px;
-      padding: 0.5rem 1.2rem;
-      font-size: 0.85rem;
-      opacity: 0.9;
-    }
+.subtitle {
+  max-width: 700px;
+  margin: 0 auto 3rem;
+  line-height: 1.7;
+  color: rgba(255,255,255,.75);
+  font-size: 1.05rem;
+}
 
-    .loader {
-      margin: 3rem auto 2rem;
-      width: 48px;
-      height: 48px;
-      border: 4px solid #333;
-      border-top-color: #ff6a00;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
+.summary {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 4rem;
+}
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
+.pill {
+  background: #1b1b1b;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 999px;
+  padding: .7rem 1.2rem;
+  font-size: .9rem;
+  color: #fff;
+}
 
-    .status {
-      font-size: 0.9rem;
-      opacity: 0.7;
-      margin-top: 0.75rem;
-    }
+.loader {
+  width: 60px;
+  height: 60px;
 
-    /* MOCK PLAYER */
-    .player {
-      margin-top: 4rem;
-      background: #1b1b1b;
-      border-radius: 14px;
-      padding: 2rem 1.75rem;
-      text-align: left;
-      max-width: 720px;
-      margin-left: auto;
-      margin-right: auto;
-      display: none;
-    }
+  margin:
+    0 auto
+    2rem;
 
-    .player h2 {
-      font-size: 1.3rem;
-      margin-bottom: 0.4rem;
-    }
+  border-radius: 50%;
 
-    .player .meta {
-      font-size: 0.8rem;
-      opacity: 0.7;
-      margin-bottom: 1.5rem;
-    }
+  border: 4px solid #282828;
+  border-top-color: #ff6a00;
 
-    .progress {
-      height: 6px;
-      background: #333;
-      border-radius: 999px;
-      overflow: hidden;
-      margin-bottom: 1.25rem;
-    }
+  animation: spin 1s linear infinite;
+}
 
-    .progress-fill {
-      width: 20%;
-      height: 100%;
-      background: #ff6a00;
-    }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
-    .controls {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
+.status {
+  font-size: 1rem;
+  color: rgba(255,255,255,.78);
+  min-height: 24px;
+}
 
-    .play {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background: #ff6a00;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.1rem;
-      cursor: pointer;
-      border: none;
-    }
+.dna-card {
 
-    .time {
-      font-size: 0.8rem;
-      opacity: 0.7;
-    }
-  </style>
+  display: none;
+
+  margin-top: 4rem;
+
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+
+  background: #171717;
+
+  border: 1px solid rgba(255,255,255,.08);
+
+  border-radius: 20px;
+
+  padding: 2rem;
+}
+
+.dna-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: .75rem;
+}
+
+.dna-description {
+
+  color: rgba(255,255,255,.72);
+
+  line-height: 1.7;
+
+  margin-bottom: 2rem;
+}
+
+.dna-section-title {
+
+  font-size: .85rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+
+  color: #ff6a00;
+
+  margin-bottom: 1rem;
+}
+
+.dna-tags {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.dna-tag {
+  background: #252525;
+  padding: .6rem 1rem;
+  border-radius: 999px;
+}
+
+.ready {
+
+  margin-top: 2rem;
+
+  color: #ff6a00;
+
+  font-weight: 600;
+}
+
+</style>
 </head>
 
 <body>
-  <div class="container">
-    <h1>Your Blendz is being created</h1>
-    <p class="subtitle">
-      We’re blending conversations across podcasts based on your preferences.
-    </p>
 
-    <div class="summary" id="summaryPills">
-      <!-- Filled by JS -->
-    </div>
+<div class="container">
 
-    <div class="loader"></div>
-    <div class="status">
-      Identifying overlapping ideas and removing repetition…
-    </div>
+  <h1>
+    Creating Your Blendz DNA
+  </h1>
 
-    <!-- MOCK PLAYER -->
-    <div class="player" id="player">
-      <h2>AI, Markets & Human Impact</h2>
-      <div class="meta">
-        10‑minute Blendz · Balanced perspectives
-      </div>
+  <p class="subtitle">
+    We're analyzing conversations across podcasts to discover
+    the ideas, perspectives, and themes that define how you learn.
+  </p>
 
-      <div class="progress">
-        <div class="progress-fill"></div>
-      </div>
-
-      <div class="controls">
-        <button class="play">▶</button>
-        <div class="time">0:00 / 10:00</div>
-      </div>
-    </div>
+  <div
+    class="summary"
+    id="summaryPills">
   </div>
 
-  <script>
-    const data = JSON.parse(
-      localStorage.getItem("podblendz_onboard_complete") || "{}"
-    );
+  <div
+    class="loader"
+    id="loader">
+  </div>
 
-    const summary = document.getElementById("summaryPills");
+  <div
+    class="status"
+    id="status">
+    Analyzing podcast conversations...
+  </div>
 
-    if (data.topics) {
-      data.topics.forEach(topic => {
-        const pill = document.createElement("div");
-        pill.className = "pill";
-        pill.textContent = topic.replace("_", " ");
-        summary.appendChild(pill);
-      });
-    }
+  <div
+    class="dna-card"
+    id="dnaCard">
 
-    if (data.duration_minutes) {
-      const pill = document.createElement("div");
-      pill.className = "pill";
-      pill.textContent = `${data.duration_minutes} min`;
-      summary.appendChild(pill);
-    }
+    <div class="dna-title">
+      Your Blendz DNA
+    </div>
 
-    if (data.blend_style) {
-      const pill = document.createElement("div");
-      pill.className = "pill";
-      pill.textContent =
-        data.blend_style.charAt(0).toUpperCase() +
-        data.blend_style.slice(1).replace("_", " ");
-      summary.appendChild(pill);
-    }
+    <div class="dna-description">
+      Your listening profile is beginning to take shape.
+      We've identified the topics that consistently drive
+      your curiosity and will use them to personalize
+      your future Blendz experiences.
+    </div>
 
-    // Simulate generation delay
-    setTimeout(() => {
-      document.querySelector(".loader").style.display = "none";
-      document.querySelector(".status").textContent =
-        "Your first Blendz is ready.";
-      document.getElementById("player").style.display = "block";
-    }, 2500);
-  </script>
+    <div class="dna-section-title">
+      Primary Interests
+    </div>
+
+    <div
+      class="dna-tags"
+      id="dnaTags">
+    </div>
+
+    <div class="ready">
+      Your personalized Blendz feed is ready.
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+
+const data = JSON.parse(
+  localStorage.getItem(
+    "podblendz_onboard_complete"
+  ) || "{}"
+);
+
+const summary =
+  document.getElementById(
+    "summaryPills"
+  );
+
+const dnaTags =
+  document.getElementById(
+    "dnaTags"
+  );
+
+if (data.topics) {
+
+  data.topics.forEach(topic => {
+
+    const pill =
+      document.createElement("div");
+
+    pill.className =
+      "pill";
+
+    pill.textContent =
+      topic.replaceAll("_", " ");
+
+    summary.appendChild(pill);
+
+    const dna =
+      document.createElement("div");
+
+    dna.className =
+      "dna-tag";
+
+    dna.textContent =
+      topic.replaceAll("_", " ");
+
+    dnaTags.appendChild(dna);
+  });
+}
+
+const messages = [
+
+  "Analyzing podcast conversations...",
+
+  "Finding where experts agree...",
+
+  "Discovering overlapping ideas...",
+
+  "Mapping your learning profile...",
+
+  "Building your Blendz DNA...",
+
+  "Preparing your personalized feed..."
+];
+
+let index = 0;
+
+const status =
+  document.getElementById(
+    "status"
+  );
+
+const interval = setInterval(() => {
+
+  index++;
+
+  if (index < messages.length) {
+
+    status.textContent =
+      messages[index];
+  }
+
+}, 1800);
+
+setTimeout(() => {
+
+  clearInterval(interval);
+
+  document.getElementById(
+    "loader"
+  ).style.display = "none";
+
+  status.textContent =
+    "Blendz DNA created.";
+
+  document.getElementById(
+    "dnaCard"
+  ).style.display = "block";
+
+  setTimeout(() => {
+
+    window.location.href =
+      "feed.html";
+
+  }, 2500);
+
+}, 11000);
+
+</script>
+
 </body>
 </html>
