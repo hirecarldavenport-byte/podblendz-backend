@@ -11,7 +11,7 @@ async function loadBlends() {
     console.log("Loading Blendz...");
 
     const response = await fetch(
-      "http://localhost:8000/blends"
+      "https://api.podblendz.com/blends"
     );
 
     if (!response.ok) {
