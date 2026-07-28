@@ -38,7 +38,7 @@ async function loadBlends() {
 
       tags: ["blend"],
 
-      sources: [],
+      sources: blend.creators || [],
 
       duration_ms:
         blend.duration_ms,
