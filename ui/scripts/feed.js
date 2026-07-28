@@ -132,8 +132,7 @@ function renderFeed() {
   }
 
   // ✅ Generate + merge
-  const autoBlends = generateAutoBlends();
-  const combined = [...autoBlends, ...BLENDS];
+  const combined = [...BLENDS];
 
   container.innerHTML = combined.map((b) => `
     <div class="card" onclick="openBlend('${b.id}')">
