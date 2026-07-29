@@ -150,6 +150,16 @@ function renderFeed() {
             ${b.subtitle}
           </div>
 
+          <div
+            style="
+              margin-top:10px;
+              font-size:0.85rem;
+              color:#777;
+            "
+          >
+            Generated from ${(b.sources || []).length} creators • ${b.clips || 0} clips
+            </div>
+
         </div>
 
       </div>
@@ -168,7 +178,7 @@ function renderFeed() {
 
       </div>
 
-      <!-- BUILT FROM -->
+      <!-- Featuring Insights From -->
 
       ${(b.sources || []).length ? `
 
@@ -183,7 +193,7 @@ function renderFeed() {
             letter-spacing:.05em;
           "
         >
-          Built From
+          Featuring Insights From
         </div>
 
         <div class="tags">
