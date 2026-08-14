@@ -61,7 +61,6 @@ function renderCurrentView() {
   }
 
 }
-
 function openCreator(creatorName) {
 
   const creatorBlends = BLENDS.filter(blend =>
