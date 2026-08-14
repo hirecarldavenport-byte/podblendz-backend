@@ -137,10 +137,10 @@ function renderTopCreators() {
   const sorted = Object.entries(counts)
     .sort((a, b) => b[1] - a[1]);
 
-  container.innerHTML = combined.map((b) => `
+  container.innerHTML = sorted.map(([name, count]) => `
 
     <div 
-      class="card">
+      class="card"
       onclick="openCreator('${name}')"
       style="cursor:pointer;"
     >
@@ -185,13 +185,15 @@ function renderFeed() {
       "<p>No blends available</p>";
 
     return;
+
+    }
   
 
   const combined = [...BLENDS];
 
-  }
+  
 
-  container.innerHTML = sorted.map(([name, count]) => `
+  container.innerHTML = combined.map((b) => `
 
     <div
       class="card"
