@@ -62,6 +62,60 @@ function renderCurrentView() {
 
 }
 
+function openCreator(creatorName) {
+
+  const creatorBlends = BLENDS.filter(blend =>
+    (blend.sources || []).includes(creatorName)
+    );
+
+    const container = document.getElementById("feed");
+
+    container.innerHTML = `
+      <div class="card">
+
+      <button
+        class="blend-btn"
+        onclick="renderTopCreators()"
+        style="margin-bottom:15px;"
+        >
+          ← Back
+        </button>
+
+        <div class="card-title">
+          ${formatCreator(creatorName)}
+        </div>
+
+        <div class="card-description">
+          Appears in ${creatorBlends.length} Blendz
+        </div>
+
+      </div>
+      `;
+
+    container.innerHTML += creatorBlends.map(blend => `
+
+      <div
+        class="card"
+        onclick="openBlend('${blend.id}')"
+        >
+          <div class="card-title">
+            ${blend.title}
+          </div>
+
+          <div class="card-description">
+            ${blend.subtitle || ""}
+
+          </div>
+
+          <div class="actions">
+            🎧 ${blend.clips || 0} clips
+
+          </div>
+        </div>
+
+        `).join("");
+      
+      }
 
 // ✅ TOP CREATORS
 function renderTopCreators() {
@@ -86,7 +140,12 @@ function renderTopCreators() {
 
   container.innerHTML = sorted.map(([name, count]) => `
 
-    <div class="card">
+    <div 
+      class="card">
+      onclick="openCreator('${name}')"
+      style="cursor:pointer;"
+
+    >
 
       <div class="card-title">
         ${formatCreator(name)}
@@ -101,6 +160,7 @@ function renderTopCreators() {
   `).join("");
 
 }
+
 
 
 // ✅ FEED
@@ -127,11 +187,13 @@ function renderFeed() {
       "<p>No blends available</p>";
 
     return;
-  }
+  
 
   const combined = [...BLENDS];
 
-  container.innerHTML = combined.map((b) => `
+  }
+
+  container.innerHTML = sorted.map(([name, count]) => `
 
     <div
       class="card"
@@ -255,6 +317,6 @@ function goToSource(name, event) {
 
   // Future:
   // window.location.href =
-  //  `/source.html?name=${encodeURIComponent(name)}`;
+  // `/source.html?name=${encodeURIComponent(name)}`;
 
 }
