@@ -143,7 +143,6 @@ function renderTopCreators() {
       class="card">
       onclick="openCreator('${name}')"
       style="cursor:pointer;"
-
     >
 
       <div class="card-title">
