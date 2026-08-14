@@ -70,7 +70,7 @@ function openCreator(creatorName) {
     const container = document.getElementById("feed");
 
     container.innerHTML = `
-      <div class="card">
+      <div class="card"
 
       <button
         class="blend-btn"
@@ -137,7 +137,7 @@ function renderTopCreators() {
   const sorted = Object.entries(counts)
     .sort((a, b) => b[1] - a[1]);
 
-  container.innerHTML = sorted.map(([name, count]) => `
+  container.innerHTML = combined.map((b) => `
 
     <div 
       class="card">
