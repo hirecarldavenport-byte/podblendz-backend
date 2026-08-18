@@ -22,6 +22,8 @@ async function loadBlends() {
 
     const data = await response.json();
 
+    console.log("FIRST BLEND", data[0]);
+
     BLENDS = data.map(blend => ({
 
       id: blend.id,
