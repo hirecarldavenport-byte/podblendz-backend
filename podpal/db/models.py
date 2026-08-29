@@ -29,3 +29,80 @@ class Episode(Base):
 
     ingested_at = Column(DateTime)
     updated_at = Column(DateTime)
+
+    # =====================================
+# GENERATED BLENDS
+# =====================================
+
+class Blend(Base):
+    __tablename__ = "blends"
+
+    id = Column(String, primary_key=True)
+    title = Column(String)
+    summary = Column(String)
+    description = Column(String)
+    query = Column(String)
+    audio_file = Column(String)
+    image = Column(String)
+    duration_ms = Column(Integer)
+    clip_count = Column(Integer)
+    confidence_score = Column(String)
+    confidence_label = Column(String)
+    corroboration_count = Column(Integer)
+    created_at = Column(DateTime)
+
+
+# =====================================
+# BLEND CREATORS
+# =====================================
+
+class BlendCreator(Base):
+    __tablename__ = "blend_creators"
+
+    id = Column(String, primary_key=True)
+    blend_id = Column(String, ForeignKey("blends.id"))
+    creator_name = Column(String)
+
+
+# =====================================
+# BLEND PODCASTS
+# =====================================
+
+class BlendPodcast(Base):
+    __tablename__ = "blend_podcasts"
+
+    id = Column(String, primary_key=True)
+    blend_id = Column(String, ForeignKey("blends.id"))
+    podcast_name = Column(String)
+
+
+# =====================================
+# BLEND EPISODES
+# =====================================
+
+class BlendEpisode(Base):
+    __tablename__ = "blend_episodes"
+
+    id = Column(String, primary_key=True)
+    blend_id = Column(
+        String,
+        ForeignKey("blends.id"),
+        nullable=False
+    )
+
+    podcast_title = Column(String)
+    episode_title = Column(String)
+    episode_id = Column(String)
+    published = Column(String)
+
+
+# =====================================
+# BLEND TOPICS
+# =====================================
+
+class BlendTopic(Base):
+    __tablename__ = "blend_topics"
+
+    id = Column(String, primary_key=True)
+    blend_id = Column(String, ForeignKey("blends.id"))
+    topic = Column(String)
