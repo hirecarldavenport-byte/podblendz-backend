@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.routing import APIRoute
+from podpal.routes.blend_feed_routes import router as blend_feed_router
 
 
 # -------------------------------------------------
@@ -75,6 +76,7 @@ app.include_router(health_router)
 app.include_router(s3_router)
 app.include_router(narration_router)
 app.include_router(blend_router)
+app.include_router(blend_feed_router)
 
 
 # -------------------------------------------------
