@@ -295,6 +295,37 @@
           console.log(blend);
           console.log(blend.episode_objects);
 
+          const episodeSources =
+  document.getElementById("episodeSources");
+
+if (
+  blend.episode_objects &&
+  blend.episode_objects.length
+) {
+
+  episodeSources.innerHTML =
+    blend.episode_objects.map(ep => `
+      <div style="margin-bottom:12px;">
+        <div style="font-weight:600;">
+          ${ep.episode_title || "Unknown Episode"}
+        </div>
+
+        <div style="
+          color:#666;
+          font-size:0.9rem;
+        ">
+          ${ep.podcast_title || "Unknown Podcast"}
+        </div>
+      </div>
+    `).join("");
+
+} else {
+
+  episodeSources.innerHTML =
+    "<p>No episode metadata found.</p>";
+
+}
+
         document.getElementById(
           "blendTitle"
         ).innerText =
