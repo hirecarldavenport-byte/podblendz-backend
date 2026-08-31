@@ -303,23 +303,29 @@ if (
   blend.episode_objects.length
 ) {
 
+  const uniqueEpisodes =
+    [...new Map(
+      blend.episode_objects.map(
+        ep => [ep.episode_id, ep]
+)
+).values()];
+
   episodeSources.innerHTML =
-    blend.episode_objects.map(ep => `
-      <div style="margin-bottom:12px;">
-        <div style="font-weight:600;">
-          ${ep.episode_title || "Unknown Episode"}
-        </div>
-
-        <div style="
-          color:#666;
-          font-size:0.9rem;
-        ">
-          ${ep.podcast_title || "Unknown Podcast"}
-        </div>
+  uniqueEpisodes.map(ep => `
+  <div style="margin-bottom:12px;">
+    <div style="font-weight:600;">
+      ${ep.episode_title || "Unknown Episode"}
       </div>
-    `).join("");
+      <div style="
+      color:#666;
+      font-size:0.9rem;
+      ">
+      ${ep.podcast_title || "Unknown Podcast"}
+      </div>
+      </div>
+      `).join("");
+      } else {
 
-} else {
 
   episodeSources.innerHTML =
     "<p>No episode metadata found.</p>";
