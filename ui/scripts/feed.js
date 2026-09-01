@@ -56,11 +56,16 @@ function renderCurrentView() {
 
   if (currentView === "creators") {
     renderTopCreators();
-  } else {
-    renderFeed();
+  } else if (currentView === "following") {
+
+    renderBoards();
+
+    } else {
+      renderFeed();
+
+    }
   }
 
-}
 function openCreator(creatorName) {
 
   const creatorBlends = BLENDS.filter(blend =>
@@ -159,8 +164,107 @@ function renderTopCreators() {
 
 }
 
+function renderBoards() {
 
+  const container =
+    document.getElementById("feed");
 
+  const boards = {};
+
+  BLENDS.forEach(blend => {
+
+    (blend.tags || []).forEach(tag => {
+
+      boards[tag] =
+        (boards[tag] || 0) + 1;
+
+    });
+
+  });
+
+  const sorted =
+    Object.entries(boards)
+      .sort((a, b) => b[1] - a[1]);
+
+  container.innerHTML =
+    sorted.map(([name, count]) => `
+
+      <div
+        class="card"
+        onclick="openBoard('${name}')"
+        style="cursor:pointer;"
+      >
+
+        <div class="card-title">
+          ${name}
+        </div>
+
+        <div class="card-description">
+          ${count} Blendz
+        </div>
+
+      </div>
+
+    `).join("");
+
+}
+
+function openBoard(boardName) {
+
+  const boardBlends =
+    BLENDS.filter(blend =>
+      (blend.tags || [])
+        .includes(boardName)
+    );
+
+  const container =
+    document.getElementById("feed");
+
+  container.innerHTML = `
+
+    <div class="card">
+
+      <button
+        class="blend-btn"
+        onclick="renderBoards()"
+        style="margin-bottom:15px;"
+      >
+        ← Back
+      </button>
+
+      <div class="card-title">
+        ${boardName}
+      </div>
+
+      <div class="card-description">
+        ${boardBlends.length} Blendz
+      </div>
+
+    </div>
+
+  `;
+
+  container.innerHTML +=
+    boardBlends.map(blend => `
+
+      <div
+        class="card"
+        onclick="openBlend('${blend.id}')"
+      >
+
+        <div class="card-title">
+          ${blend.title}
+        </div>
+
+        <div class="card-description">
+          ${blend.subtitle || ""}
+        </div>
+
+      </div>
+
+    `).join("");
+
+}
 // ✅ FEED
 function renderFeed() {
 
