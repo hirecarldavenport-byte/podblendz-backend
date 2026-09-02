@@ -164,6 +164,8 @@ function renderTopCreators() {
 
 }
 
+console.log("BOARDS VERSION");
+
 function renderBoards() {
 
   const container =
