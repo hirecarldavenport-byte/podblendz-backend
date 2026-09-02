@@ -149,7 +149,7 @@
 </div>
 
 <!-- LOAD DATA -->
-<script src="scripts/blends.js"></script>
+<script src="scripts/blends.js?v=>script>
 
 <script>
 
@@ -165,7 +165,6 @@ const filtered = BLENDS.filter(b =>
   (b.sources || []).some(s =>
     s.toLowerCase().includes(name.toLowerCase())
   )
-);
 
 // ✅ COUNT
 document.getElementById("blendCount").innerText =
