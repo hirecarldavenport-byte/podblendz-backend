@@ -175,14 +175,14 @@ function renderBoards() {
 
   BLENDS.forEach(blend => {
 
-    (blend.tags || []).forEach(tag => {
+    const board =
+      blend.board || "Uncategorized";
 
-      boards[tag] =
-        (boards[tag] || 0) + 1;
+      boards[board] =
+        (boards[board] || 0) + 1;
+
 
     });
-
-  });
 
   const sorted =
     Object.entries(boards)
@@ -214,9 +214,9 @@ function renderBoards() {
 function openBoard(boardName) {
 
   const boardBlends =
-    BLENDS.filter(blend =>
-      (blend.tags || [])
-        .includes(boardName)
+    BLENDS.filter(
+      blend =>
+        blend.board === boardName
     );
 
   const container =
@@ -335,15 +335,9 @@ function renderFeed() {
       <!-- TAGS -->
 
       <div class="tags">
-
-        ${(b.tags || []).map(tag => `
-
-          <span class="tag">
-            ${tag}
-          </span>
-
-        `).join("")}
-
+        <span class="tag">
+          ${b.board || "Uncategorized"}
+        </span>
       </div>
 
       <!-- Featuring Insights From -->

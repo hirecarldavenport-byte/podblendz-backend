@@ -23,12 +23,20 @@ async function loadBlends() {
     const data = await response.json();
 
     console.log("FIRST BLEND", data[0]);
+      console.log(
+        "FIRST BOARD",
+        data[0]?.board
+        );
+
 
     BLENDS = data.map(blend => ({
 
       id: blend.id,
 
       title: blend.title,
+
+      board:
+      blend.board || "Uncategorized",
 
       subtitle:
         blend.summary ||
@@ -37,8 +45,6 @@ async function loadBlends() {
 
       clips:
         blend.clip_count || 0,
-
-      tags: ["blend"],
 
       sources: blend.creators || [],
       episode_objects:
