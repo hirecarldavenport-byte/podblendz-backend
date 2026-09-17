@@ -16,6 +16,7 @@
 
     body {
 
+
       font-family:
         -apple-system,
         BlinkMacSystemFont,
@@ -26,7 +27,9 @@
       background: #f7f4ef;
       color: #111;
       padding: 1.5rem;
-    }
+
+      }
+    
 
     .container {
       max-width: 700px;
@@ -304,14 +307,14 @@ if (
 ) {
 
   const uniqueEpisodes =
-    [...new Map(
-      blend.episode_objects.map(
-        ep => [ep.episode_id, ep]
-)
-).values()];
+  [...new Map(
+    blend.episode_objects.map(
+      ep => [ep.episode_id, ep]
+    )
+  ).values()];
 
   episodeSources.innerHTML =
-  uniqueEpisodes.map(ep => `
+  uniqueEpisodes.map(ep => `  
   <div style="margin-bottom:12px;">
     <div style="font-weight:600;">
       ${ep.episode_title || "Unknown Episode"}
@@ -324,7 +327,30 @@ if (
       </div>
       </div>
       `).join("");
-      } else {
+      const creatorCount =
+        (blend.creators || []).length;
+      const displayedCount =
+        uniqueEpisodes.length;
+      if (creatorCount > displayedCount) {
+        episodeSources.innerHTML += `
+            <div style="
+                margin-top:16px;
+                padding:12px;
+                background:#f4f4f4;
+                border-radius:12px;
+                color:#666;
+                font-size:0.9rem;
+            ">
+                📚 Additional source episodes contributed to this Blend.
+                <div style="margin-top:6px;">
+                    PodBlendz is still matching episode titles and source metadata for some clips.
+                </div>
+            </div>
+          `;
+
+           }
+        
+        } else {
 
 
   episodeSources.innerHTML =
@@ -507,4 +533,3 @@ if (
 
 </body>
 </html>
-
