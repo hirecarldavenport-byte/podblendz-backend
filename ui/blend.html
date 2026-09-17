@@ -325,6 +325,22 @@ if (
       ">
       ${ep.podcast_title || "Unknown Podcast"}
       </div>
+
+      <div style="margin-top:4px;">
+        <a
+          href="${'https://www.google.com/search?q=' + encodeURIComponent(
+            (ep.episode_title || '') + ' ' + (ep.podcast_title || '')
+            )}"
+            rel="noopener noreferrer"
+            style="
+              font-size:0.85rem;
+              text-decoration:none;
+              color:#cfa85c;
+              font-weight:600;
+            "
+          >
+          🔍 Find Original Episode
+        </a>
       </div>
       `).join("");
       const creatorCount =
@@ -343,8 +359,7 @@ if (
             ">
                 📚 Additional source episodes contributed to this Blend.
                 <div style="margin-top:6px;">
-                    PodBlendz is still matching episode titles and source details for some clips.
-                </div>
+                    PodBlendz is still matching source details for some clips.v>
             </div>
           `;
 
