@@ -186,9 +186,9 @@
   <div class="nav">
     <div class="logo">PodBlendz 🎧</div>
 
-    <button class="login-btn">
+    button class="login-btn" id="loginBtn"
       Sign In
-    </button>
+    /button
   </div>
 
   <!-- HERO -->
@@ -241,6 +241,11 @@
       .addEventListener("click", () => {
         window.location.href = "/onboard/topics.html";
       });
+
+      document.getElementById("loginBtn")
+  .addEventListener("click", () => {
+    alert("Sign In clicked");
+  });
   </script>
 
 </body>
