@@ -217,7 +217,14 @@ def create_blend(
 
         return blend
 
-    except Exception:
+    except Exception as e:
+        print("\n===== COMMIT FAILED =====")
+        print("TYPE:", type(e))
+        print("ERROR:", str(e))
+
+        import traceback
+        traceback.print_exc()
+
 
         db.rollback()
 
@@ -399,6 +406,14 @@ def delete_blend(
         return False
 
     db.delete(blend)
+
+    print("\n===== ABOUT TO COMMIT =====")
+    print("ID:", blend.id)
+    print("TITLE:", blend.title)
+    print("CREATED_AT:", blend.created_at)
+    print("BOARD:", blend.board)
+    print("AUDIO:", blend.audio_file)
+    print("==========================")
 
     db.commit()
 
