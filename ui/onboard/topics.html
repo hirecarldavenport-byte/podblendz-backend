@@ -118,13 +118,23 @@
   <div class="container">
     <h1>What do you want to explore?</h1>
     <p class="subtitle">
-      Select a few topics to start blending conversations.
+      Choose topics you care about and we'll build your Blendz DNA from the conversations behind them.
     </p>
 
     <div class="topic-grid" id="topicGrid">
       <div class="topic-card" data-topic="ai_tech">
         <div class="topic-title">AI & Technology</div>
         <div class="topic-desc">Understand where experts align</div>
+      </div>
+
+      <div class="topic-card" data-topic="health_fitness">
+        <div class="topic-title">Politics</div>
+        <div class="topic-desc">Mind, body, longevity</div>
+      </div>
+
+      <div class="topic-card" data-topic="health_fitness">
+        <div class="topic-title">World Affairs</div>
+        <div class="topic-desc">Mind, body, longevity</div>
       </div>
 
       <div class="topic-card" data-topic="health_fitness">
@@ -138,7 +148,7 @@
       </div>
 
       <div class="topic-card" data-topic="movies_media">
-        <div class="topic-title">Movies & Media</div>
+        <div class="topic-title">Parenting</div>
         <div class="topic-desc">Culture and storytelling</div>
       </div>
 
@@ -153,7 +163,7 @@
       </div>
 
       <div class="topic-card" data-topic="true_crime">
-        <div class="topic-title">True Crime</div>
+        <div class="topic-title">Relationships</div>
         <div class="topic-desc">Cases and investigations</div>
       </div>
     </div>
@@ -202,7 +212,7 @@
       localStorage.setItem("podblendz_onboard_topics", JSON.stringify(payload));
 
       // Move to Screen 2 (Time Selection)
-      window.location.href = "/onboard/duration.html";
+      window.location.href = "/UI/generate.html";
     });
   </script>
 </body>
