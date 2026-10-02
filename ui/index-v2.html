@@ -113,7 +113,35 @@
         min-width: 250px;
         padding-left: 2rem;
         padding-right: 2rem;
-}
+
+        }
+
+        .demo-modal {
+          display: none;
+          position: fixed;
+          inset: 0;
+          background: rgba(0,0,0,.9);
+          z-index: 1000;
+        }
+
+        .demo-content {
+          width: 90%;
+          max-width: 900px;
+          margin: 5vh auto;
+        }
+
+        .demo-content video {
+          width: 100%;
+          border-radius: 16px;
+        }
+
+        #closeDemo {
+          color: white;
+          font-size: 34px;
+          cursor: pointer;
+          float: right;
+          margin-bottom: 12px;
+        }
 
 
     /* IMAGE BELOW TEXT (KEY CHANGE) */
@@ -256,7 +284,9 @@
         <button class="btn btn-primary" id="generateBlendzBtn">
           Generate Your Blendz
         </button>
-        <button class="btn">Watch Demo</button>
+        <button class="btn" id="watchDemoBtn">
+          Watch Demo
+          </button>
       </div>
 
       <div class="cta-note">
@@ -273,7 +303,24 @@
       />
     </div>
 
-  </section>
+  </section>   <!-- HERO ENDS -->
+
+<!-- DEMO VIDEO MODAL -->
+<div id="demoModal" class="demo-modal">
+
+  <div class="demo-content">
+
+    <span id="closeDemo">&times;</span>
+
+    <video controls width="100%">
+      <source
+        src="/podblendz-demo.mp4"
+        type="video/mp4">
+    </video>
+
+  </div>
+
+</div>
 
   <!-- TOPICS -->
   <section class="featured-blend">
@@ -336,7 +383,23 @@
   .addEventListener("click", () => {
     window.location.href = "/auth/login.html";
   });
-  </script>
+  
+
+    const modal = document.getElementById("demoModal");
+
+    document
+      .getElementById("watchDemoBtn")
+      .addEventListener("click", () => {
+        modal.style.display = "block";
+      });
+
+    document
+      .getElementById("closeDemo")
+      .addEventListener("click", () => {
+        modal.style.display = "none";
+      });
+
+</script>
 
 </body>
 </html>
