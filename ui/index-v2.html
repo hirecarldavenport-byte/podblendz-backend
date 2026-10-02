@@ -351,9 +351,27 @@
 
     <button 
       class="btn btn-primary"
-      onclick="window.location.href='/blend.html?id=2c37437f-e13d-421f-a952-b14786830cb2'">
+      id="playFeaturedBlend">
       ▶ Play Featured Blend
     </button>
+
+    <div
+      id="featuredBlendPlayer"
+      style="display:none; margin-top:20px;">
+
+      <audio
+      id="featuredAudio"
+      controls
+      style="width:100%;">
+
+      <source
+      src="/featured-blend.mp3"
+      type="audio/mpeg">
+    
+    </audio>
+    
+    </div>
+
 
     </section>
 
@@ -402,6 +420,24 @@
         video.pause();
         video.currentTime = 0;
       });
+
+      document
+  .getElementById("playFeaturedBlend")
+  .addEventListener("click", () => {
+
+    const player =
+      document.getElementById("featuredBlendPlayer");
+
+    player.style.display = "block";
+
+    document
+      .getElementById("featuredAudio")
+      .play();
+
+  });
+
+
+
 
 </script>
 
