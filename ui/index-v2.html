@@ -312,7 +312,7 @@
 
     <span id="closeDemo">&times;</span>
 
-    <video controls width="100%">
+    <video id="demoVideo" controls width="100%">
       <source
         src="/podblendz-demo.mp4"
         type="video/mp4">
@@ -386,17 +386,21 @@
   
 
     const modal = document.getElementById("demoModal");
+    const video = document.getElementById("demoVideo");
 
     document
       .getElementById("watchDemoBtn")
       .addEventListener("click", () => {
         modal.style.display = "block";
+        video.play();
       });
 
     document
       .getElementById("closeDemo")
       .addEventListener("click", () => {
         modal.style.display = "none";
+        video.pause();
+        video.currentTime = 0;
       });
 
 </script>
