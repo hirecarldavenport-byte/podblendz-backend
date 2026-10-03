@@ -103,6 +103,10 @@
         margin-bottom: 1rem;
       }
 
+      #previewMessage {
+        margin-top: 20px;
+}
+
       .featured-blend p {
         opacity: .8;
         line-height: 1.6;
@@ -358,20 +362,21 @@
     <div
       id="featuredBlendPlayer"
       style="display:none; margin-top:20px;">
+      
       <p
-  id="previewNotice"
-  style="
-    display:none;
-    margin-top:15px;
-    color:#ff6a00;">
-  Preview plays for 2 minutes.
-</p>
-      style="display:none; margin-top:20px;">
+        id="previewNotice"
+        style="
+          display:none;
+          margin-top:15px;
+          color:#ff6a00;">
+        Preview plays for 2 minutes.
+      </p>
+      
 
       <audio
-      id="featuredAudio"
-      controls
-      style="width:100%;">
+        id="featuredAudio"
+        controls
+        style="width:100%;">
 
       <source
       src="https://podblendz-episode-audio.s3.us-east-1.amazonaws.com/blends/0465b31c-b799-4f25-9fd3-8b44c36b7a02/final.mp3"
@@ -485,11 +490,6 @@
     window.location.href =
       "/onboard/topics.html";
 
-  });
-
-      document
-  .getElementById("playFeaturedBlend")
-  .addEventListener("click", () => {
 
     const player =
       document.getElementById("featuredBlendPlayer");
@@ -508,9 +508,16 @@
   "timeupdate",
   () => {
 
-    if (featuredAudio.currentTime >= 120) {
+    const currentTime = Math.floor(
+      featuredAudio.currentTime
+
+      );
+
+    if (currentTime >= 120) {
 
       featuredAudio.pause();
+
+      featuredAudio.currentTime = 120;
 
       document
         .getElementById("previewMessage")
