@@ -358,6 +358,15 @@
     <div
       id="featuredBlendPlayer"
       style="display:none; margin-top:20px;">
+      <p
+  id="previewNotice"
+  style="
+    display:none;
+    margin-top:15px;
+    color:#ff6a00;">
+  Preview plays for 2 minutes.
+</p>
+      style="display:none; margin-top:20px;">
 
       <audio
       id="featuredAudio"
@@ -365,7 +374,7 @@
       style="width:100%;">
 
       <source
-      src="https://podblendz-episode-audio.s3.us-east-1.amazonaws.com/blends/0465b31c-b799-4f25-9fd3-8b44c36b7a02
+      src="https://podblendz-episode-audio.s3.us-east-1.amazonaws.com/blends/0465b31c-b799-4f25-9fd3-8b44c36b7a02/final.mp3"
       type="audio/mpeg">
     
     </audio>
@@ -453,6 +462,23 @@
       });
 
       document
+  .getElementById("playFeaturedBlend")
+  .addEventListener("click", () => {
+
+    const player =
+      document.getElementById("featuredBlendPlayer");
+
+    player.style.display = "block";
+
+    document
+      .getElementById("previewNotice")
+      .style.display = "block";
+
+    featuredAudio.play();
+
+  });
+
+      document
   .getElementById("continueWithGoogle")
   .addEventListener("click", () => {
 
@@ -468,9 +494,9 @@
     const player =
       document.getElementById("featuredBlendPlayer");
 
-    if (player.style.display !== "block") {
+    
       player.style.display = "block";
-      }
+      
 
     document
       .getElementById("featuredAudio")
