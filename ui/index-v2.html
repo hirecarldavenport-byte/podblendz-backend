@@ -99,7 +99,12 @@
 
         border-color:#ff6a00;
 
-}
+      }
+
+      .topic-preview.selected {
+        border-color: #ff6a00;
+        background: rgba(255,106,0,.12);
+      }
 
       .featured-label {
         color: #ff6a00;
@@ -496,6 +501,22 @@
 
   <!-- CTA LOGIC -->
   <script>
+
+    localStorage.setItem(
+      "blendzEntryTopic",
+      topic
+    );
+    
+    document
+      .querySelectorAll(".topic-preview")
+      .forEach(btn => {
+        btn.classList.remove("selected");
+    });
+
+    button.classList.add("selected");
+
+    
+
     document.getElementById("generateBlendzBtn")
       .addEventListener("click", () => {
         window.location.href = "/onboard/topics.html";
