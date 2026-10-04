@@ -77,6 +77,30 @@
         border: 1px solid rgba(255,255,255,.08);
       }
 
+      .topic-preview {
+
+        width:100%;
+
+        background:#1a1a1a;
+
+        color:white;
+
+        border:1px solid rgba(255,255,255,.1);
+
+        padding:14px;
+
+        border-radius:14px;
+
+        cursor:pointer;
+
+      }
+
+      .topic-preview:hover {
+
+        border-color:#ff6a00;
+
+}
+
       .featured-label {
         color: #ff6a00;
         font-size: 0.75rem;
@@ -326,6 +350,42 @@
 
 </div>
 
+<section class="featured-blend">
+
+  <div class="featured-label">
+    EXPERIENCE BLENDZ BY TOPIC
+  </div>
+
+  <div class="grid">
+
+    <button class="topic-preview" data-topic="ai">
+      AI & Tech Preview
+    </button>
+
+    <button class="topic-preview" data-topic="health">
+      Health Preview
+    </button>
+
+    <button class="topic-preview" data-topic="finance">
+      Finance Preview
+    </button>
+
+    <button class="topic-preview" data-topic="media">
+      Media Preview
+    </button>
+
+    <button class="topic-preview" data-topic="startups">
+      Startup Preview
+    </button>
+
+    <button class="topic-preview" data-topic="science">
+      Science Preview
+    </button>
+
+  </div>
+
+</section>
+
   <!-- TOPICS -->
   <section class="featured-blend">
 
@@ -411,7 +471,7 @@
   <button
     id="continueWithGoogle"
     class="btn btn-primary">
-    Continue With Google
+    Personalize My Blendz
   </button>
 
 </div>
@@ -510,8 +570,7 @@
 
     const currentTime = Math.floor(
       featuredAudio.currentTime
-
-      );
+    );
 
     if (currentTime >= 120) {
 
@@ -528,10 +587,32 @@
   }
 );
 
+document
+  .querySelectorAll(".topic-preview")
+  .forEach(button => {
 
+    button.addEventListener(
+      "click",
+      () => {
 
+        const topic =
+          button.dataset.topic;
+
+        localStorage.setItem(
+          "blendzEntryTopic",
+          topic
+        );
+
+        console.log(
+          "Entry Topic:",
+          topic
+        );
+
+      }
+    );
+
+  });
 
 </script>
 
 </body>
-</html>
