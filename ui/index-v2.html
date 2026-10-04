@@ -502,21 +502,6 @@
   <!-- CTA LOGIC -->
   <script>
 
-    localStorage.setItem(
-      "blendzEntryTopic",
-      topic
-    );
-    
-    document
-      .querySelectorAll(".topic-preview")
-      .forEach(btn => {
-        btn.classList.remove("selected");
-    });
-
-    button.classList.add("selected");
-
-    
-
     document.getElementById("generateBlendzBtn")
       .addEventListener("click", () => {
         window.location.href = "/onboard/topics.html";
@@ -628,6 +613,40 @@ document
           "Entry Topic:",
           topic
         );
+
+        document
+  .querySelectorAll(".topic-preview")
+  .forEach(button => {
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        const topic =
+          button.dataset.topic;
+
+        localStorage.setItem(
+          "blendzEntryTopic",
+          topic
+        );
+
+        document
+          .querySelectorAll(".topic-preview")
+          .forEach(btn => {
+            btn.classList.remove("selected");
+          });
+
+        button.classList.add("selected");
+
+        console.log(
+          "Entry Topic:",
+          topic
+        );
+
+      }
+    );
+
+  });
 
       }
     );
