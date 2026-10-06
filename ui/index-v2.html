@@ -379,6 +379,16 @@
       Play Featured Blend
     </div>
 
+    <div
+      id="currentTopic"
+      style="
+        display:none;
+        color:#ff6a00;
+        font-size:.9rem;
+        margin-bottom:12px;
+        font-weight:600;">
+    </div>
+
     <h2>
       What habits create extraordinary careers over decades?
     </h2>
@@ -467,6 +477,47 @@
 
   <!-- CTA LOGIC -->
   <script>
+
+    const previewBlends = {
+
+  ai: {
+    title: "When will people finally fight back against AI?",
+    blendId: "8eefdea6-c382-42f4-82a3-03b01b2a6335",
+    url: "/blend.html?id=8eefdea6-c382-42f4-82a3-03b01b2a6335"
+  },
+
+  health: {
+    title: "What are the most effective ways to maintain brain health throughout life?",
+    blendId: "5566afcc-208a-428a-9384-920cecf523c2",
+    url: "/blend.html?id=5566afcc-208a-428a-9384-920cecf523c2"
+  },
+
+  finance: {
+    title: "Saving money for retirement",
+    blendId: "55a9c4fa-64f4-456c-8eea-d092748fa5e0",
+    url: "/blend.html?id=55a9c4fa-64f4-456c-8eea-d092748fa5e0"
+  },
+
+  media: {
+    title: "What are the benefits of reading books?",
+    blendId: "0465b31c-b799-4f25-9fd3-8b44c36b7a02",
+    url: "/blend.html?id=0465b31c-b799-4f25-9fd3-8b44c36b7a02"
+  },
+
+  startups: {
+    title: "How to start your own business",
+    blendId: "6fc8636c-d989-4a1c-8996-4af13ead484e",
+    url: "/blend.html?id=6fc8636c-d989-4a1c-8996-4af13ead484e"
+  },
+
+  science: {
+    title: "Genome Decode: The moment DNA stops being abstract and starts making sense.",
+    blendId: "84064415-0c38-46b9-aea3-2ac257c11aaf",
+    url: "/blend.html?id=84064415-0c38-46b9-aea3-2ac257c11aaf"
+  }
+
+};
+
 
     document.getElementById("generateBlendzBtn")
       .addEventListener("click", () => {
