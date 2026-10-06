@@ -435,6 +435,7 @@
         style="width:100%;">
 
       <source
+      id="featuredAudioSource"
       src="https://podblendz-episode-audio.s3.us-east-1.amazonaws.com/blends/2c37437f-e13d-421f-a952-b14786830cb2/final.mp3"
       type="audio/mpeg">
     
@@ -495,7 +496,9 @@
   finance: {
     title: "Saving money for retirement",
     blendId: "55a9c4fa-64f4-456c-8eea-d092748fa5e0",
-    url: "/blend.html?id=55a9c4fa-64f4-456c-8eea-d092748fa5e0"
+    url: "/blend.html?id=55a9c4fa-64f4-456c-8eea-d092748fa5e0",
+    audio: "https://podblendz-episode-audio.s3.us-east-1.amazonaws.com/blends/55a9c4fa-64f4-456c-8eea-d092748fa5e0/final.mp3"
+
   },
 
   media: {
@@ -631,9 +634,6 @@ document
           topic
         );
 
-        document
-  .querySelectorAll(".topic-preview")
-  .forEach(button => {
 
     button.addEventListener(
       "click",
@@ -654,7 +654,7 @@ document
           });
 
         button.classList.add("selected");
-        
+
         document
           .getElementById("currentTopic")
           .style.display = "block";
@@ -669,6 +669,14 @@ document
           .innerText =
           previewBlends[topic].title;
 
+          const source =
+          document.getElementById("featuredAudioSource");
+
+        source.src =
+          previewBlends[topic].audio;
+
+        featuredAudio.load();
+
         console.log(
           "Entry Topic:",
           topic
@@ -682,7 +690,6 @@ document
       }
     );
 
-  });
 
 </script>
 
