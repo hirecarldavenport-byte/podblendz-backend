@@ -389,7 +389,7 @@
         font-weight:600;">
     </div>
 
-    <h2>
+    <h2 id="featuredTitle">
       What habits create extraordinary careers over decades?
     </h2>
 
@@ -654,6 +654,20 @@ document
           });
 
         button.classList.add("selected");
+        
+        document
+          .getElementById("currentTopic")
+          .style.display = "block";
+
+        document
+          .getElementById("currentTopic")
+          .innerText =
+          "Selected Topic";
+
+        document
+          .getElementById("featuredTitle")
+          .innerText =
+          previewBlends[topic].title;
 
         console.log(
           "Entry Topic:",
