@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>PodBlendz Community</title>
+
+<style>
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  background:#050505;
+  color:#fff;
+  font-family:-apple-system,BlinkMacSystemFont,
+  "Segoe UI",Roboto,sans-serif;
+}
+
+.layout{
+  display:grid;
+  grid-template-columns:250px 1fr 330px;
+  min-height:100vh;
+}
+
+/* ============================
+   LEFT SIDEBAR
+============================ */
+
+.sidebar{
+  padding:24px;
+  border-right:1px solid rgba(255,255,255,.08);
+}
+
+.logo{
+  font-size:30px;
+  font-weight:700;
+  margin-bottom:30px;
+}
+
+.logo span{
+  color:#ff6a00;
+}
+
+.nav{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.nav a{
+  color:#ddd;
+  text-decoration:none;
+  padding:12px 14px;
+  border-radius:12px;
+}
+
+.nav a.active{
+  background:#121212;
+  color:#ff6a00;
+}
+
+.section-title{
+  margin-top:40px;
+  margin-bottom:16px;
+  font-size:.8rem;
+  text-transform:uppercase;
+  opacity:.6;
+}
+
+.topic{
+  margin-bottom:10px;
+  color:#ddd;
+}
+
+.follow-card{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:14px;
+}
+
+.follow-btn{
+  background:transparent;
+  color:white;
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:999px;
+  padding:6px 14px;
+  cursor:pointer;
+}
+
+/* ============================
+   CENTER FEED
+============================ */
+
+.main{
+  padding:24px;
+}
+
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:24px;
+}
+
+.search{
+  width:60%;
+  background:#0f0f0f;
+  border:1px solid rgba(255,255,255,.08);
+  color:white;
+  padding:14px;
+  border-radius:14px;
+}
+
+.new-post-btn{
+  background:#ff6a00;
+  color:white;
+  border:none;
+  padding:12px 24px;
+  border-radius:999px;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.page-title{
+  font-size:48px;
+  margin-bottom:10px;
+}
+
+.subtitle{
+  opacity:.7;
+  margin-bottom:30px;
+}
+
+.tabs{
+  display:flex;
+  gap:30px;
+  margin-bottom:24px;
+}
+
+.tab{
+  cursor:pointer;
+  opacity:.6;
+}
+
+.tab.active{
+  color:#ff6a00;
+  opacity:1;
+}
+
+.post{
+  background:#0d0d0d;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:22px;
+  padding:24px;
+  margin-bottom:18px;
+}
+
+.post-header{
+  margin-bottom:16px;
+}
+
+.post-user{
+  font-weight:700;
+}
+
+.post-time{
+  opacity:.5;
+  font-size:.9rem;
+}
+
+.post-content{
+  line-height:1.7;
+}
+
+.post-actions{
+  display:flex;
+  gap:28px;
+  margin-top:18px;
+  opacity:.7;
+}
+
+.blend-preview{
+  background:#181818;
+  border-radius:18px;
+  margin-top:18px;
+  padding:16px;
+  border:1px solid rgba(255,255,255,.05);
+}
+
+.blend-preview h4{
+  margin-bottom:10px;
+}
+
+/* ============================
+   RIGHT SIDEBAR
+============================ */
+
+.right{
+  padding:24px;
+  border-left:1px solid rgba(255,255,255,.08);
+}
+
+.widget{
+  background:#0d0d0d;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:22px;
+  padding:22px;
+  margin-bottom:20px;
+}
+
+.widget h3{
+  margin-bottom:14px;
+}
+
+.widget textarea{
+  width:100%;
+  background:#171717;
+  border:none;
+  color:white;
+  border-radius:14px;
+  padding:14px;
+  resize:none;
+}
+
+.post-btn{
+  background:#ff6a00;
+  color:white;
+  border:none;
+  border-radius:999px;
+  padding:10px 20px;
+  margin-top:10px;
+  cursor:pointer;
+}
+
+.trend{
+  padding:10px 0;
+  border-bottom:1px solid rgba(255,255,255,.05);
+}
+
+.popular-blend{
+  margin-bottom:18px;
+}
+
+.popular-blend small{
+  opacity:.6;
+}
+
+/* ============================
+   MOBILE
+============================ */
+
+@media(max-width:1100px){
+
+  .layout{
+    grid-template-columns:1fr;
+  }
+
+  .sidebar,
+  .right{
+    display:none;
+  }
+
+  .search{
+    width:100%;
+  }
+
+  .topbar{
+    flex-direction:column;
+    gap:12px;
+    align-items:stretch;
+  }
+
+  .page-title{
+    font-size:36px;
+  }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="layout">
+
+  <!-- LEFT -->
+
+  <aside class="sidebar">
+
+    <div class="logo">
+      PodBlendz<span>🎧</span>
+    </div>
+
+    <nav class="nav">
+
+      <a href="#" 
+      #🔥 Trending</a>
+      #👥 Following</a>
+      #🔍 Discover</a>
+      <a� Messages</a>
+      #🔔 Notifications</a>
+
+    </nav>
+
+    <div class="section-title">
+      Top Topics
+    </div>
+
+    <div class="topic">AI & Tech</div>
+    <div class="topic">Health & Mindset</div>
+    <div class="topic">Finance & Business</div>
+    <div class="topic">Media & Culture</div>
+    <div class="topic">Science & Space</div>
+    <div class="topic">Startups</div>
+
+    <div class="section-title">
+      Who To Follow
+    </div>
+
+    <div class="follow-card">
+      <span>Lex Fridman</span>
+      <button class="follow-btn">Follow</button>
+    </div>
+
+    <div class="follow-card">
+      <span>Hidden Brain</span>
+      <button class="follow-btn">Follow</button>
+    </div>
+
+    <div class="follow-card">
+      <span>Freakonomics</span>
+      <button class="follow-btn">Follow</button>
+    </div>
+
+  </aside>
+
+  <!-- CENTER -->
+
+  <main class="main">
+
+    <div class="topbar">
+
+      <input
+        class="search"
+        placeholder="Search topics, creators, or blends...">
+
+      <button class="new-post-btn">
+        + New Post
+      </button>
+
+    </div>
+
+    <h1 class="page-title">
+      Community Board
+    </h1>
+
+    <p class="subtitle">
+      Join the conversation. Share insights.
+      Discover new perspectives.
+    </p>
+
+    <div class="tabs">
+      <div class="tab active">For You</div>
+      <div class="tab">Following</div>
+      <div class="tab">Trending</div>
+      <div class="tab">Latest</div>
+    </div>
+
+    <div class="post">
+
+      <div class="post-header">
+        <div class="post-user">
+          PodBlendz Team
+        </div>
+
+        <div class="post-time">
+          2h ago
+        </div>
+      </div>
+
+      <div class="post-content">
+
+        📌 What blends are you most excited
+        about this week?
+
+      </div>
+
+      <div class="post-actions">
+        ❤️ 128
+        💬 36
+        🔁 24
+        🔗 Share
+      </div>
+
+    </div>
+
+    <div class="post">
+
+      <div class="post-header">
+        <div class="post-user">
+          Alex Mercer
+        </div>
+
+        <div class="post-time">
+          1h ago
+        </div>
+      </div>
+
+      <div class="post-content">
+
+        Just listened to the
+        "Habits & High Performance"
+        blend. Incredible synthesis.
+
+        <div class="blend-preview">
+
+          <h4>
+            What habits create extraordinary careers over decades?
+          </h4>
+
+          <p>
+            27 clips • 5 creators • 8 min
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- RIGHT -->
+
+  <aside class="right">
+
+    <div class="widget">
+
+      <h3>Share your thoughts</h3>
+
+      <textarea
+        rows="5"
+        placeholder="What's on your mind?"></textarea>
+
+      <button class="post-btn">
+        Post
+      </button>
+
+    </div>
+
+    <div class="widget">
+
+      <h3>Trending Now</h3>
+
+      <div class="trend">
+        Future of AI
+      </div>
+
+      <div class="trend">
+        Mental Health
+      </div>
+
+      <div class="trend">
+        Building In Public
+      </div>
+
+      <div class="trend">
+        Retirement Planning
+      </div>
+
+    </div>
+
+    <div class="widget">
+
+      <h3>Popular Blends</h3>
+
+      <div class="popular-blend">
+        What habits create extraordinary careers over decades?<br>
+        <small>27 clips • 8 min</small>
+      </div>
+
+      <div class="popular-blend">
+        The Future Of AI Explained<br>
+        <small>32 clips • 12 min</small>
+      </div>
+
+      <div class="popular-blend">
+        Rethinking Productivity<br>
+        <small>18 clips • 6 min</small>
+      </div>
+
+    </div>
+
+  </aside>
+
+</div>
+
+</body>
+</html>
