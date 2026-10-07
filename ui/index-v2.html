@@ -393,17 +393,21 @@
       What habits create extraordinary careers over decades?
     </h2>
 
-    <p>
+    <p id="featuredDescription">
       A conversation built from 27 clips spanning
       Lex Fridman, Hidden Brain, Freakonomics Radio,
       and other leading creators.
 
     </p>
-    <div class="featured-meta">
+    <div
+     id="featuredMeta"
+     class="featured-meta">
       27 clips • 5 creators • 8 min listen
     </div>
 
-    <div class="featured-creators">
+    <div
+    id="featuredCreators"
+    class="featured-creators">
       Lex Fridman • Hidden Brain • Freakonomics Radio • Kev on Stage
     </div>
 
@@ -495,9 +499,15 @@
 
   finance: {
     title: "Saving money for retirement",
+    description:"A conversation synthesizing perspectives on retirement planning, long-term investing, and financial independence.",
     blendId: "55a9c4fa-64f4-456c-8eea-d092748fa5e0",
     url: "/blend.html?id=55a9c4fa-64f4-456c-8eea-d092748fa5e0",
-    audio: "https://podblendz-episode-audio.s3.us-east-1.amazonaws.com/blends/55a9c4fa-64f4-456c-8eea-d092748fa5e0/final.mp3"
+    audio: "https://podblendz-episode-audio.s3.us-east-1.amazonaws.com/blends/55a9c4fa-64f4-456c-8eea-d092748fa5e0/final.mp3",
+    clips: "18 clips",
+    creatorsCount: "4 creators",
+    length: "12 min listen",
+    creators: "The Ramsey Show • Afford Anything • BiggerPockets • Planet Money",
+    
 
   },
 
@@ -668,6 +678,23 @@ document
           .getElementById("featuredTitle")
           .innerText =
           previewBlends[topic].title;
+
+          document
+          .getElementById("featuredDescription")
+          .innerText =
+          previewBlends[topic].description;
+
+          document
+          .getElementById("featuredMeta")
+          .innerText =
+          `${previewBlends[topic].clips} • `
+          + `${previewBlends[topic].creatorsCount} • `
+          + `${previewBlends[topic].length}`;
+
+        document
+          .getElementById("featuredCreators")
+          .innerText =
+          previewBlends[topic].creators;
 
           const source =
           document.getElementById("featuredAudioSource");
