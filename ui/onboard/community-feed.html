@@ -425,9 +425,24 @@ body{
         id="communityComment"
         class="post-content">
 
-        Just listened to the
-        "Habits & High Performance"
-        blend. Incredible synthesis.
+        document.getElementById(
+  "communityComment"
+).innerHTML = `
+Just listened to the
+"${blend.title}" blend.
+
+Incredible synthesis.
+
+<div class="blend-preview">
+  <h4>${blend.title}</h4>
+  <p>
+    ${blend.clips} clips •
+    ${blend.sources.length} creators
+  </p>
+</div>
+`;
+
+        
 
         <div class="blend-preview">
 
@@ -522,6 +537,11 @@ setTimeout(() => {
     "communityBlendTitle"
   ).innerText =
     BLENDS[0].title;
+
+  document.getElementById(
+    "communityBlendMeta"
+).innerText =
+  `${blend.clips} clips • ${blend.sources.length} creators`;
 
 }, 3000);
 
