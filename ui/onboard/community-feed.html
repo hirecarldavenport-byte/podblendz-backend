@@ -519,7 +519,15 @@ body{
 
 setTimeout(() => {
 
-     const blend = BLENDS[0];
+    const selectedBlendId =
+  localStorage.getItem(
+    "dnaSeedBlendId"
+  );
+
+const blend =
+  BLENDS.find(
+    b => b.id === selectedBlendId
+  ) || BLENDS[0];
 
   document.getElementById(
     "communityBlendTitle"
