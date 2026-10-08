@@ -515,13 +515,19 @@ body{
 <script src="scripts/blends.js"></script>
 
 <script>
-console.log("Community Feed Loaded");
 
 setTimeout(() => {
-    console.log("BLENDS =", BLENDS);
-    }, 5000);
+
+  document.getElementById(
+    "communityBlendTitle"
+  ).innerText =
+    BLENDS[0].title;
+
+}, 3000);
 
 </script>
+
+
 
 
 </body>
