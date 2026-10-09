@@ -676,23 +676,21 @@ document
           topic
         );
 
+        localStorage.setItem(
+          "dnaSeedBlendId",
+          previewBlends[topic].blendId
+        );
+
+        console.log(
+          "DNA Blend:",
+          previewBlends[topic].blendId
+        );
+
         console.log(
           "Entry Topic:",
           topic
         );
 
-
-    button.addEventListener(
-      "click",
-      () => {
-
-        const topic =
-          button.dataset.topic;
-
-        localStorage.setItem(
-          "blendzEntryTopic",
-          topic
-        );
 
         document
           .querySelectorAll(".topic-preview")
@@ -751,8 +749,7 @@ document
 
   });
 
-      }
-    );
+    
 
 
 </script>
