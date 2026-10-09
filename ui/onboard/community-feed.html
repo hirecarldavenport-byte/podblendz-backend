@@ -260,6 +260,11 @@ body{
   background:#181818;
 }
 
+.popular-blend.active {
+    background:#181818;
+    border-left:4px solid #ff6a00;
+    }
+
 .popular-blend small{
   opacity:.6;
 }
@@ -504,6 +509,16 @@ body{
 
   console.log(blend);
 
+  document
+  .querySelectorAll(".popular-blend")
+  .forEach(el => {
+    el.classList.remove("active");
+  });
+
+document
+  .getElementById(`blend-${blend.id}`)
+  ?.classList.add("active");
+
   document.querySelectorAll(
   ".popular-blend"
 ).forEach(el => {
@@ -579,6 +594,7 @@ BLENDS.slice(0, 3).forEach((blend, index) => {
   popularContainer.innerHTML += `
     <div
         class="popular-blend"
+        id="blend-${blend.id}"
         style="cursor:pointer;"
         
         onclick="loadBlend(BLENDS[${index}])">
