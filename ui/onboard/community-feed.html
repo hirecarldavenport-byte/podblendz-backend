@@ -447,27 +447,6 @@ body{
 
 </div>
 
-<div
-  id="communityPlayer"
-  class="post"
-  style="display:none;">
-
-  <h3 id="playerTitle">
-    Blend Title
-  </h3>
-
-  <p id="playerMeta">
-    Blend Meta
-  </p>
-
-  <audio
-    id="communityAudio"
-    controls
-    style="width:100%; margin-top:15px;">
-  </audio>
-
-</div>
-
 </main>
 
    
@@ -493,32 +472,20 @@ body{
         27 clips • 5 creators • 8 min
       </p>
 
+
+  <audio
+      id="communityAudio"
+      controls
+      style="width:100%; margin-top:15px;">
+    </audio>
+
+
     </div>
 
   </div>
 
 </div>
 
-<div
-  id="communityPlayer"
-  class="post"
-  style="display:none;">
-
-  <h3 id="playerTitle">
-    Blend Title
-  </h3>
-
-  <p id="playerMeta">
-    Blend Meta
-  </p>
-
-  <audio
-    id="communityAudio"
-    controls
-    style="width:100%; margin-top:15px;">
-  </audio>
-
-</div>
 
   
         class="post"
@@ -635,19 +602,6 @@ body{
     function loadBlend(blend) {
         console.log(blend);
 
-  document.getElementById(
-    "communityPlayer"
-  ).style.display = "block";
-
-  document.getElementById(
-    "playerTitle"
-  ).innerText =
-    blend.title;
-
-  document.getElementById(
-    "playerMeta"
-  ).innerText =
-    `${blend.clips} clips • ${blend.sources.length} creators`;
 
   const player =
     document.getElementById(
