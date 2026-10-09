@@ -530,6 +530,37 @@ body{
 
 <script>
 
+    function loadBlend(blend) {
+        console.log(blend);
+
+  document.getElementById(
+    "communityPlayer"
+  ).style.display = "block";
+
+  document.getElementById(
+    "playerTitle"
+  ).innerText =
+    blend.title;
+
+  document.getElementById(
+    "playerMeta"
+  ).innerText =
+    `${blend.clips} clips • ${blend.sources.length} creators`;
+
+  const player =
+    document.getElementById(
+      "communityAudio"
+    );
+
+  player.src =
+    blend.audio_file;
+
+  player.load();
+
+  player.play();
+
+}
+
 setTimeout(() => {
 
     const selectedBlendId =
@@ -571,16 +602,14 @@ console.log(
 
 popularContainer.innerHTML = "";
 
-BLENDS.slice(0, 3).forEach(blend => {
+BLENDS.slice(0, 3).forEach((blend, index) => {
 
   popularContainer.innerHTML += `
     <div
         class="popular-blend"
         style="cursor:pointer;"
-        onclick="
-            window.location.href=
-            '/blend.html?id=${blend.id}'
-        ">
+        
+        onclick="loadBlend(BLENDS[${index}])">
 
       ${blend.title}<br>
 
