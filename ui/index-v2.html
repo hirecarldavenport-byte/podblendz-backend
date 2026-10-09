@@ -6,6 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
+    
+    
     * {
       margin: 0;
       padding: 0;
@@ -272,6 +274,7 @@
     }
 
   </style>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 
 <body>
@@ -469,11 +472,7 @@
     Now let's personalize it around your interests.
   </p>
 
-  <button
-    id="continueWithGoogle"
-    class="btn btn-primary">
-    Personalize My Blendz
-  </button>
+<div id="googleSignIn"></div>
 
 </div>
 
@@ -748,6 +747,43 @@ document
     );
 
   });
+
+  function handleCredentialResponse(response) {
+
+  localStorage.setItem(
+    "googleToken",
+    response.credential
+  );
+
+  window.location.href =
+    "/onboard/topics.html";
+
+}
+
+  console.log(
+    "Google Token:",
+    response.credential
+  );
+
+
+
+google.accounts.id.initialize({
+  client_id:
+    "YOUR_CLIENT_ID.apps.googleusercontent.com",
+  callback:
+    handleCredentialResponse
+});
+
+google.accounts.id.renderButton(
+  document.getElementById(
+    "googleSignIn"
+  ),
+  {
+    theme: "filled_black",
+    size: "large",
+    width: 300
+  }
+);
 
     
 
