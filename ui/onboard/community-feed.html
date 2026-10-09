@@ -492,20 +492,9 @@ body{
 
       <h3>Popular Blends</h3>
 
-      <div class="popular-blend">
-        What habits create extraordinary careers over decades?<br>
-        <small>27 clips • 8 min</small>
-      </div>
+      <div id="popularBlendsContainer">
+        </div>
 
-      <div class="popular-blend">
-        The Future Of AI Explained<br>
-        <small>32 clips • 12 min</small>
-      </div>
-
-      <div class="popular-blend">
-        Rethinking Productivity<br>
-        <small>18 clips • 6 min</small>
-      </div>
 
     </div>
 
@@ -550,6 +539,30 @@ console.log(
     "communityBlendMeta"
 ).innerText =
   `${blend.clips} clips • ${blend.sources.length} creators`;
+
+  const popularContainer =
+  document.getElementById(
+    "popularBlendsContainer"
+  );
+
+popularContainer.innerHTML = "";
+
+BLENDS.slice(0, 3).forEach(blend => {
+
+  popularContainer.innerHTML += `
+    <div class="popular-blend">
+
+      ${blend.title}<br>
+
+      <small>
+        ${blend.clips} clips •
+        ${blend.sources.length} creators
+      </small>
+
+    </div>
+  `;
+
+});
 
   document.getElementById(
   "communityCommentText"
