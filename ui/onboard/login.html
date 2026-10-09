@@ -70,6 +70,11 @@
       text-decoration: none;
     }
   </style>
+  <script
+  src="https://accounts.google.com/gsi/client"
+  async
+  defer>
+</script>
 </head>
 <body>
 
@@ -79,20 +84,60 @@
 
     <p>Sign in to access your personalized Blendz.</p>
 
-    <input type="email" placeholder="Email Address">
+    <div id="googleSignIn"></div>
 
-    <input type="password" placeholder="Password">
-
-    <button class="signin-btn">
-      Sign In
-    </button>
 
     <div class="signup-link">
-      New to PodBlendz?
-      /auth/signup.htmlCreate Account</a>
-    </div>
+  First time here?
+  Your PodBlendz account will be created automatically after Google sign-in.
+</div>
+
+    
+
+    
 
   </div>
+  <script>
+
+function handleCredentialResponse(response) {
+
+  console.log(
+    "Google Token:",
+    response.credential
+  );
+
+  localStorage.setItem(
+    "googleToken",
+    response.credential
+  );
+
+  window.location.href =
+    "/community.html";
+}
+
+window.addEventListener("load", () => {
+
+  google.accounts.id.initialize({
+    client_id:
+      "964383747009-f1lesnjpg9gr6bncgh3kbh47ugilj4qd.apps.googleusercontent.com",
+    callback:
+      handleCredentialResponse
+  });
+
+  google.accounts.id.renderButton(
+    document.getElementById(
+      "googleSignIn"
+    ),
+    {
+      theme: "filled_black",
+      size: "large",
+      width: 350
+    }
+  );
+
+});
+
+</script>
 
 </body>
 </html>
