@@ -305,9 +305,15 @@ body{
   }
 
   .page-title{
-    font-size:3rem;
-    line-height:1.1;
+    font-size:2.5rem;
+    line-height:1.05;
+    margin-bottom:8px;
   }
+
+  .topbar{
+  margin-bottom:16px;
+}
+
 
   .subtitle{
     font-size:1rem;
@@ -588,6 +594,16 @@ event.currentTarget.style.background =
     "communityCommentText"
   ).innerText =
     `Just listened to "${blend.title}". Incredible synthesis.`;
+
+    document.getElementById(
+  "communityBlendTitle"
+).innerText =
+  blend.title;
+
+document.getElementById(
+  "communityBlendMeta"
+).innerText =
+  `${blend.clips} clips • ${blend.sources.length} creators`;
 
   const player =
     document.getElementById(
