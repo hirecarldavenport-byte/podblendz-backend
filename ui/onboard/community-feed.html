@@ -425,9 +425,9 @@ body{
   id="communityComment"
   class="post-content">
 
-  Just listened to the
-  "Habits & High Performance"
-  blend. Incredible synthesis.
+  <p id="communityCommentText">
+  Just listened to a blend.
+  </p>
 
   <div class="blend-preview">
 
@@ -550,6 +550,11 @@ console.log(
     "communityBlendMeta"
 ).innerText =
   `${blend.clips} clips • ${blend.sources.length} creators`;
+
+  document.getElementById(
+  "communityCommentText"
+).innerText =
+  `Just listened to "${blend.title}". Incredible synthesis.`;
 
 }, 3000);
 
