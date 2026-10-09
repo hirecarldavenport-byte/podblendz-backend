@@ -615,26 +615,6 @@
 
   });
 
-      document
-  .getElementById("continueWithGoogle")
-  .addEventListener("click", () => {
-
-    window.location.href =
-      "/onboard/topics.html";
-
-
-    const player =
-      document.getElementById("featuredBlendPlayer");
-
-    
-      player.style.display = "block";
-      
-
-    document
-      .getElementById("featuredAudio")
-      .play();
-
-  });
 
   featuredAudio.addEventListener(
   "timeupdate",
@@ -750,6 +730,12 @@ document
 
   function handleCredentialResponse(response) {
 
+     console.log(
+    "Google Token:",
+    response.credential
+  );
+
+
   localStorage.setItem(
     "googleToken",
     response.credential
@@ -760,16 +746,10 @@ document
 
 }
 
-  console.log(
-    "Google Token:",
-    response.credential
-  );
-
-
 
 google.accounts.id.initialize({
   client_id:
-    "YOUR_CLIENT_ID.apps.googleusercontent.com",
+    "964383747009-f1lesnjpg9gr6bncgh3kbh47ugilj4qd.apps.googleusercontent.com",
   callback:
     handleCredentialResponse
 });
