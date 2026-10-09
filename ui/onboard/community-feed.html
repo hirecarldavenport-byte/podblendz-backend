@@ -550,7 +550,13 @@ popularContainer.innerHTML = "";
 BLENDS.slice(0, 3).forEach(blend => {
 
   popularContainer.innerHTML += `
-    <div class="popular-blend">
+    <div
+        class="popular-blend"
+        style="cursor:pointer;"
+        onclick="
+            window.location.href=
+            '/blend.html?id=${blend.id}'
+        ">
 
       ${blend.title}<br>
 
