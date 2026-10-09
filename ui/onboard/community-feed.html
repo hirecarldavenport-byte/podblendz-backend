@@ -478,9 +478,6 @@ body{
 
   </div>
 
-  <div
-    id="communityComment"
-    class="post-content">
 
     <p id="communityCommentText">
       Just listened to a blend.
@@ -657,8 +654,10 @@ body{
       "communityAudio"
     );
 
-  player.src =
-    blend.audio_file;
+    player.src =
+  `https://podblendz-episode-audio.s3.us-east-1.amazonaws.com/blends/${blend.id}/final.mp3`;
+
+  
 
   player.load();
 
