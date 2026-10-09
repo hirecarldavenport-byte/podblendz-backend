@@ -449,65 +449,6 @@ body{
 
 </div>
 
-    
-
-    </div>
-
-  </div>
-
-</div>
-
-
-   
-
-   
-  </div>
-
-
-
-    <div class="blend-preview">
-
-      <h4 id="communityBlendTitle">
-        What habits create extraordinary careers over decades?
-      </h4>
-
-      <p id="communityBlendMeta">
-        27 clips • 5 creators • 8 min
-      </p>
-
-
-  <audio
-      id="communityAudio"
-      controls
-      style="width:100%; margin-top:15px;">
-    </audio>
-
-
-    </div>
-
-  </div>
-
-</div>
-
-
-
-        </div>
-
-      
-
-        <div class="post-time">
-          1h ago
-        </div>
-      </div>
-
-
-  </div>
-
-</div>
-
-     
-    </div>
-
   </main>
 
   <!-- RIGHT -->
@@ -569,24 +510,39 @@ body{
 <script>
 
     function loadBlend(blend) {
-        console.log(blend);
 
+  console.log(blend);
+
+  document.getElementById(
+    "communityBlendTitle"
+  ).innerText =
+    blend.title;
+
+  document.getElementById(
+    "communityBlendMeta"
+  ).innerText =
+    `${blend.clips} clips • ${blend.sources.length} creators`;
+
+  document.getElementById(
+    "communityCommentText"
+  ).innerText =
+    `Just listened to "${blend.title}". Incredible synthesis.`;
 
   const player =
     document.getElementById(
       "communityAudio"
     );
 
-    player.src =
-  `https://podblendz-episode-audio.s3.us-east-1.amazonaws.com/blends/${blend.id}/final.mp3`;
-
-  
+  player.src =
+    `https://podblendz-episode-audio.s3.us-east-1.amazonaws.com/blends/${blend.id}/final.mp3`;
 
   player.load();
-
   player.play();
 
 }
+
+
+  
 
 setTimeout(() => {
 
@@ -611,17 +567,6 @@ console.log(
 );
 
   
-
-  document.getElementById(
-    "communityBlendTitle"
-  ).innerText =
-    blend.title;
-
-  document.getElementById(
-    "communityBlendMeta"
-).innerText =
-  `${blend.clips} clips • ${blend.sources.length} creators`;
-
   const popularContainer =
   document.getElementById(
     "popularBlendsContainer"
