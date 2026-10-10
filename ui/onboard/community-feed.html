@@ -285,7 +285,7 @@ body{
   }
 
   .main{
-    padding:18px;
+    padding:14px;
   }
 
   .search{
@@ -297,6 +297,7 @@ body{
     flex-direction:column;
     gap:12px;
     align-items:stretch;
+    margin-bottom:16px;
   }
 
   .new-post-btn{
@@ -310,9 +311,6 @@ body{
     margin-bottom:8px;
   }
 
-  .topbar{
-  margin-bottom:16px;
-}
 
 
   .subtitle{
@@ -333,7 +331,20 @@ body{
 
   .post{
     padding:18px;
+    cursor:pointer;
+    transition:.15s;
+
+
   }
+
+  .post:hover{
+    border-color:#ff6a00;
+    }
+
+  .post:active{
+    transform:scale(.98);
+    border-color:#ff6a00;
+    }
 
   .blend-preview{
     padding:12px;
@@ -478,7 +489,7 @@ body{
 
     </div>
 
-    <div class="post">
+    <div class="post" onclick="openCurrentBlend()">
 
   <div class="post-header">
 
@@ -679,6 +690,19 @@ BLENDS.slice(0, 3).forEach((blend, index) => {
   `Just listened to "${blend.title}". Incredible synthesis.`;
 
 }, 3000);
+
+function openCurrentBlend() {
+
+  const selectedBlendId =
+    localStorage.getItem(
+      "dnaSeedBlendId"
+    );
+
+  if (!selectedBlendId) return;
+
+  window.location.href =
+    `/blend.html?id=${selectedBlendId}`;
+}
 
 </script>
 
