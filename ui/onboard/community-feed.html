@@ -287,6 +287,36 @@ body{
   opacity:.6;
 }
 
+.dna-category{
+  color:#ff6a00;
+  font-size:.72rem;
+  font-weight:700;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  margin-bottom:8px;
+}
+
+.dna-card{
+  background:#181818;
+  padding:14px;
+  border-radius:14px;
+  margin-bottom:12px;
+  border-left:4px solid #ff6a00;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.dna-card:hover{
+  background:#202020;
+}
+
+.dna-subtitle{
+  color:rgba(255,255,255,.6);
+  font-size:.85rem;
+  margin-top:-6px;
+  margin-bottom:16px;
+}
+
 /* ============================
    MOBILE
 ============================ */
@@ -517,10 +547,16 @@ body{
 
     <div class="widget">
 
-  <h3>Blendz DNA</h3>
+<h3>🧬 Your Blendz DNA</h3>
 
-  <div id="popularBlendsContainer">
-  </div>
+<p class="dna-subtitle">
+  Personalized from your selected interests
+</p>
+
+<div id="dnaBlendsContainer">
+</div>
+
+  
 
 </div>
 
