@@ -229,6 +229,10 @@ body{
   resize:none;
 }
 
+.widget:first-child{
+  display:none;
+}
+
 .post-btn{
   background:#ff6a00;
   color:white;
@@ -280,9 +284,13 @@ body{
   }
 
   .sidebar,
+
   .right{
-    display:none;
-  }
+  display:block;
+  border:none;
+  padding:0 14px 14px;
+}
+ 
 
   .main{
     padding:14px;
@@ -301,9 +309,15 @@ body{
   }
 
   .new-post-btn{
+  display:none;
+}
+
+  .new-post-btn{
     padding:12px;
     width:100%;
   }
+
+
 
   .page-title{
     font-size:2.5rem;
@@ -347,8 +361,12 @@ body{
     }
 
   .blend-preview{
-    padding:12px;
+    padding:16px;
   }
+
+  .blend-preview{
+  border:1px solid rgba(255,106,0,.25);
+}
 
   .blend-preview h4{
     font-size:1.2rem;
