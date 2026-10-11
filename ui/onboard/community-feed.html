@@ -31,6 +31,14 @@ body{
 /* ============================
    LEFT SIDEBAR
 ============================ */
+  @media(max-width:1100px){
+
+  .sidebar{
+    display:none !important;
+  }
+
+}
+
 
 .sidebar{
   padding:24px;
@@ -129,8 +137,8 @@ body{
 }
 
 .page-title{
-  font-size:48px;
-  margin-bottom:10px;
+  font-size:2rem;
+  margin-bottom:4px;
 }
 
 .subtitle{
@@ -296,6 +304,10 @@ body{
     padding:14px;
   }
 
+  .subtitle{
+  display:none;
+}
+
   .search{
     width:100%;
     padding:12px;
@@ -377,6 +389,21 @@ body{
     width:100%;
     max-width:100%;
   }
+
+  @media(max-width:1100px){
+
+  .widget{
+    padding:16px;
+    margin-bottom:20px;
+  }
+
+  #popularBlendsContainer{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+
+}
 
 }
 
@@ -464,13 +491,22 @@ body{
     </div>
 
     <h1 class="page-title">
-      Community Board
+      🎧 Community
     </h1>
 
     <p class="subtitle">
-      Join the conversation. Share insights.
-      Discover new perspectives.
+     For You | Trending
+
+     [ Search ]
     </p>
+
+    @media(max-width:1100px){
+
+  .subtitle{
+    display:none;
+  }
+
+}
 
     <div class="tabs">
       <div class="tab active">For You</div>
@@ -478,6 +514,15 @@ body{
       <div class="tab">Trending</div>
       <div class="tab">Latest</div>
     </div>
+
+    <div class="widget">
+
+  <h3>Popular Blends</h3>
+
+  <div id="popularBlendsContainer">
+  </div>
+
+</div>
 
     <div class="post">
 
@@ -564,17 +609,6 @@ body{
       <button class="post-btn">
         Post
       </button>
-
-    </div>
-
-
-    <div class="widget">
-
-      <h3>Popular Blends</h3>
-
-      <div id="popularBlendsContainer">
-        </div>
-
 
     </div>
 
