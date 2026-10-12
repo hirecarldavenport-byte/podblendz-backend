@@ -498,26 +498,11 @@ body{
 
     <div class="section-title">
       Featured Creators
-    </div>
 
-    <div id="creatorFollowContainer">
+      <div id="creatorFollowContainer">
 
-    </div>
+      </div>
 
-    <div class="follow-card">
-      <span>Lex Fridman</span>
-      <button class="follow-btn">Follow</button>
-    </div>
-
-    <div class="follow-card">
-      <span>Hidden Brain</span>
-      <button class="follow-btn">Follow</button>
-    </div>
-
-    <div class="follow-card">
-      <span>Freakonomics</span>
-      <button class="follow-btn">Follow</button>
-    </div>
 
   </aside>
 
@@ -753,6 +738,7 @@ creatorContainer.innerHTML = "";
 
         <button
           class="follow-btn"
+          data-creator="${creator}"
           onclick="
             toggleCreatorFollow(
               '${creator}'
@@ -767,6 +753,8 @@ creatorContainer.innerHTML = "";
 
   }
 );
+
+updateCreatorButtons();
 
   console.log(
   "Selected Blend ID:",
@@ -826,6 +814,49 @@ function openCurrentBlend() {
 
   window.location.href =
     `/blend.html?id=${selectedBlendId}`;
+}
+
+function updateCreatorButtons() {
+
+  const follows =
+    JSON.parse(
+      localStorage.getItem(
+        "followedCreators"
+      ) || "[]"
+    );
+
+  document
+    .querySelectorAll(
+      ".follow-btn"
+    )
+    .forEach(btn => {
+
+      const creator =
+        btn.dataset.creator;
+
+      if (
+        follows.includes(
+          creator
+        )
+      ) {
+
+        btn.innerText =
+          "Following";
+
+        btn.style.background =
+          "#ff6a00";
+
+      } else {
+
+        btn.innerText =
+          "Follow";
+
+        btn.style.background =
+          "transparent";
+      }
+
+    });
+
 }
 
 </script>
