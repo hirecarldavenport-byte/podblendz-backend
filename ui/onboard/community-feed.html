@@ -440,7 +440,7 @@ body{
     margin-bottom:20px;
   }
 
-  #popularBlendsContainer{
+  #dnaBlendsContainer{
     display:flex;
     flex-direction:column;
     gap:10px;
@@ -729,6 +729,7 @@ const blend =
   BLENDS.find(
     b => b.id === selectedBlendId
   ) || BLENDS[0];
+  loadBlend(blend);
 
   console.log(
   "Selected Blend ID:",
@@ -743,7 +744,7 @@ console.log(
   
   const popularContainer =
   document.getElementById(
-    "popularBlendsContainer"
+    "dnaBlendsContainer"
   );
 
 popularContainer.innerHTML = "";
