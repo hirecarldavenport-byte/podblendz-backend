@@ -497,7 +497,11 @@ body{
     <div class="topic">Startups</div>
 
     <div class="section-title">
-      Who To Follow
+      Featured Creators
+    </div>
+
+    <div id="creatorFollowContainer">
+
     </div>
 
     <div class="follow-card">
@@ -730,6 +734,39 @@ const blend =
     b => b.id === selectedBlendId
   ) || BLENDS[0];
   loadBlend(blend);
+
+  const creatorContainer =
+  document.getElementById(
+    "creatorFollowContainer"
+  );
+
+creatorContainer.innerHTML = "";
+
+(blend.creators || []).forEach(
+  creator => {
+
+    creatorContainer.innerHTML += `
+
+      <div class="follow-card">
+
+        <span>${creator}</span>
+
+        <button
+          class="follow-btn"
+          onclick="
+            toggleCreatorFollow(
+              '${creator}'
+            )
+          ">
+          Follow
+        </button>
+
+      </div>
+
+    `;
+
+  }
+);
 
   console.log(
   "Selected Blend ID:",
