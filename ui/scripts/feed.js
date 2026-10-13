@@ -310,9 +310,14 @@ function renderFeed() {
 
         <div>
 
-          <div class="card-title">
-            ${b.title}
+          <div class="category-label">
+            ${(b.board || "General").toUpperCase()}
           </div>
+
+          <div class="card-title">
+          ${b.title}
+          </div>
+
 
           <div class="card-description">
             ${b.subtitle}
@@ -334,11 +339,6 @@ function renderFeed() {
 
       <!-- TAGS -->
 
-      <div class="tags">
-        <span class="tag">
-          ${b.board || "Uncategorized"}
-        </span>
-      </div>
 
       <!-- Featuring Insights From -->
 
@@ -392,13 +392,17 @@ function renderFeed() {
 // ✅ OPEN BLEND
 function openBlend(id) {
 
+  localStorage.setItem(
+    "dnaSeedBlendId",
+    id);
+
   console.log(
     "Opening blend:",
     id
   );
 
   window.location.href =
-    `./blend.html?id=${id}`;
+     "./community-feed.html";
 
 }
 
