@@ -27,7 +27,7 @@
         Roboto,
         sans-serif;
 
-      background: #eaeaea;
+      background:#050505;
 
       display: flex;
       justify-content: center;
@@ -38,7 +38,7 @@
       max-width: 430px;
       min-height: 100vh;
 
-      background: #f7f4ef;
+      background:#050505;
 
       border-radius: 24px;
       overflow: hidden;
@@ -56,6 +56,7 @@
       font-size: 1.15rem;
       font-weight: 700;
       letter-spacing: 0.18em;
+      color: white;
     }
 
     .header-right {
@@ -73,7 +74,8 @@
 
     /* COMPOSER */
     .composer {
-      background: white;
+      background: #0d0d0d;
+      border: 1px solid rgba(255,255,255,.08);
       margin: 0 1rem;
       padding: 0.8rem;
       border-radius: 20px;
@@ -93,19 +95,67 @@
 
     .composer input {
       flex: 1;
+      background: transparent;
+      color: white;
       border: none;
       outline: none;
       font-size: 0.95rem;
     }
 
     .blend-btn {
-      background: #cfa85c;
+      background: #ff6a00;
+      color:white;
       border: none;
       padding: 0.7rem 1rem;
       border-radius: 999px;
       font-weight: 600;
       cursor: pointer;
     }
+
+    .blend-btn {
+  background: #ff6a00;
+  border: none;
+  padding: 0.7rem 1rem;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ADD HERE */
+
+.topic-strip{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  padding:12px 16px;
+}
+
+.topic-strip::-webkit-scrollbar{
+  display:none;
+}
+
+.topic-pill{
+  background:#181818;
+  color:white;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:999px;
+  padding:8px 12px;
+  white-space:nowrap;
+  cursor:pointer;
+}
+
+.topic-pill:hover{
+  border-color:#ff6a00;
+}
+
+/* TABS */
+
+.tabs {
+  display: flex;
+  gap: 0.7rem;
+  overflow-x: auto;
+  padding: 1rem 1rem 0.5rem;
+}
 
     /* TABS */
     .tabs {
@@ -121,14 +171,15 @@
 
     .tab {
       border: none;
-      background: #ece7df;
+      background: #181818;
+      color: #999;
       padding: 0.6rem 1rem;
       border-radius: 999px;
       white-space: nowrap;
     }
 
     .tab.active {
-      background: #17152e;
+      background: #ff6a00;
       color: white;
     }
 
@@ -139,11 +190,12 @@
 
     /* CARD */
     .card {
-      background: white;
+      background: #0d0d0d;
+      border: 1px solid rgba(255,255,255,.08);
       border-radius: 26px;
       padding: 1rem;
       margin-bottom: 1.1rem;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.05);
+      color: white;
     }
 
     .card-title {
@@ -191,8 +243,8 @@
       left: 50%;
       transform: translateX(-50%);
 
-      background: white;
-      border-top: 1px solid #e5dfd7;
+      background:#0d0d0d;
+      border-top:1px solid rgba(255,255,255,.08);
 
       display: flex;
       justify-content: space-around;
@@ -202,7 +254,7 @@
 
     .nav-item {
       font-size: 0.82rem;
-      color: #666;
+      color: #aaa;
     }
 
     .nav-plus {
@@ -230,7 +282,11 @@
   <div class="app-header">
     <div class="logo">PODBLENDZ</div>
     <div class="header-right">
-      🔔
+      <div class="notification-icon">
+        🔔
+
+      </div>
+      
       <img class="profile-avatar" src="https://i.pravatar.cc/100?img=12" />
     </div>
   </div>
@@ -261,6 +317,8 @@
       </button>
     
   </div>
+
+
 
 
 
