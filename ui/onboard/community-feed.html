@@ -710,16 +710,30 @@ document.getElementById(
 
 (function(){
 
-    const selectedBlendId =
+ const selectedBlendId =
   localStorage.getItem(
     "dnaSeedBlendId"
   );
 
-const blend =
-  BLENDS.find(
-    b => b.id === selectedBlendId
-  ) || BLENDS[0];
-  loadBlend(blend);
+
+if (!selectedBlendId) return;
+
+fetch(
+  `https://api.podblendz.com/blend/${selectedBlendId}`
+)
+.then(response => response.json())
+.then(blend => {
+
+  loadBlend({
+    id: blend.id,
+    title: blend.title,
+    clips: blend.clip_count,
+    sources: blend.creators || []
+  });
+
+});
+
+
 
   const creatorContainer =
   document.getElementById(
@@ -728,7 +742,7 @@ const blend =
 
 creatorContainer.innerHTML = "";
 
-(blend.creators || []).forEach(
+(blend.sources || []).forEach(
   creator => {
 
     creatorContainer.innerHTML += `
