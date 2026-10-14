@@ -301,6 +301,11 @@
         const blend =
           await response.json();
 
+        localStorage.setItem(
+            "dnaSeedBlendId",
+            blend.id
+        );
+
           console.log(blend);
           console.log(blend.episode_objects);
 
