@@ -499,6 +499,7 @@ body{
     <div class="section-title">
       Featured Creators
 
+      </div>
       <div id="creatorFollowContainer">
 
       </div>
@@ -707,7 +708,7 @@ document.getElementById(
 
   
 
-setTimeout(() => {
+(function(){
 
     const selectedBlendId =
   localStorage.getItem(
@@ -801,7 +802,46 @@ BLENDS.slice(0, 3).forEach((blend, index) => {
 ).innerText =
   `Just listened to "${blend.title}". Incredible synthesis.`;
 
-}, 3000);
+})();
+
+function toggleCreatorFollow(
+  creator
+) {
+
+  let follows =
+    JSON.parse(
+      localStorage.getItem(
+        "followedCreators"
+      ) || "[]"
+    );
+
+  if (
+    follows.includes(
+      creator
+    )
+  ) {
+
+    follows =
+      follows.filter(
+        c => c !== creator
+      );
+
+  } else {
+
+    follows.push(
+      creator
+    );
+
+  }
+
+  localStorage.setItem(
+    "followedCreators",
+    JSON.stringify(follows)
+  );
+
+  updateCreatorButtons();
+
+}
 
 function openCurrentBlend() {
 

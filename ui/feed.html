@@ -394,6 +394,17 @@ function goToSource(name, event) {
   window.location.href =
     '/ui/source.html?name=' + encodeURIComponent(name);
 }
+
+function openBlend(id){
+
+  localStorage.setItem(
+    "dnaSeedBlendId",
+    id
+  );
+
+  window.location.href =
+    `./blend.html?id=${id}`;
+}
 </script>
 
 </body>
