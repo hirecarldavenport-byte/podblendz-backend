@@ -258,6 +258,12 @@
         Copy
       </button>
 
+      <button
+        class="share-btn"
+        onclick="openCommunity()">
+        🎧 Discuss in Community
+      </button>
+
     </div>
 
   </div>
@@ -554,6 +560,23 @@ if (
         "Link copied!"
       );
     }
+
+    function openCommunity() {
+
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
+
+  localStorage.setItem(
+    "dnaSeedBlendId",
+    params.get("id")
+  );
+
+  window.location.href =
+    "/community-feed.html";
+
+}
 
   </script>
 
