@@ -731,10 +731,6 @@ fetch(
     sources: blend.creators || []
   });
 
-});
-
-
-
   const creatorContainer =
   document.getElementById(
     "creatorFollowContainer"
@@ -742,10 +738,15 @@ fetch(
 
 creatorContainer.innerHTML = "";
 
-(blend.sources || []).forEach(
+(blend.creators || []).forEach(
+
   creator => {
 
+
     creatorContainer.innerHTML += `
+
+    
+    
 
       <div class="follow-card">
 
@@ -770,16 +771,17 @@ creatorContainer.innerHTML = "";
 );
 
 updateCreatorButtons();
+}); 
+})();
+
+
+
 
   console.log(
   "Selected Blend ID:",
   selectedBlendId
 );
 
-console.log(
-  "Blend Loaded:",
-  blend
-);
 
   
   const popularContainer =
@@ -811,12 +813,7 @@ BLENDS.slice(0, 3).forEach((blend, index) => {
 
 });
 
-  document.getElementById(
-  "communityCommentText"
-).innerText =
-  `Just listened to "${blend.title}". Incredible synthesis.`;
 
-})();
 
 function toggleCreatorFollow(
   creator
