@@ -456,6 +456,31 @@ body{
     gap:10px;
   }
 
+  .mobile-board-row{
+  display:flex;
+  overflow-x:auto;
+  gap:8px;
+  position:sticky;
+  top:0;
+  z-index:100;
+}
+
+.mobile-board-row{
+  display:flex;
+  overflow-x:auto;
+  gap:10px;
+  margin-bottom:20px;
+}
+
+.mobile-board-row div{
+  background:#181818;
+  padding:8px 14px;
+  border-radius:999px;
+  white-space:nowrap;
+  cursor:pointer;
+}
+
+
 }
 
 }
@@ -568,6 +593,26 @@ body{
       🎧 Community
     </h1>
 
+    <div class="mobile-board-row">
+
+  <div onclick="openBoard('Brain Health')">
+    🧠 Brain Health
+  </div>
+
+  <div onclick="openBoard('AI')">
+    🤖 AI
+  </div>
+
+  <div onclick="openBoard('Business')">
+    💰 Business
+  </div>
+
+  <div onclick="openBoard('Relationships')">
+    ❤️ Relationships
+  </div>
+
+</div>
+
 
     <div class="tabs">
       <div class="tab active">For You</div>
@@ -578,13 +623,49 @@ body{
 
     <div class="widget">
 
-<h3>🧬 Your Blendz DNA</h3>
+  <h3>🔥 Active Boards</h3>
 
-<p class="dna-subtitle">
-  Personalized from your selected interests
-</p>
+  <div
+    class="dna-card"
+    onclick="openBoard('Brain Health')">
 
-<div id="dnaBlendsContainer">
+    🧠 Brain Health
+  </div>
+
+  <div
+    class="dna-card"
+    onclick="openBoard('AI')">
+
+    🤖 AI
+  </div>
+
+  <div
+    class="dna-card"
+    onclick="openBoard('Business')">
+
+    💰 Business
+  </div>
+
+</div>
+
+    <div class="widget">
+
+  <h3>🧬 Your Blendz DNA</h3>
+
+  <div class="active-boards">
+
+    <div class="dna-chip">🧠 Brain Health</div>
+    <div class="dna-chip">🤖 AI</div>
+    <div class="dna-chip">💰 Business</div>
+
+  </div>
+
+  <p class="dna-subtitle">
+    Recommended because of your listening habits
+  </p>
+
+  <div id="dnaBlendsContainer"></div>
+
 </div>
 
   
