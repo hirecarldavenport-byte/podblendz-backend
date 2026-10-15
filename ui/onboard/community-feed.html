@@ -905,6 +905,25 @@ popularContainer.innerHTML = "";
 
 BLENDS.slice(0, 3).forEach((blend, index) => {
 
+    popularContainer.innerHTML += `
+  <div
+    class="dna-card"
+    onclick="loadBlend(BLENDS[${index}])">
+
+    <div class="dna-category">
+      Recommended
+    </div>
+
+    <strong>${blend.title}</strong>
+
+    <div class="dna-subtitle">
+      ${blend.clips} clips •
+      ${blend.sources.length} creators
+    </div>
+
+  </div>
+`;
+
   popularContainer.innerHTML += `
     <div
         class="popular-blend"
