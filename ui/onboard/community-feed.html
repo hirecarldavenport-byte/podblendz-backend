@@ -815,16 +815,6 @@ updateCreatorButtons();
 }); 
 })();
 
-
-
-
-  console.log(
-  "Selected Blend ID:",
-  selectedBlendId
-);
-
-
-  
   const popularContainer =
   document.getElementById(
     "dnaBlendsContainer"
@@ -908,6 +898,13 @@ function openCurrentBlend() {
     `/blend.html?id=${selectedBlendId}`;
 }
 
+function openBoard(board){
+
+  window.location.href =
+    `/feed.html?board=${encodeURIComponent(board)}`;
+
+}
+
 function updateCreatorButtons() {
 
   const follows =
@@ -947,12 +944,9 @@ function updateCreatorButtons() {
           "transparent";
       }
 
-      function openBoard(board){
+ 
 
-  window.location.href =
-    `/feed.html?board=${encodeURIComponent(board)}`;
 
-}
 
     });
 
