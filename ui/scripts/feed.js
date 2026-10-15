@@ -11,6 +11,7 @@ let currentView = "blends";
 // ✅ ON LOAD
 document.addEventListener("DOMContentLoaded", () => {
   console.log("feed.js ready");
+  renderCurrentView();
 });
 
 // ✅ HUMANIZE CREATOR NAMES
@@ -211,65 +212,6 @@ function renderBoards() {
 
 }
 
-function openBoard(boardName){
-
-  window.location.href =
-    `/feed.html?board=${
-      encodeURIComponent(boardName)
-    }`;
-
-}
-
-
-  const container =
-    document.getElementById("feed");
-
-  container.innerHTML = `
-
-    <div class="card">
-
-      <button
-        class="blend-btn"
-        onclick="renderBoards()"
-        style="margin-bottom:15px;"
-      >
-        ← Back
-      </button>
-
-      <div class="card-title">
-        ${boardName}
-      </div>
-
-      <div class="card-description">
-        ${boardBlends.length} Blendz
-      </div>
-
-    </div>
-
-  `;
-
-  container.innerHTML +=
-    boardBlends.map(blend => `
-
-      <div
-        class="card"
-        onclick="openBlend('${blend.id}')"
-      >
-
-        <div class="card-title">
-          ${blend.title}
-        </div>
-
-        <div class="card-description">
-          ${blend.subtitle || ""}
-        </div>
-
-      </div>
-
-    `).join("");
-
-// ✅ FEED
-function renderFeed() {
 
   const container =
     document.getElementById("feed");
@@ -425,7 +367,8 @@ if (selectedBoard) {
 
   `).join("");
 
-}
+  container.innerHTML = html;
+
 
 
 // ✅ OPEN BLEND
