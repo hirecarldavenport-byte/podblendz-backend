@@ -212,6 +212,8 @@ function renderBoards() {
 
 }
 
+function renderFeed() {
+
 
   const container =
     document.getElementById("feed");
@@ -405,4 +407,4 @@ function goToSource(name, event) {
   // window.location.href =
   // `/source.html?name=${encodeURIComponent(name)}`;
 
-}
+}}
