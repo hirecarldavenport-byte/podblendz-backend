@@ -211,13 +211,15 @@ function renderBoards() {
 
 }
 
-function openBoard(boardName) {
+function openBoard(boardName){
 
-  const boardBlends =
-    BLENDS.filter(
-      blend =>
-        blend.board === boardName
-    );
+  window.location.href =
+    `/feed.html?board=${
+      encodeURIComponent(boardName)
+    }`;
+
+}
+
 
   const container =
     document.getElementById("feed");
@@ -266,7 +268,6 @@ function openBoard(boardName) {
 
     `).join("");
 
-}
 // ✅ FEED
 function renderFeed() {
 
@@ -293,13 +294,51 @@ function renderFeed() {
     return;
 
     }
+
+    const params =
+  new URLSearchParams(
+    window.location.search
+  );
+
+const selectedBoard =
+  params.get("board");
   
 
-  const combined = [...BLENDS];
+  let combined = [...BLENDS];
+
+if (selectedBoard) {
+
+  combined = combined.filter(
+    blend =>
+      (blend.board || "") ===
+      selectedBoard
+  );
+
+}
+
+let html = "";
+
+if (selectedBoard) {
+
+  html += `
+    <div class="card">
+      <div class="card-title">
+        📚 ${selectedBoard}
+      </div>
+
+      <div class="card-description">
+        Community Board
+      </div>
+    </div>
+  `;
+
+}
+
+
 
   
 
-  container.innerHTML = combined.map((b) => `
+  html += combined.map((b) => `
 
     <div
       class="card"

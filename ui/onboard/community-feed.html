@@ -102,6 +102,16 @@ body{
   cursor:pointer;
 }
 
+.topic.clickable{
+  cursor:pointer;
+  transition:.2s;
+}
+
+.topic.clickable:hover{
+  color:#ff6a00;
+  padding-left:6px;
+}
+
 /* ============================
    CENTER FEED
 ============================ */
@@ -489,12 +499,43 @@ body{
 
 </nav>
 
-    <div class="topic">AI & Tech</div>
-    <div class="topic">Health & Mindset</div>
-    <div class="topic">Finance & Business</div>
-    <div class="topic">Media & Culture</div>
-    <div class="topic">Science & Space</div>
-    <div class="topic">Startups</div>
+<div
+  class="topic clickable"
+  onclick="openBoard('AI')">
+  AI & Tech
+</div>
+
+<div
+  class="topic clickable"
+  onclick="openBoard('Brain Health')">
+  Health & Mindset
+</div>
+
+<div
+  class="topic clickable"
+  onclick="openBoard('Business')">
+  Finance & Business
+</div>
+
+<div
+  class="topic clickable"
+  onclick="openBoard('Media')">
+  Media & Culture
+</div>
+
+<div
+  class="topic clickable"
+  onclick="openBoard('Science')">
+  Science & Space
+</div>
+
+<div
+  class="topic clickable"
+  onclick="openBoard('Startups')">
+  Startups
+</div>
+
+   
 
     <div class="section-title">
       Featured Creators
@@ -905,6 +946,13 @@ function updateCreatorButtons() {
         btn.style.background =
           "transparent";
       }
+
+      function openBoard(board){
+
+  window.location.href =
+    `/feed.html?board=${encodeURIComponent(board)}`;
+
+}
 
     });
 
