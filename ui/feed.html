@@ -178,6 +178,11 @@
       white-space: nowrap;
     }
 
+    .topic-pill.active{
+      background:#ff6a00;
+      color:white;
+    }
+
     .tab.active {
       background: #ff6a00;
       color: white;
@@ -334,21 +339,30 @@
 
   <div class="topic-strip">
 
-    <button class="topic-pill">
-      🧠 Brain Health
-    </button>
+    <button
+  class="topic-pill"
+  onclick="openBoard('Brain Health')">
+  🧠 Brain Health
+</button>
 
-    <button class="topic-pill">
-      🤖 AI
-    </button>
+<button
+  class="topic-pill"
+  onclick="openBoard('AI')">
+  🤖 AI
+</button>
 
-    <button class="topic-pill">
-      💰 Business
-      </button>
+<button
+  class="topic-pill"
+  onclick="openBoard('Business')">
+  💰 Business
+</button>
 
-    <button class="topic-pill">
-        ❤️ Relationships
-      </button>
+<button
+  class="topic-pill"
+  onclick="openBoard('Relationships')">
+  ❤️ Relationships
+</button>
+
     
   </div>
 
@@ -362,8 +376,7 @@
     <button class="tab" onclick="setView('creators')">Top Creators</button>
     <button class="tab" onclick="setView('following')">Boards</button>
     <button class="tab" onclick="setView('recent')">Trending</button>
-    <button class="tab" onclick="setView('all')">Topics</button>
-  </div>
+    <button class="tab" onclick="window.location.href='./community-feed.html'">Community</button>
 
   <!-- FEED -->
 
