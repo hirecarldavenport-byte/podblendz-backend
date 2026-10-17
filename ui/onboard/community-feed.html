@@ -501,7 +501,7 @@ body{
     </div>
 
     <div class="section-title">
-      Top Topics
+      Community Boards
     </div>
 
     <nav class="nav">
@@ -563,7 +563,7 @@ body{
    
 
     <div class="section-title">
-      Featured Creators
+      Following
 
       </div>
       <div id="creatorFollowContainer">
@@ -923,24 +923,6 @@ BLENDS.slice(0, 3).forEach((blend, index) => {
 
   </div>
 `;
-
-  popularContainer.innerHTML += `
-    <div
-        class="popular-blend"
-        id="blend-${blend.id}"
-        style="cursor:pointer;"
-        
-        onclick="loadBlend(BLENDS[${index}])">
-
-      ${blend.title}<br>
-
-      <small>
-        ${blend.clips} clips •
-        ${blend.sources.length} creators
-      </small>
-
-    </div>
-  `;
 
 });
 

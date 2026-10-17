@@ -40,9 +40,24 @@ function setView(view) {
 
   currentView = view;
 
-  document.querySelectorAll(".tab").forEach(btn =>
-    btn.classList.remove("active")
-  );
+  if (
+    view === "blends" &&
+    window.location.search.includes("board=")
+  ) {
+
+    window.history.replaceState(
+      {},
+      "",
+      "/feed.html"
+    );
+
+  }
+
+  document
+    .querySelectorAll(".tab")
+    .forEach(btn =>
+      btn.classList.remove("active")
+    );
 
   if (window.event?.target) {
     window.event.target.classList.add("active");
@@ -50,7 +65,6 @@ function setView(view) {
 
   renderCurrentView();
 }
-
 
 // ✅ MAIN VIEW ROUTER
 function renderCurrentView() {
