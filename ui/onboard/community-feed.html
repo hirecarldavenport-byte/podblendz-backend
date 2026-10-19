@@ -485,6 +485,15 @@ body{
   cursor:pointer;
 }
 
+.featured-label{
+  color:#ff6a00;
+  font-weight:700;
+  margin-bottom:10px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  font-size:.75rem;
+}
+
 
 }
 
@@ -590,31 +599,49 @@ body{
       🎧 Community
     </h1>
 
-    <p class="community-subtitle">
-      <div class="post">
+    <div class="post" onclick="openCurrentBlend()">
 
-  <div class="post-user">
-    🎙 PodBlendz Prompt
-  </div>
+  <div class="post-header">
 
-  <div class="post-content">
-
-    What podcast insight has changed
-    your behavior recently?
-
-  </div>
-
-  <div class="post-actions">
-
-    💬 Join Discussion
-
-  </div>
-
+    <div class="featured-label">
+  🔥 Featured Blend Discussion
 </div>
-      Conversations happening around
-      the world's best podcasts.
+
+    <div class="post-user">
+      Alex Mercer
+    </div>
+
+    <div class="post-time">
+      1h ago
+    </div>
+
+  </div>
+
+  <div
+    id="communityComment"
+    class="post-content">
+
+    <p id="communityCommentText">
+      Just listened to a blend.
     </p>
 
+    <div class="blend-preview">
+
+  <h4 id="communityBlendTitle">
+    What habits create extraordinary careers over decades?
+  </h4>
+
+  <p id="communityBlendMeta">
+    27 clips • 5 creators • 8 min
+  </p>
+
+  <audio
+    id="communityAudio"
+    controls
+    style="width:100%; margin-top:15px;">
+  </audio>
+
+</div>
 
     <div class="mobile-board-row">
 
@@ -635,6 +662,30 @@ body{
   </div>
 
 </div>
+
+
+    <p class="community-subtitle">
+      <div class="post">
+
+  <div class="post-user">
+    🎙 PodBlendz Prompt
+  </div>
+
+  <div class="post-content">
+
+    What podcast insight has changed
+    your behavior recently?
+
+  </div>
+
+  <div class="post-actions">
+
+    💬 Join Discussion
+
+  </div>
+
+
+
 
 
 
@@ -679,46 +730,7 @@ body{
 
     </div>
 
-    <div class="post" onclick="openCurrentBlend()">
-
-  <div class="post-header">
-
-    <div class="post-user">
-      Alex Mercer
-    </div>
-
-    <div class="post-time">
-      1h ago
-    </div>
-
-  </div>
-
-  <div
-    id="communityComment"
-    class="post-content">
-
-    <p id="communityCommentText">
-      Just listened to a blend.
-    </p>
-
-    <div class="blend-preview">
-
-  <h4 id="communityBlendTitle">
-    What habits create extraordinary careers over decades?
-  </h4>
-
-  <p id="communityBlendMeta">
-    27 clips • 5 creators • 8 min
-  </p>
-
-  <audio
-    id="communityAudio"
-    controls
-    style="width:100%; margin-top:15px;">
-  </audio>
-
-</div>
-
+    
   </main>
 
   <!-- RIGHT -->
