@@ -101,6 +101,10 @@
 
     function handleCredentialResponse(response) {
 
+      console.log(
+  "GOOGLE CALLBACK FIRED"
+);
+
   const profile =
     parseJwt(
       response.credential
