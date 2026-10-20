@@ -403,10 +403,70 @@
 
 <script>
 
-const user =
-  JSON.parse(
-    localStorage.getItem("pbUser")
+function parseJwt(token) {
+
+  const base64Url =
+    token.split('.')[1];
+
+  const base64 =
+    base64Url
+      .replace(/-/g, '+')
+      .replace(/_/g, '/');
+
+  return JSON.parse(
+    atob(base64)
   );
+
+}
+
+const token =
+  localStorage.getItem(
+    "googleToken"
+  );
+
+if (token) {
+
+  const profile =
+    parseJwt(token);
+
+  const user = {
+
+    googleSub:
+      profile.sub,
+
+    email:
+      profile.email,
+
+    displayName:
+      profile.name,
+
+    photoUrl:
+      profile.picture,
+
+    blendzId:
+      `BLZ-${profile.sub.slice(-8)}`
+  };
+
+  localStorage.setItem(
+    "pbUser",
+    JSON.stringify(user)
+  );
+
+  document
+    .querySelector(".profile-avatar")
+    ?.setAttribute(
+      "src",
+      user.photoUrl
+    );
+
+  document
+    .querySelector(".composer-avatar")
+    ?.setAttribute(
+      "src",
+      user.photoUrl
+    );
+
+}
 
 if (user?.photoUrl) {
 
