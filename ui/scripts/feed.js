@@ -357,13 +357,20 @@ if (selectedBoard) {
 
         <div class="tags">
 
-          ${(b.sources || []).map(source => `
+         ${(b.sources || []).map(source => `
 
-            <span class="tag">
-              🎙 ${formatCreator(source)}
-            </span>
+  <span
+    class="tag"
+    onclick="
+      openCreator('${source}');
+      event.stopPropagation();
+    "
+    style="cursor:pointer;"
+  >
+    🎙 ${formatCreator(source)}
+  </span>
 
-          `).join("")}
+`).join("")}
 
         </div>
 
