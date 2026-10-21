@@ -87,6 +87,24 @@ function openCreator(creatorName) {
     (blend.sources || []).includes(creatorName)
     );
 
+    const topicCounts = {};
+
+creatorBlends.forEach(blend => {
+
+  const board =
+    blend.board || "General";
+
+  topicCounts[board] =
+    (topicCounts[board] || 0) + 1;
+
+});
+
+const topTopics =
+  Object.entries(topicCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3);
+
+
     const container = document.getElementById("feed");
 
     container.innerHTML = `
@@ -105,8 +123,32 @@ function openCreator(creatorName) {
         </div>
 
         <div class="card-description">
-          Appears in ${creatorBlends.length} Blendz
-        </div>
+  Appears in ${creatorBlends.length} Blendz
+</div>
+
+<div
+  style="
+    margin-top:12px;
+    color:#888;
+    font-size:.75rem;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+  "
+>
+  Top Topics
+</div>
+
+<div class="tags">
+
+  ${topTopics.map(([topic]) => `
+    <span class="tag">
+      ${topic}
+    </span>
+  `).join("")}
+
+</div>
+
+      
 
       </div>
       `;
