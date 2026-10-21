@@ -20,9 +20,9 @@ def get_conn() -> sqlite3.Connection:
     conn.execute("PRAGMA foreign_keys = ON;")
     return conn
 
-
 def ensure_tables() -> None:
     conn = get_conn()
+
     conn.execute(
         """
         CREATE TABLE IF NOT EXISTS transcripts (
@@ -32,8 +32,54 @@ def ensure_tables() -> None:
         )
         """
     )
+
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS users (
+
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+            blendz_id TEXT UNIQUE,
+
+            google_sub TEXT UNIQUE,
+
+            email TEXT UNIQUE,
+
+            display_name TEXT,
+
+            photo_url TEXT,
+
+            created_at TEXT,
+
+            last_login TEXT
+        )
+        """
+    )
+
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS community_activity (
+
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+            blend_id TEXT,
+
+            blend_title TEXT,
+
+            user_email TEXT,
+
+            display_name TEXT,
+
+            comment TEXT,
+
+            created_at TEXT
+        )
+        """
+    )
+
     conn.commit()
     conn.close()
+
 
 
 # ------------------------------------------------------------
@@ -117,6 +163,80 @@ def delete_transcript(episode_id: int) -> None:
     conn.commit()
     conn.close()
 
+def save_user(
+    blendz_id,
+    google_sub,
+    email,
+    display_name,
+    photo_url
+):
+    ensure_tables()
+
+    conn = get_conn()
+
+    conn.execute(
+        """
+        INSERT OR REPLACE INTO users (
+
+            blendz_id,
+            google_sub,
+            email,
+            display_name,
+            photo_url,
+            last_login
+
+        )
+        VALUES (?, ?, ?, ?, ?, datetime('now'))
+        """,
+        (
+            blendz_id,
+            google_sub,
+            email,
+            display_name,
+            photo_url
+        )
+    )
+
+    conn.commit()
+    conn.close()
+
+def save_community_activity(
+    blend_id,
+    blend_title,
+    user_email,
+    display_name,
+    comment
+):
+    ensure_tables()
+
+    conn = get_conn()
+
+    conn.execute(
+        """
+        INSERT INTO community_activity (
+
+            blend_id,
+            blend_title,
+            user_email,
+            display_name,
+            comment,
+            created_at
+
+        )
+        VALUES (?, ?, ?, ?, ?, datetime('now'))
+        """,
+        (
+            blend_id,
+            blend_title,
+            user_email,
+            display_name,
+            comment
+        )
+    )
+
+    conn.commit()
+    conn.close()
+
 
 def backup() -> None:
     ensure_tables()
@@ -124,4 +244,5 @@ def backup() -> None:
     if os.path.exists(DB_PATH):
         with open(DB_PATH, "rb") as src, open(backup_path, "wb") as dst:
             dst.write(src.read())
-            
+
+          
