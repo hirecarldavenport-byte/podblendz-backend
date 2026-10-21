@@ -641,6 +641,17 @@ body{
     27 clips • 5 creators • 8 min
   </p>
 
+  <div
+  id="communityCreators"
+  style="
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:12px;
+  "
+>
+</div>
+
   <audio
     id="communityAudio"
     controls
@@ -830,6 +841,33 @@ document
     "communityBlendMeta"
   ).innerText =
     `${blend.clips} clips • ${blend.sources.length} creators`;
+
+    const creatorContainer =
+  document.getElementById(
+    "communityCreators"
+  );
+
+creatorContainer.innerHTML =
+  (blend.sources || [])
+    .map(source => `
+      <span
+        class="tag"
+        onclick="
+          event.stopPropagation();
+          window.location.href='/feed.html';
+        "
+        style="
+          background:#181818;
+          border:1px solid rgba(255,255,255,.08);
+          padding:8px 12px;
+          border-radius:999px;
+          cursor:pointer;
+        "
+      >
+        🎙 ${source}
+      </span>
+    `)
+    .join("");
 
   document.getElementById(
     "communityCommentText"
