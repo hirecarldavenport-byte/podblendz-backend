@@ -6,9 +6,21 @@ Primary FastAPI entrypoint for PodBlendz.
 
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
+from sqlalchemy.orm import Session
+
+from podpal.db.database import get_db
+
+from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+
+from podpal.db.blend_store import (
+    save_user,
+    save_community_activity
+)
+
+
 
 # ---------------------------------------------------------
 # Directories
@@ -114,6 +126,21 @@ if blend_feed_router:
 if catalog_router:
     app.include_router(catalog_router)
 
+class UserLogin(BaseModel):
+    blendz_id: str
+    google_sub: str
+    email: str
+    display_name: str
+    photo_url: str
+
+
+class CommunityActivity(BaseModel):
+    blend_id: str
+    blend_title: str
+    user_email: str
+    display_name: str
+    comment: str
+
 # ---------------------------------------------------------
 # Root
 # ---------------------------------------------------------
@@ -125,6 +152,44 @@ def root():
         "service": "PodBlendz API",
         "version": "1.0.0",
         "description": "Generates Shared Perspectives podcast blends"
+    }
+
+@app.post("/users/login")
+def user_login(
+    user: UserLogin,
+    db: Session = Depends(get_db)
+):
+
+    save_user(
+    db,
+    user.blendz_id,
+    user.google_sub,
+    user.email,
+    user.display_name,
+    user.photo_url
+)
+
+    return {
+        "success": True
+    }
+
+@app.post("/community/activity")
+def community_activity(
+    activity: CommunityActivity,
+    db: Session = Depends(get_db)
+):
+
+        save_community_activity(
+            db,
+        activity.blend_id,
+        activity.blend_title,
+        activity.user_email,
+        activity.display_name,
+        activity.comment
+    )
+
+        return {
+        "success": True
     }
 
 
