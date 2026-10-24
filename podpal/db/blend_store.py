@@ -30,10 +30,13 @@ def create_blend(
 
         id=metadata["id"],
 
+<<<<<<< HEAD
         board=metadata.get(
             "board"
             ),
 
+=======
+>>>>>>> 4b86cf74806cefd0ce096ccc7f6e62369d18bb4b
         title=metadata.get(
             "title"
         ),
@@ -221,7 +224,18 @@ def create_blend(
 
         return blend
 
+<<<<<<< HEAD
     except Exception:
+=======
+    except Exception as e:
+        print("\n===== COMMIT FAILED =====")
+        print("TYPE:", type(e))
+        print("ERROR:", str(e))
+
+        import traceback
+        traceback.print_exc()
+
+>>>>>>> 4b86cf74806cefd0ce096ccc7f6e62369d18bb4b
 
         db.rollback()
 
@@ -404,6 +418,17 @@ def delete_blend(
 
     db.delete(blend)
 
+<<<<<<< HEAD
+=======
+    print("\n===== ABOUT TO COMMIT =====")
+    print("ID:", blend.id)
+    print("TITLE:", blend.title)
+    print("CREATED_AT:", blend.created_at)
+    print("BOARD:", blend.board)
+    print("AUDIO:", blend.audio_file)
+    print("==========================")
+
+>>>>>>> 4b86cf74806cefd0ce096ccc7f6e62369d18bb4b
     db.commit()
 
     return True

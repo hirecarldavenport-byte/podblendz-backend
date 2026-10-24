@@ -119,6 +119,7 @@ app.include_router(blend_publish_router)
 
 if blend_router:
     app.include_router(blend_router)
+app.include_router(blend_feed_router)
 
 if blend_feed_router:
     app.include_router(blend_feed_router)
