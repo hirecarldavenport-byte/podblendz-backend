@@ -158,13 +158,51 @@
     JSON.stringify(user)
   );
 
+  fetch(
+  "https://api.podblendz.com/users",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type":
+        "application/json"
+    },
+    body: JSON.stringify(user)
+  }
+).catch(console.error);
+
+
   localStorage.setItem(
     "googleToken",
     response.credential
   );
 
+  fetch("/users/login", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    blendz_id: user.blendzId,
+    google_sub: user.googleSub,
+    email: user.email,
+    display_name: user.displayName,
+    photo_url: user.photoUrl
+  })
+})
+.then(res => res.json())
+.then(data => {
+  console.log("User saved:", data);
+
   window.location.href =
     "/community-feed.html";
+})
+.catch(err => {
+  console.error("Login save failed:", err);
+
+  window.location.href =
+    "/community-feed.html";
+});
+
 
 }
 
