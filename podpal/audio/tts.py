@@ -1,134 +1,152 @@
-# podpal/audio/tts.py
-
 from __future__ import annotations
 
 import os
 import uuid
 from pathlib import Path
 from datetime import datetime
-from typing import Optional
 
 from dotenv import load_dotenv
 import azure.cognitiveservices.speech as speechsdk
 
 
 # -------------------------------------------------
-# ✅ FORCE LOAD ENV FROM PROJECT ROOT
+# ✅ LOAD ENV
 # -------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+load_dotenv(BASE_DIR / ".env")
 
-env_path = BASE_DIR / ".env"
-load_dotenv(env_path)
-
-AZURE_SPEECH_KEY = os.getenv("AZURE_SPEECH_KEY")
-AZURE_SPEECH_REGION = os.getenv("AZURE_SPEECH_REGION")
+AZURE_KEY = os.getenv("AZURE_SPEECH_KEY")
+AZURE_REGION = os.getenv("AZURE_SPEECH_REGION")
 
 
 # -------------------------------------------------
-# ✅ DIRECTORIES
+# ✅ OUTPUT DIRECTORY
 # -------------------------------------------------
 TTS_DIR = BASE_DIR / "audio" / "tts"
 TTS_DIR.mkdir(parents=True, exist_ok=True)
 
 
 # -------------------------------------------------
-# ✅ MAIN TTS FUNCTION
+# ✅ TEXT CLEANING
+# -------------------------------------------------
+def clean_text(text: str) -> str:
+    """Normalize spacing for smoother speech"""
+    return " ".join(text.split())
+
+
+def add_pauses(text: str) -> str:
+    """Light pacing improvement without SSML"""
+    text = text.replace(". ", ". ... ")
+    text = text.replace("? ", "? ... ")
+    text = text.replace("! ", "! ... ")
+    return text
+
+
+# -------------------------------------------------
+# ✅ NARRATOR TTS (CORE FUNCTION)
 # -------------------------------------------------
 def generate_audio(
     text: str,
     voice: str = "en-US-JennyNeural",
-    filename_prefix: str = "blend",
+    filename_prefix: str = "narrator"
 ) -> str:
     """
-    Generate TTS audio using Azure Speech Service.
+    Generate narrator-only audio.
+
+    Used by:
+    ✅ audio_builder (hybrid system)
+    ✅ narration layers
 
     Returns:
-        Absolute path to MP3 file.
+        Path to WAV file
     """
 
-    # ✅ HARD DEBUG (remove later if you want)
-    print(f"🔐 AZURE KEY LOADED: {bool(AZURE_SPEECH_KEY)}")
-    print(f"🌍 AZURE REGION: {AZURE_SPEECH_REGION}")
+    print("🔐 AZURE KEY LOADED:", bool(AZURE_KEY))
+    print("🌍 AZURE REGION:", AZURE_REGION)
 
-    if not AZURE_SPEECH_KEY or not AZURE_SPEECH_REGION:
-        raise RuntimeError("❌ Azure Speech is not configured (missing env vars)")
+    if not AZURE_KEY or not AZURE_REGION:
+        raise RuntimeError("❌ Missing Azure Speech credentials")
 
-    # -------------------------------------------------
-    # ✅ FILENAME
-    # -------------------------------------------------
+    # -------------------------
+    # ✅ PREP TEXT
+    # -------------------------
+    text = clean_text(text)
+    text = add_pauses(text)
+
+    # -------------------------
+    # ✅ OUTPUT FILE
+    # -------------------------
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    unique_id = uuid.uuid4().hex[:8]
-    filename = f"{filename_prefix}_{timestamp}_{unique_id}.mp3"
+    uid = uuid.uuid4().hex[:6]
 
-    output_path = TTS_DIR / filename
+    output_path = TTS_DIR / f"{filename_prefix}_{timestamp}_{uid}.wav"
 
-    print(f"🔊 Azure TTS generating → {output_path}")
+    print(f"🎙 Generating narrator audio → {output_path}")
 
-    try:
-        # -------------------------------------------------
-        # ✅ CONFIGURE SPEECH
-        # -------------------------------------------------
-        speech_config = speechsdk.SpeechConfig(
-            subscription=AZURE_SPEECH_KEY,
-            region=AZURE_SPEECH_REGION
-        )
+    # -------------------------
+    # ✅ AZURE CONFIG
+    # -------------------------
+    speech_config = speechsdk.SpeechConfig(
+        subscription=AZURE_KEY,
+        region=AZURE_REGION
+    )
 
-        # ✅ FORCE correct endpoint
-        speech_config.set_property(
-             speechsdk.PropertyId.SpeechServiceConnection_Endpoint,
-             f"https://{AZURE_SPEECH_REGION}.tts.speech.microsoft.com/cognitiveservices/v1"
+    speech_config.speech_synthesis_voice_name = voice
 
-        )
+    audio_config = speechsdk.audio.AudioOutputConfig(
+        filename=str(output_path)
+    )
 
-        speech_config.speech_synthesis_voice_name = voice
+    synthesizer = speechsdk.SpeechSynthesizer(
+        speech_config=speech_config,
+        audio_config=audio_config
+    )
 
-        audio_config = speechsdk.audio.AudioOutputConfig(
-            filename=str(output_path)
-        )
+    # -------------------------
+    # ✅ SYNTHESIZE (NO SSML = STABLE)
+    # -------------------------
+    result = synthesizer.speak_text_async(text).get()
 
-        synthesizer = speechsdk.SpeechSynthesizer(
-            speech_config=speech_config,
-            audio_config=audio_config
-        )
+    # -------------------------
+    # ✅ ERROR HANDLING
+    # -------------------------
+    if result is None:
+        raise RuntimeError("❌ Azure returned no result")
 
-        # -------------------------------------------------
-        # ✅ SYNTHESIS
-        # -------------------------------------------------
-        result: Optional[speechsdk.SpeechSynthesisResult] = (
-            synthesizer.speak_text_async(text).get()
-        )
+    if result.reason != speechsdk.ResultReason.SynthesizingAudioCompleted:
 
-        if not result:
-            raise RuntimeError("Azure TTS returned no result")
+        if result.reason == speechsdk.ResultReason.Canceled:
+            cancellation = result.cancellation_details
 
-        if result.reason != speechsdk.ResultReason.SynthesizingAudioCompleted:
-            print(f"⚠️ Azure TTS unexpected result: {result.reason}")
+            print("❌ Azure TTS canceled")
 
-            if result.reason == speechsdk.ResultReason.Canceled:
-                cancellation = result.cancellation_details
-                print(f"❌ Cancellation reason: {cancellation.reason}")
-                print(f"❌ Error details: {cancellation.error_details}")
+            if cancellation:
+                print("🔹 Reason:", cancellation.reason)
+                print("🔹 Error details:", cancellation.error_details)
+            else:
+                print("⚠️ No cancellation details available")
 
-            raise RuntimeError("Azure TTS synthesis failed")
+        else:
+            print("❌ Unexpected result:", result.reason)
 
-    except Exception as e:
-        print(f"🔥 Azure TTS ERROR: {e}")
-        raise RuntimeError("Azure TTS generation failed") from e
+        raise RuntimeError("❌ Narrator TTS failed")
 
-    # -------------------------------------------------
+    # -------------------------
     # ✅ VALIDATE FILE
-    # -------------------------------------------------
+    # -------------------------
     if not output_path.exists():
-        raise RuntimeError("TTS file was not created")
+        raise RuntimeError("❌ Audio file was not created")
 
     if output_path.stat().st_size == 0:
-        try:
-            output_path.unlink()
-        except Exception:
-            pass
-        raise RuntimeError("TTS output file is empty")
+        output_path.unlink(missing_ok=True)
+        raise RuntimeError("❌ Audio file is empty")
 
-    print(f"✅ Azure TTS complete → {output_path}")
+    print(f"✅ Narrator audio created → {output_path}")
 
     return str(output_path)
+
+
+
+
+
 

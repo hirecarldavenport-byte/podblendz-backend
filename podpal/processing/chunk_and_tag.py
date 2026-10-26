@@ -100,6 +100,18 @@ def process_transcript(path: Path):
     segments = data.get("segments", [])
     podcast_id = data.get("podcast_id") or "unknown_podcast"
     episode_id = data.get("episode_id") or path.stem
+    episode_title = data.get("title")
+    published = data.get("published")
+    audio_url = data.get("audio_url")
+    s3_key = data.get("s3_key")
+
+    print("\n===== TRANSCRIPT METADATA =====")
+    print("path:", path)
+    print("title:", repr(data.get("title")))
+    print("episode_title:", repr(data.get("episode_title")))
+    print("keys:", list(data.keys()))
+    print("===============================\n")
+
 
     # ✅ FIXED: ALWAYS USE S3 PATH
     s3_key = f"raw_audio/{podcast_id}/{episode_id}.mp3"
@@ -131,6 +143,10 @@ def process_transcript(path: Path):
         processed.append({
             "text": full_text,
             "tag": tag_text(full_text),
+            "episode_title": episode_title,
+            "published": published,
+            "podcast_id": podcast_id,
+            "episode_id": episode_id,
 
             # ✅ CRITICAL CHANGE HERE
             "audio_path": audio_path,
@@ -152,10 +168,23 @@ def process_transcript(path: Path):
         json.dump({
             "podcast_id": podcast_id,
             "episode_id": episode_id,
+             # ✅ Episode metadata
+             "episode_title": episode_title,
+             "published": published,
+             "audio_url": audio_url,
+             "s3_key": s3_key,
+
             "chunks": processed,
         }, f, indent=2)
 
+        print(
+             f"[CHUNK] "
+             f"{episode_id} -> "
+             f"{episode_title}"
+        )
+
     print(f"✅ Saved → {out_path}")
+    return str(out_path)
 
 
 # -------------------------------------------------

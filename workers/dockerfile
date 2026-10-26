@@ -1,16 +1,22 @@
+# FORCE_REBUILD_007
+
 FROM nvidia/cuda:12.1.0-runtime-ubuntu22.04
 
 RUN apt-get update && apt-get install -y \
     ffmpeg \
     python3 \
     python3-pip \
-    git \
-    && rm -rf /var/lib/apt/lists/*
+    git && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN pip3 install --upgrade pip
 RUN pip3 install runpod boto3 openai-whisper torch
 
 WORKDIR /app
-COPY handler.py /app/handler.py
 
-CMD ["python3", "handler.py"]
+# ✅ ONLY copy handler
+COPY workers/transcription/handler.py /app/handler.py
+
+# ✅ FORCE only this file to run
+CMD ["python3", "-u", "/app/handler.py"]
+

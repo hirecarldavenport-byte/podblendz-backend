@@ -1,20 +1,20 @@
-FROM python:3.11-slim
+# FORCE_REBUILD_005
+# REBUILD_TRIGGER_002
+FROM python:3.10-slim
 
 WORKDIR /app
 
-# ✅ ✅ ✅ ADD THIS (FINAL FIX)
-RUN apt-get update && apt-get install -y ffmpeg
+RUN apt-get update && apt-get install -y \
+    ffmpeg \
+    git \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy application code
 COPY . .
 
-# ✅ GUARANTEE static directories exist
-RUN mkdir -p /app/ui/assets
+RUN pip install --no-cache-dir \
+    runpod \
+    boto3 \
+    torch \
+    openai-whisper
 
-ENV PYTHONUNBUFFERED=1
-
-CMD ["sh", "-c", "uvicorn podpal.main:app --host 0.0.0.0 --port $PORT"]
+CMD ["python", "-u", "workers/transcription/handler.py"]

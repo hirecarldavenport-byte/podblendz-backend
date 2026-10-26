@@ -1,0 +1,974 @@
+
+from scripts.search_chunks import search
+from openai import OpenAI
+import os
+import json
+import hashlib
+import subprocess
+import uuid
+
+# ✅ INIT
+client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+
+
+# =========================
+# ✅ HELPERS
+# =========================
+
+def shorten(text, max_words=40):
+    return " ".join(text.split()[:max_words])
+
+
+def safe_content(response):
+    try:
+        content = response.choices[0].message.content
+        return content.strip() if content else ""
+    except Exception as e:
+        print("⚠️ safe_content error:", str(e))
+        return ""
+
+
+# =========================
+# ✅ FILTERING
+# =========================
+
+def is_ad(text):
+    t = text.lower()
+
+    signals = [
+
+    "sponsor",
+    "sponsored by",
+    "this episode is sponsored",
+    "brought to you by",
+
+    "support for this podcast",
+    "our sponsor",
+    "thanks to our sponsor",
+
+    "promo code",
+    "discount code",
+    "use code",
+
+    "limited time offer",
+    "special offer",
+
+    "free trial",
+    "sign up",
+
+    "visit our sponsor",
+    "visit today",
+
+    ".com",
+    "www.",
+
+    "youtube",
+    "suscribe",
+    "subscribe",
+    "follow me",
+    "follow us",
+    "instagram",
+    "facebook",
+    "twitter",
+    "linkedin",
+
+    "wherever you get your podcasts",
+    "Wherever you get podcasts",
+
+    "app store",
+    "google play",
+
+    "download now",
+
+    "available now",
+
+    "local dealer",
+    "dealership",
+    "test drive",
+
+
+    "home depot",
+    "betterhelp",
+    "ag1",
+    "athletic greens",
+    "shopify",
+    "squarespace",
+    "rocket money",
+    "ziprecruiter"
+]
+
+    return any(s in t for s in signals)
+
+
+def dedup_key(text):
+    core = text[:150]
+
+    return hashlib.md5(
+        core.encode()
+    ).hexdigest()
+
+
+def extract_show_name(source_path):
+    try:
+        parts = source_path.split("/")
+
+        if len(parts) > 2:
+            return parts[-2].replace("_", " ").title()
+
+    except Exception:
+        pass
+
+    return "this podcast"
+
+
+# =========================
+# ✅ TONE DETECTION
+# =========================
+
+def get_tone(query):
+    q = query.lower()
+    if any(x in q for x in [
+        "dementia",
+        "alzheimer",
+        "brain",
+        "memory",
+        "mental health",
+        "health",
+        "longevity"
+    ]):
+        return (
+            "warm, thoughtful, hopeful, human"
+        )
+    if any(x in q for x in [
+        "startup",
+        "business",
+        "leadership",
+        "venture",
+        "marketing",
+        "sales"
+    ]):
+        return (
+            "confident, practical, insightful"
+        )
+    if any(x in q for x in [
+        "ai",
+        "artificial intelligence",
+        "machine learning",
+        "robotics",
+        "automation"
+    ]):
+        return (
+            "curious, futuristic, innovative"
+        )
+    if any(x in q for x in [
+        "relationship",
+        "dating",
+        "marriage",
+        "parenting"
+    ]):
+        return (
+            "reflective, conversational, relatable"
+        )
+    return (
+        "engaging, intelligent, conversational"
+    )
+
+# =========================
+# ✅ AI NARRATION
+# =========================
+
+
+
+def generate_dateline_line(
+    context,
+    text=None,
+    query="",
+    stage="middle"
+):
+    tone = get_tone(query)
+
+    if stage == "intro":
+
+        prompt = f"""
+        Topic:
+        {query}
+
+        Tone:
+        {tone}
+        Create a compelling opening.
+
+        Do not sound academic.
+        Do not sound like a documentary.
+        Sound natural and engaging.
+        Maximum 22 words.
+        """
+
+    elif stage == "bridge":
+
+        prompt = f"""
+Previous: "{context}"
+
+Next: "{text}"
+
+Build curiosity.
+
+Max 18 words.
+"""
+
+    elif stage == "outro":
+
+        prompt = f"""
+        Topic:
+        {query}
+        Key ideas discussed:
+        {context}
+        
+        Create a final takeaway.
+        Do not summarize mechanically.
+        End with a memorable insight.
+        Maximum 45 words.
+        Sound human.
+        """
+
+    else:
+        prompt = f"""
+        Topic:
+        {query}
+        Tone:
+        {tone}
+        Create a short observation that helps
+        the listener connect ideas.
+        Do not summarize.
+        Do not sound academic.
+        Maximum 18 words.
+        Content:
+        {text}
+        """
+
+    try:
+
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ]
+        )
+
+        return safe_content(response)
+
+    except Exception as e:
+
+        print("⚠️ GPT error:", str(e))
+        return ""
+
+# =========================
+# ✅ RELEVANCE FILTER
+# =========================
+def relevance_score(query, text):
+        prompt = f"""
+    Topic:
+    {query}
+    Transcript:
+    {text}
+    Rate from 0 to 100.
+
+    A transcript can be relevant if it:
+    - directly mentions the topic
+    - describes the same underlying concept
+    - uses synonymous language
+    - provides examples of the concept
+
+    Examples:
+
+    Mental toughness may include:
+    grit
+    resilience
+    perseverance
+    discipline
+    mental endurance
+    psychological stability
+    self-belief
+    self-efficacy
+    determination
+    focus
+    fortitude
+    mental performance
+    overcoming adversity
+    coping with stress
+    mindset
+    staying calm under pressure
+    persistence
+    anti-fragility
+
+    Indirect examples can still be highly relevant.
+
+    If the topic contains a specific substance,
+    product, disease, technology, company,
+    person, or method, heavily prioritize
+    segments that directly discuss that subject.
+
+    Do not score based solely on general health,
+    wellness, medicine, business, or lifestyle
+    themes.
+
+    How directly does this transcript discuss the topic?
+    Respond ONLY with a number.
+    """
+        try:
+             response = client.chat.completions.create(
+                 model="gpt-4o-mini",
+                 messages=[
+                     {
+                         "role": "user",
+                         "content": prompt
+                         }
+                         ]
+             )
+             raw = safe_content(response)
+             print(f"GPT RAW RESPONSE: [{raw}]")
+             return int(raw)
+        
+        except Exception as e:
+             print(
+                 f"⚠️ Relevance scoring error: {e}"
+             )
+             return 0
+
+
+
+# =========================
+# ✅ MAIN BUILDER
+# =========================
+
+def build_blend(query, max_segments=20):
+
+    print("🔥 INSIDE BUILD_BLEND")
+
+    print(f"\n🎧 Building Blend: {query}\n")
+
+    results = search(query, k=500) or []
+    if not results:
+      print("❌ No search results.")
+      return []  
+
+    print("\n===== RAW RESULT =====")
+    sample = results[0]
+    print(
+        "episode_id:",
+        repr(sample.get("episode_id"))
+    )
+    print(
+        "episode_title:",
+        repr(sample.get("episode_title"))
+    )
+    print(
+        "podcast_title:",
+        repr(sample.get("podcast_title"))
+    )
+    print(
+        "published:",
+        repr(sample.get("published"))
+    )
+
+
+    selected_pool = []
+    seen = set()
+    source_counts = {}
+
+    rejected_ads = 0
+    rejected_duration = 0
+    rejected_relevance = 0
+    rejected_dedupe = 0
+    rejected_source_limit = 0
+    accepted = 0
+    skipped_missing_audio = 0
+    rejected_overlap = 0
+
+
+    MAX_PER_SOURCE = 4
+
+    for r in results:
+        print("🔥 PROCESSING SEGMENT")
+
+        text = r.get("text", "").strip()
+
+        episode_title = (
+            str(r.get("episode_title") or "")
+            .strip()
+)
+        has_title = bool(episode_title)
+        if not has_title:
+                print(
+                    f"⚠️ Missing title: "
+                    f"{r.get('episode_id')}"
+    )
+
+        r["has_title"] = has_title
+
+        published = (
+            str(r.get("published") or "")
+            .strip()
+        )
+
+        has_published = bool(published)
+
+        if not has_published:
+            print(
+                f"⚠️ Missing published date: "
+                f"{r.get('episode_id')}"
+            )
+            r["has_published"] = has_published
+        start = r.get("start")
+        end = r.get("end")
+        source = r.get("audio_file")
+
+        if not source:
+            print(
+                f"🚫 Missing audio file: "
+                f"{r.get('episode_id')}"
+            )
+            continue
+
+        source = (
+            r.get("podcast_id")
+            or r.get("podcast_title")
+            or "unknown"
+        )
+
+        if start is None or end is None:
+            continue
+
+        duration = end - start
+
+        if not text or duration < 7:
+            rejected_duration += 1
+            print(
+                f"⏱ Duration: {duration:.2f}"
+            )
+            continue
+
+        print("🔥 ABOUT TO SCORE")
+
+        if is_ad(text):
+            print(
+                f"🚫 AD REMOVED: {text[:100]}"
+            )
+            continue
+
+
+    
+        relevance = relevance_score(
+            query,
+            text
+        )
+        r["relevance"] = relevance
+        print(
+            f"\n🎯 Relevance={relevance}"
+            f"Duration={duration:.1f}"
+        )
+        print(
+            text[:120]
+        )
+       
+        if relevance < 30:
+            rejected_relevance += 1
+            print(
+                f"❌ Rejected ({relevance})"
+
+            )
+            continue
+        print(
+            f"✅ Accepted ({relevance})"
+        )
+            
+
+        key = (
+            r.get("episode_id"),
+            round(start),
+            round(end),
+            r.get("episode_title"),
+            text[:100]
+        )
+
+        if key in seen:
+            rejected_dedupe += 1
+            continue
+
+        seen.add(key)
+
+        count = source_counts.get(source, 0)
+
+        if count >= MAX_PER_SOURCE:
+            rejected_source_limit += 1
+            continue
+
+        source_counts[source] = count + 1
+
+
+        def overlaps_existing(candidate, selected, threshold=0.25):
+            candidate_start = candidate.get("start")
+            candidate_end = candidate.get("end")
+            candidate_audio = candidate.get("audio_file")
+
+            if candidate_start is None or candidate_end is None:
+                return False
+            for clip in selected:
+                if clip.get("audio_file") != candidate_audio:
+                    continue
+                overlap = max(
+                    0,
+                    min(candidate_end, clip.get("end"))
+                    - max(candidate_start, clip.get("start"))
+                )
+                shorter = min(
+                    candidate_end - candidate_start,
+                    clip.get("end") - clip.get("start")
+                )
+                if shorter <= 0:
+                    continue
+                overlap_pct = overlap / shorter
+                if overlap_pct >= threshold:
+                    return True
+            return False
+            
+        if overlaps_existing(r, selected_pool):
+                rejected_overlap += 1
+                continue
+
+        accepted += 1
+
+        print(
+            f"✅ ACCEPTED | "
+            f"score={r.get('score')} | "
+            f"relevance={relevance} | "
+            f"source={source}"
+        )
+
+        selected_pool.append(r)
+
+    print("\n===== FILTER STATS =====")
+    print(f"Duration rejected: {rejected_duration}")
+    print(f"Relevance rejected: {rejected_relevance}")
+    print(f"Dedupe rejected: {rejected_dedupe}")
+    print(f"Source limit rejected: {rejected_source_limit}")
+    print(f"Accepted: {accepted}")
+    print(f"Ads rejected: {rejected_ads}")
+    print(f"Overlap rejected: {rejected_overlap}")
+
+    print(f"✅ Retrieved {len(selected_pool)} usable segments")
+    print(f"⚠️ Skipped {skipped_missing_audio} missing audio")
+
+    if not selected_pool:
+        return []
+
+    # =========================
+    # ✅ SCORE DIAGNOSTICS
+    # =========================
+
+    scores = [
+        item["relevance"]
+        for item in selected_pool
+        if "relevance" in item
+    ]
+
+    if scores:
+
+        print(f"Min score: {min(scores)}")
+        print(f"Max score: {max(scores)}")
+
+    # =========================
+    # ✅ DISTANCE SORT
+    # =========================
+    #Test
+    #selected_pool = sorted(
+        #selected_pool,
+        #key=lambda x: (
+            #-x["relevance"],
+            #x["score"]
+        #)
+    #)
+
+
+
+    print(
+        f"Highest relevance: "
+        f"{selected_pool[0]['relevance']}"
+    )
+
+    print(
+        f"Lowest relevance: "
+        f"{selected_pool[-1]['relevance']}"
+    )
+
+    # =========================
+    # ✅ TIER 1
+    # Title required
+    # =========================
+
+    preferred = [
+        item
+        for item in selected_pool
+        if item.get("has_title")
+    ]
+
+    fallback = [
+        item
+        for item in selected_pool
+        if not item.get("has_title")
+        and item.get("relevance", 0) >= 45
+    ]
+
+    # ✅ Best clips first
+    preferred = sorted(
+        preferred,
+        key=lambda x: x.get("relevance", 0),
+        reverse=True
+    )
+    fallback = sorted(
+        fallback,
+        key=lambda x: x.get("relevance", 0),
+        reverse=True
+    )
+
+    print(f"Titled clips: {len(preferred)}")
+    print(f"Fallback clips: {len(fallback)}")
+    print(f"Usable pool: {len(selected_pool)}")
+
+
+    selected = preferred[:max_segments]
+
+    total_duration = sum(
+        item["end"] - item["start"]
+        for item in selected
+    )
+
+    print(
+        f"Preferred duration: "
+        f"{round(total_duration, 1)} sec"
+    )
+
+    FIVE_MINUTES = 300
+    fallback_used = False
+
+    if total_duration < FIVE_MINUTES:
+
+        print(
+            "⚠️ Blend under 5 minutes. "
+            "Adding fallback clips."
+        )
+
+        fallback_used = True
+
+        for clip in fallback:
+
+            if len(selected) >= max_segments:
+                break
+
+            selected.append(clip)
+
+            total_duration += (
+                clip["end"] - clip["start"]
+            )
+
+            if total_duration >= FIVE_MINUTES:
+                break
+
+    print(
+        f"Final duration: "
+        f"{round(total_duration, 1)} sec"
+    )
+
+    print("\n===== SELECTED CLIPS =====")
+    for item in selected:
+        print("\n------------------")
+        print(item.get("podcast_title"))
+        print(item.get("text", "")[:300])
+
+    total_duration = 0
+    for item in selected:
+        total_duration += (
+            item["end"] -
+            item["start"]
+        )
+    print(
+            f"Total clip duration:"
+            f" {round(total_duration,1)} sec"
+        )
+
+    blend = []
+
+    # =========================
+    # ✅ INTRO
+    # =========================
+
+    intro = generate_dateline_line(
+        "",
+        query=query,
+        stage="intro"
+    )
+
+    blend.append({
+        "type": "narration",
+        "text": intro
+    })
+
+    # =========================
+    # ✅ FIRST CLIP
+    # =========================
+
+    first = selected[0]
+    print("\n🔍 FIRST CLIP KEYS")
+    print(first.keys())
+
+    print("\n✅ First Selected Clip")
+    print(
+        "Podcast:",
+        first.get("podcast_title")
+    )
+    print(
+        "Episode:",
+        first.get("episode_title")
+    )
+
+    print("\n===== FIRST CLIP DEBUG =====")
+    print("episode_title:", repr(first.get("episode_title")))
+    print("podcast_title:", repr(first.get("podcast_title")))
+    print("published:", repr(first.get("published")))
+    print("episode_id:", repr(first.get("episode_id")))
+    print("keys:", first.keys())
+    print("============================\n")
+
+    blend.append({
+        "type": "speaker",
+
+        "audio_file": first["audio_file"],
+        "start": first["start"],
+        "end": first["end"],
+        "text": first["text"],
+
+        # Metadata
+        "episode_id": first.get("episode_id"),
+        "episode_title": first.get("episode_title"),
+        "episode_description": first.get("episode_description"),
+        "published": first.get("published"),
+
+        "podcast_id": first.get("podcast_id"),
+        "podcast_title": first.get("podcast_title"),
+        "podcast_description": first.get("podcast_description")
+    })
+
+    print("\nFIRST SELECTED CLIP")
+    from pprint import pprint
+    pprint(selected[0])
+
+    # =========================
+    # ✅ REMAINING CLIPS
+    # =========================
+
+    for i in range(1, len(selected)):
+
+        curr = selected[i]
+
+        blend.append({
+            "type": "speaker",
+
+            "audio_file": curr["audio_file"],
+            "start": curr["start"],
+            "end": curr["end"],
+            "text": curr["text"],
+
+            # Metadata
+            "episode_id": curr.get("episode_id"),
+            "episode_title": curr.get("episode_title"),
+            "episode_description": curr.get("episode_description"),
+            "published": curr.get("published"),
+
+            "podcast_id": curr.get("podcast_id"),
+            "podcast_title": curr.get("podcast_title"),
+            "podcast_description": curr.get("podcast_description")
+        })
+
+        
+# =========================
+# ✅ OUTRO
+# =========================
+
+    recent_context = "\n".join([
+        shorten(item["text"], 20)
+        for item in selected[-5:]
+        ])
+    
+    outro = generate_dateline_line(
+        recent_context,
+        query=query,
+        stage="outro"
+    
+    )
+
+    blend.append({
+        "type": "narration",
+        "text": outro
+})
+    contributors = {}
+
+    for clip in selected:
+
+        episode_id = clip.get("episode_id")
+
+        if not episode_id:
+            continue
+        if episode_id not in contributors:
+
+
+            contributors[episode_id] = {
+                "episode_id": episode_id,
+                "episode_title": clip.get("episode_title"),
+                "podcast_title": clip.get("podcast_title"),
+                "published": clip.get("published"),
+            }
+    contributing_episodes = list(
+                contributors.values()
+    )
+    print("\n===== CONTRIBUTING EPISODES =====")
+
+    for ep in contributing_episodes:
+        print(
+            f"{ep.get('podcast_title')} -> "
+            f"{ep.get('episode_title')}"
+        )
+
+        print(
+                f"✅ Built blend with {len(blend)} steps"
+        )
+        return blend
+
+
+# =========================
+# ✅ RENDER AUDIO
+# =========================
+
+def render_blend(blend):
+
+    blend_id = str(uuid.uuid4())
+
+    folder = f"media/blends/{blend_id}"
+
+    os.makedirs(
+        folder,
+        exist_ok=True
+    )
+
+    files_txt = os.path.join(
+        folder,
+        "files.txt"
+    )
+
+    file_list = []
+
+    for i, step in enumerate(blend):
+
+        if step["type"] != "speaker":
+            continue
+
+        url = step["audio_file"]
+
+        if not url:
+            print("\n===================")
+            print("\n⚠️ Missing audio_file")
+            print("===================")
+            print(json.dumps(step, indent=2))
+            continue
+
+
+        url = url.replace(
+            "&amp;amp;",
+            "&amp;"
+        )
+
+        clip_path = os.path.join(
+            folder,
+            f"clip_{i}.mp3"
+        )
+
+        print(f"🎧 Extracting clip {i}")
+
+        subprocess.run([
+            "ffmpeg",
+            "-y",
+            "-ss",
+            str(step["start"]),
+            "-to",
+            str(step["end"]),
+            "-i",
+            url,
+            "-c",
+            "copy",
+            clip_path
+        ])
+
+        file_list.append(clip_path)
+
+    with open(files_txt, "w") as f:
+
+        for file in file_list:
+            filename = os.path.basename(file)
+            f.write(
+                f"file '{filename}'\n"
+                )
+
+    final_output = os.path.join(
+        folder,
+        "final.mp3"
+    )
+
+    subprocess.run([
+        "ffmpeg",
+        "-y",
+        "-f",
+        "concat",
+        "-safe",
+        "0",
+        "-i",
+        files_txt,
+        "-c",
+        "copy",
+        final_output
+    ])
+
+    return final_output
+
+
+# =========================
+# ✅ MAIN RUN
+# =========================
+
+if __name__ == "__main__":
+
+    query = "When Grief Changes Everything"
+
+    blend = build_blend(
+        query,
+        max_segments=50
+        )
+
+    if not blend:
+        print("❌ No blend generated.")
+        exit()
+    print(json.dumps(blend[-1], indent=2))
+    
+                           
+
+    print("\n🎧 Rendering audio...\n")
+
+    output = render_blend(blend)
+
+    print(f"\n✅ FINAL AUDIO FILE: {output}")
+
+
+
+
+
+

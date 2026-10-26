@@ -1,42 +1,57 @@
-from fastapi import FastAPI
+"""
+podpal/api.py
+
+Primary FastAPI entrypoint for PodBlendz.
+"""
+
+from pathlib import Path
+
+from fastapi import FastAPI, Depends
+from sqlalchemy.orm import Session
+
+from podpal.db.database import get_db
+
+from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from pathlib import Path
-from podpal.routes.blend_feed_routes import router as blend_feed_router
-import os
 
-# -------------------------------------------------
-# ✅ SINGLE SOURCE OF TRUTH
-# -------------------------------------------------
+from podpal.db.blend_store import (
+    save_user,
+    save_community_activity
+)
 
-AUDIO_DIR = Path("/app/audio")
-TEMP_DIR = AUDIO_DIR / "temp"
-FINAL_DIR = AUDIO_DIR / "final"
 
-# ✅ Ensure directories exist BEFORE mounting
+
+# ---------------------------------------------------------
+# Directories
+# ---------------------------------------------------------
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+MEDIA_DIR = BASE_DIR / "media"
+TEMP_DIR = MEDIA_DIR / "temp"
+FINAL_DIR = MEDIA_DIR / "final"
+
 TEMP_DIR.mkdir(parents=True, exist_ok=True)
 FINAL_DIR.mkdir(parents=True, exist_ok=True)
 
-print("✅ AUDIO DIR:", AUDIO_DIR)
-print("✅ TEMP DIR:", TEMP_DIR)
-print("✅ FINAL DIR:", FINAL_DIR)
+print(f"✅ MEDIA_DIR: {MEDIA_DIR}")
+print(f"✅ TEMP_DIR: {TEMP_DIR}")
+print(f"✅ FINAL_DIR: {FINAL_DIR}")
 
-# ✅ DEBUG: show files present at startup
-print("📂 Initial FINAL contents:", list(FINAL_DIR.glob("*")))
-
-# -------------------------------------------------
-# ✅ FASTAPI APP
-# -------------------------------------------------
+# ---------------------------------------------------------
+# FastAPI
+# ---------------------------------------------------------
 
 app = FastAPI(
     title="PodBlendz API",
-    version="0.1.0",
-    description="Backend API for podcast blending",
+    version="1.0.0",
+    description="AI-powered podcast blending platform",
 )
 
-# -------------------------------------------------
-# ✅ CORS
-# -------------------------------------------------
+# ---------------------------------------------------------
+# CORS
+# ---------------------------------------------------------
 
 app.add_middleware(
     CORSMiddleware,
@@ -46,70 +61,168 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# -------------------------------------------------
-# ✅ STATIC FILE SERVING (CRITICAL FIX)
-# -------------------------------------------------
+# ---------------------------------------------------------
+# Static Audio
+# ---------------------------------------------------------
 
-# ✅ IMPORTANT: mount AFTER directory exists
 app.mount(
     "/audio",
-    StaticFiles(directory=str(AUDIO_DIR), html=False),
-    name="audio"
+    StaticFiles(directory=str(MEDIA_DIR)),
+    name="audio",
 )
 
-print("✅ Static /audio mounted to:", AUDIO_DIR)
+print("✅ Audio mount active")
 
-# -------------------------------------------------
-# ✅ DEBUG ENDPOINTS
-# -------------------------------------------------
-
-@app.get("/debug/audio")
-def list_audio():
-    files = [f.name for f in FINAL_DIR.glob("*")]
-    print("📂 FINAL FILES:", files)
-    return {"files": files}
-
-
-@app.get("/debug/audio/{filename}")
-def check_audio(filename: str):
-    file_path = FINAL_DIR / filename
-
-    exists = file_path.exists()
-
-    print(f"🔍 Checking: {file_path} → exists={exists}")
-
-    return {
-        "exists": exists,
-        "path": str(file_path),
-        "size": file_path.stat().st_size if exists else 0
-    }
-
-# -------------------------------------------------
-# ✅ IMPORT ROUTERS
-# -------------------------------------------------
+# ---------------------------------------------------------
+# Routers
+# ---------------------------------------------------------
 
 from podpal.routes.health import router as health_router
 from podpal.routes.search_routes import router as search_router
-from podpal.routes.blend_routes import router as blend_router
+from podpal.routes.blend_publish_routes import (
+    router as blend_publish_router
+)
+# Optional routes
 
-# -------------------------------------------------
-# ✅ REGISTER ROUTERS
-# -------------------------------------------------
+
+try:
+    from podpal.routes.blend_routes import router as blend_router
+except Exception as e:
+    blend_router = None
+    print("⚠️ blend_router unavailable:", e)
+
+try:
+    from podpal.routes.blend_feed_routes import (
+        router as blend_feed_router
+    )
+except Exception as e:
+    blend_feed_router = None
+    print("⚠️ blend_feed_router unavailable:", e)
+
+try:
+    from podpal.routes.catalog_routes import (
+        router as catalog_router
+    )
+except Exception as e:
+    catalog_router = None
+    print("⚠️ catalog_router unavailable:", e)
+
+# ---------------------------------------------------------
+# Register Routers
+# ---------------------------------------------------------
 
 app.include_router(health_router)
-app.include_router(search_router)
-app.include_router(blend_router)
-app.include_router(blend_feed_router)
 
-# -------------------------------------------------
-# ✅ ROOT
-# -------------------------------------------------
+app.include_router(search_router)
+
+app.include_router(blend_publish_router)
+
+if blend_router:
+    app.include_router(blend_router)
+
+
+if blend_feed_router:
+    app.include_router(blend_feed_router)
+
+if catalog_router:
+    app.include_router(catalog_router)
+
+class UserLogin(BaseModel):
+    blendz_id: str
+    google_sub: str
+    email: str
+    display_name: str
+    photo_url: str
+
+
+class CommunityActivity(BaseModel):
+    blend_id: str
+    blend_title: str
+    user_email: str
+    display_name: str
+    comment: str
+
+# ---------------------------------------------------------
+# Root
+# ---------------------------------------------------------
 
 @app.get("/", tags=["System"])
 def root():
     return {
         "status": "ok",
         "service": "PodBlendz API",
-        "description": "Blends multiple podcasts into one audio story",
+        "version": "1.0.0",
+        "description": "Generates Shared Perspectives podcast blends"
     }
 
+@app.post("/users/login")
+def user_login(
+    user: UserLogin,
+    db: Session = Depends(get_db)
+):
+
+    save_user(
+    db,
+    user.blendz_id,
+    user.google_sub,
+    user.email,
+    user.display_name,
+    user.photo_url
+)
+
+    return {
+        "success": True
+    }
+
+@app.post("/community/activity")
+def community_activity(
+    activity: CommunityActivity,
+    db: Session = Depends(get_db)
+):
+
+        save_community_activity(
+            db,
+        activity.blend_id,
+        activity.blend_title,
+        activity.user_email,
+        activity.display_name,
+        activity.comment
+    )
+
+        return {
+        "success": True
+    }
+
+
+# ---------------------------------------------------------
+# Debug Audio
+# ---------------------------------------------------------
+
+@app.get("/debug/audio")
+def debug_audio():
+
+    files = []
+
+    if FINAL_DIR.exists():
+        files = [f.name for f in FINAL_DIR.glob("*")]
+
+    return {
+        "count": len(files),
+        "files": files
+    }
+
+
+@app.get("/debug/audio/{filename}")
+def debug_audio_file(filename: str):
+
+    file_path = FINAL_DIR / filename
+
+    return {
+        "exists": file_path.exists(),
+        "path": str(file_path),
+        "size": (
+            file_path.stat().st_size
+            if file_path.exists()
+            else 0
+        ),
+    }

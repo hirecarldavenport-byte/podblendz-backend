@@ -1,5 +1,5 @@
+import json
 import sqlite3
-import boto3
 from pathlib import Path
 
 # ============================================================
@@ -7,123 +7,229 @@ from pathlib import Path
 # ============================================================
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 DB_PATH = BASE_DIR / "podblendz.db"
 
-S3_BUCKET = "podblendz-episode-audio"
-BASE_PREFIX = "raw_audio"
-MASTER_TOPIC = "education_learning"
+METADATA_BASE = (
+    BASE_DIR
+    / "ingestion"
+    / "episode_metadata"
+)
 
-PODCAST_IDS = [
-    "hidden_brain",
-    "99_percent_invisible",
-    "ted_talks_daily",
-]
-
-AUDIO_EXTENSION = ".mp3"
+COMMIT_INTERVAL = 100
 
 # ============================================================
-# SETUP
+# DB
 # ============================================================
 
-s3 = boto3.client("s3")
 conn = sqlite3.connect(DB_PATH)
 conn.row_factory = sqlite3.Row
+
+conn.execute("PRAGMA journal_mode=WAL")
+conn.execute("PRAGMA synchronous=NORMAL")
 
 # ============================================================
 # HELPERS
 # ============================================================
 
-def episode_exists(episode_id: str) -> bool:
-    return conn.execute(
-        "SELECT 1 FROM episodes WHERE id = ?",
-        (episode_id,)
-    ).fetchone() is not None
-
-
-def insert_episode(episode_id: str, podcast_id: str, s3_key: str):
+def insert_episode(metadata: dict) -> bool:
     """
-    Insert a new episode row.
-
-    NOTE:
-    - guid is required (NOT NULL), so we safely reuse episode_id
-    - published_at is intentionally left NULL (can be backfilled later)
+    Returns:
+        True  = inserted
+        False = duplicate / ignored
     """
-    conn.execute(
+
+    episode_id = metadata["episode_id"]
+    guid = metadata.get("guid") or episode_id
+
+    cursor = conn.execute(
         """
-        INSERT INTO episodes (
+        INSERT OR IGNORE INTO episodes (
             id,
-            guid,
             podcast_id,
+            guid,
+            title,
+            published_at,
+            audio_url,
             audio_s3_key,
             storage_tier,
             transcript_status,
             ingested_at,
             updated_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        VALUES (
+            ?, ?, ?, ?, ?, ?,
+            ?, ?, ?,
+            CURRENT_TIMESTAMP,
+            CURRENT_TIMESTAMP
+        )
         """,
         (
-            episode_id,   # id
-            episode_id,   # guid (safe stand-in)
-            podcast_id,
-            s3_key,
+            episode_id,
+            metadata["podcaster_id"],
+            guid,
+            metadata.get("title"),
+            metadata.get("published"),
+            metadata.get("audio_url"),
+            metadata.get("s3_key"),
             "s3",
             "pending",
+        ),
+    )
+
+    return cursor.rowcount > 0
+
+# ============================================================
+# INDEXING
+# ============================================================
+
+def index_podcast(topic: str, podcast_id: str) -> tuple[int, int, int]:
+
+    metadata_dir = (
+        METADATA_BASE
+        / topic
+        / podcast_id
+    )
+
+    if not metadata_dir.exists():
+        print(
+            f"⚠️ Missing metadata folder: "
+            f"{metadata_dir}"
         )
-    )
-
-
-# ============================================================
-# INDEXING LOGIC
-# ============================================================
-
-def index_podcast(podcast_id: str):
-    prefix = f"{BASE_PREFIX}/{MASTER_TOPIC}/{podcast_id}/"
-    print(f"\n🔍 Scanning s3://{S3_BUCKET}/{prefix}")
-
-    paginator = s3.get_paginator("list_objects_v2")
-    pages = paginator.paginate(
-        Bucket=S3_BUCKET,
-        Prefix=prefix,
-    )
+        return 0, 0, 0
 
     inserted = 0
     skipped = 0
+    errors = 0
 
-    for page in pages:
-        for obj in page.get("Contents", []):
-            key = obj["Key"]
+    files = list(metadata_dir.glob("*.json"))
 
-            # Ignore non-audio files
-            if not key.lower().endswith(AUDIO_EXTENSION):
-                continue
+    print(
+        f"\n🔍 {topic}/{podcast_id} "
+        f"({len(files)} metadata files)"
+    )
 
-            episode_id = Path(key).stem
+    for metadata_file in files:
 
-            if episode_exists(episode_id):
+        try:
+
+            with open(
+                metadata_file,
+                "r",
+                encoding="utf-8",
+            ) as f:
+                metadata = json.load(f)
+
+            was_inserted = insert_episode(metadata)
+
+            if was_inserted:
+                inserted += 1
+            else:
                 skipped += 1
-                continue
 
-            insert_episode(
-                episode_id=episode_id,
-                podcast_id=podcast_id,
-                s3_key=key,
+            if inserted % COMMIT_INTERVAL == 0:
+                conn.commit()
+
+        except Exception as exc:
+
+            errors += 1
+
+            print(
+                f"❌ Failed "
+                f"{metadata_file.name}: {exc}"
             )
-            inserted += 1
 
     conn.commit()
-    print(f"✅ {podcast_id}: inserted={inserted}, skipped={skipped}")
 
+    print(
+        f"✅ {topic}/{podcast_id} | "
+        f"inserted={inserted} "
+        f"skipped={skipped} "
+        f"errors={errors}"
+    )
+
+    return inserted, skipped, errors
+
+# ============================================================
+# DISCOVERY
+# ============================================================
+
+def discover_podcasts():
+
+    discovered = []
+
+    for topic_dir in sorted(METADATA_BASE.iterdir()):
+
+        if not topic_dir.is_dir():
+            continue
+
+        for podcast_dir in sorted(topic_dir.iterdir()):
+
+            if not podcast_dir.is_dir():
+                continue
+
+            discovered.append(
+                (
+                    topic_dir.name,
+                    podcast_dir.name,
+                )
+            )
+
+    return discovered
+
+# ============================================================
+# MAIN
+# ============================================================
 
 def main():
-    print("🚀 Starting S3 → DB indexing (audio catalog backfill)")
 
-    for podcast_id in PODCAST_IDS:
-        index_podcast(podcast_id)
+    print(
+        "🚀 Starting Metadata → DB indexing"
+    )
 
-    conn.close()
-    print("\n✅ Indexing complete — S3 and DB are now aligned")
+    podcasts = discover_podcasts()
 
+    print(
+        f"\nFound {len(podcasts)} podcast folders"
+    )
+
+    total_inserted = 0
+    total_skipped = 0
+    total_errors = 0
+
+    try:
+
+        for topic, podcast_id in podcasts:
+
+            inserted, skipped, errors = (
+                index_podcast(
+                    topic,
+                    podcast_id,
+                )
+            )
+
+            total_inserted += inserted
+            total_skipped += skipped
+            total_errors += errors
+
+    finally:
+        conn.close()
+
+    print("\n================================================")
+   
+    print("INDEXING SUMMARY")
+    print("================================================")
+    print(f"Inserted : {total_inserted}")
+    print(f"Skipped  : {total_skipped}")
+    print(f"Errors   : {total_errors}")
+    print("================================================")
+
+    print("\n✅ Indexing complete")
+
+
+# ============================================================
+# ENTRY
+# ============================================================
 
 if __name__ == "__main__":
     main()
