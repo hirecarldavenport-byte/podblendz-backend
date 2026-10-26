@@ -7,6 +7,16 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.routing import APIRoute
 from podpal.routes.blend_feed_routes import router as blend_feed_router
 
+from fastapi import Depends
+from sqlalchemy.orm import Session
+
+from podpal.db.session import SessionLocal
+from podpal.db.blend_store import (
+    save_user,
+    save_community_activity,
+)
+
+
 
 # -------------------------------------------------
 # ✅ STARTUP LOG
@@ -33,6 +43,13 @@ print("✅ PodBlendz backend starting...")
 # ✅ APP
 # -------------------------------------------------
 app = FastAPI(title="PodBlendz Backend")
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 # -------------------------------------------------
@@ -62,6 +79,29 @@ def homepage():
         "note": "UI not present in deployment",
     }
 
+# -------------------------------------------------
+# USER LOGIN
+# -------------------------------------------------
+
+@app.post("/users/login")
+def user_login(
+    payload: dict,
+    db: Session = Depends(get_db),
+):
+    return save_user(
+        db=db,
+        blendz_id=payload.get("blendz_id"),
+        google_sub=payload.get("google_sub"),
+        email=payload.get("email"),
+        display_name=payload.get("display_name"),
+        photo_url=payload.get("photo_url"),
+    )
+
+
+# -------------------------------------------------
+# COMMUNITY ACTIVITY
+# -------------------------------------------------
+
 
 # -------------------------------------------------
 # ✅ ROUTES (IMPORT AFTER APP)
@@ -77,6 +117,29 @@ app.include_router(s3_router)
 app.include_router(narration_router)
 app.include_router(blend_router)
 app.include_router(blend_feed_router)
+
+# -------------------------------------------------
+# USER LOGIN
+# -------------------------------------------------
+
+
+# -------------------------------------------------
+# COMMUNITY ACTIVITY
+# -------------------------------------------------
+
+@app.post("/community/activity")
+def community_activity(
+    payload: dict,
+    db: Session = Depends(get_db),
+):
+    return save_community_activity(
+        db=db,
+        blend_id=payload.get("blend_id"),
+        blend_title=payload.get("blend_title"),
+        user_email=payload.get("user_email"),
+        display_name=payload.get("display_name"),
+        comment=payload.get("comment"),
+    )
 
 
 # -------------------------------------------------
