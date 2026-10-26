@@ -30,13 +30,10 @@ def create_blend(
 
         id=metadata["id"],
 
-<<<<<<< HEAD
         board=metadata.get(
             "board"
             ),
 
-=======
->>>>>>> 4b86cf74806cefd0ce096ccc7f6e62369d18bb4b
         title=metadata.get(
             "title"
         ),
@@ -224,18 +221,7 @@ def create_blend(
 
         return blend
 
-<<<<<<< HEAD
     except Exception:
-=======
-    except Exception as e:
-        print("\n===== COMMIT FAILED =====")
-        print("TYPE:", type(e))
-        print("ERROR:", str(e))
-
-        import traceback
-        traceback.print_exc()
-
->>>>>>> 4b86cf74806cefd0ce096ccc7f6e62369d18bb4b
 
         db.rollback()
 
@@ -418,17 +404,71 @@ def delete_blend(
 
     db.delete(blend)
 
-<<<<<<< HEAD
-=======
-    print("\n===== ABOUT TO COMMIT =====")
-    print("ID:", blend.id)
-    print("TITLE:", blend.title)
-    print("CREATED_AT:", blend.created_at)
-    print("BOARD:", blend.board)
-    print("AUDIO:", blend.audio_file)
-    print("==========================")
-
->>>>>>> 4b86cf74806cefd0ce096ccc7f6e62369d18bb4b
     db.commit()
 
     return True
+
+from datetime import datetime
+from podpal.db.models import (
+    User,
+    CommunityActivity
+)
+
+def save_user(
+    db: Session,
+    blendz_id,
+    google_sub,
+    email,
+    display_name,
+    photo_url
+):
+
+    user = User(
+        id=str(uuid.uuid4()),
+        blendz_id=blendz_id,
+        google_sub=google_sub,
+        email=email,
+        display_name=display_name,
+        photo_url=photo_url,
+        created_at=datetime.utcnow(),
+        last_login=datetime.utcnow()
+    )
+
+    db.add(user)
+
+    try:
+        db.commit()
+        return user
+
+    except Exception:
+        db.rollback()
+        raise
+
+def save_community_activity(
+    db: Session,
+    blend_id,
+    blend_title,
+    user_email,
+    display_name,
+    comment
+):
+
+    activity = CommunityActivity(
+        id=str(uuid.uuid4()),
+        blend_id=blend_id,
+        blend_title=blend_title,
+        user_email=user_email,
+        display_name=display_name,
+        comment=comment,
+        created_at=datetime.utcnow()
+    )
+
+    db.add(activity)
+
+    try:
+        db.commit()
+        return activity
+
+    except Exception:
+        db.rollback()
+        raise
