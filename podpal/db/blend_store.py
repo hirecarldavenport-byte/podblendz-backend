@@ -423,6 +423,21 @@ def save_user(
     photo_url
 ):
 
+    existing = (
+        db.query(User)
+        .filter(User.google_sub == google_sub)
+        .first()
+    )
+
+    if existing:
+        existing.last_login = datetime.utcnow()
+        existing.display_name = display_name
+        existing.photo_url = photo_url
+        existing.email = email
+
+        db.commit()
+        return existing
+
     user = User(
         id=str(uuid.uuid4()),
         blendz_id=blendz_id,
