@@ -11,10 +11,6 @@ RUN apt-get update && apt-get install -y \
 
 COPY . .
 
-RUN pip install --no-cache-dir \
-    runpod \
-    boto3 \
-    torch \
-    openai-whisper
+RUN pip install --no-cache-dir -r requirements.txt
 
 CMD ["uvicorn", "podpal.main:app", "--host", "0.0.0.0", "--port", "10000"]
