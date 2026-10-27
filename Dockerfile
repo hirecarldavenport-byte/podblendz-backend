@@ -17,4 +17,4 @@ RUN pip install --no-cache-dir \
     torch \
     openai-whisper
 
-CMD ["python", "-u", "workers/transcription/handler.py"]
+CMD ["uvicorn", "podpal.main:app", "--host", "0.0.0.0", "--port", "10000"]
