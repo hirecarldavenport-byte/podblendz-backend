@@ -62,19 +62,14 @@ class Episode(Base):
 
     updated_at = Column(DateTime)
 
-<<<<<<< HEAD
 
 # =====================================
-=======
-    # =====================================
->>>>>>> 4b86cf74806cefd0ce096ccc7f6e62369d18bb4b
 # GENERATED BLENDS
 # =====================================
 
 class Blend(Base):
     __tablename__ = "blends"
 
-<<<<<<< HEAD
     id = Column(
         String,
         primary_key=True
@@ -107,20 +102,6 @@ class Blend(Base):
 
     corroboration_count = Column(Integer)
 
-=======
-    id = Column(String, primary_key=True)
-    title = Column(String)
-    summary = Column(String)
-    description = Column(String)
-    query = Column(String)
-    audio_file = Column(String)
-    image = Column(String)
-    duration_ms = Column(Integer)
-    clip_count = Column(Integer)
-    confidence_score = Column(String)
-    confidence_label = Column(String)
-    corroboration_count = Column(Integer)
->>>>>>> 4b86cf74806cefd0ce096ccc7f6e62369d18bb4b
     created_at = Column(DateTime)
 
 
@@ -131,7 +112,6 @@ class Blend(Base):
 class BlendCreator(Base):
     __tablename__ = "blend_creators"
 
-<<<<<<< HEAD
     id = Column(
         String,
         primary_key=True
@@ -142,10 +122,6 @@ class BlendCreator(Base):
         ForeignKey("blends.id")
     )
 
-=======
-    id = Column(String, primary_key=True)
-    blend_id = Column(String, ForeignKey("blends.id"))
->>>>>>> 4b86cf74806cefd0ce096ccc7f6e62369d18bb4b
     creator_name = Column(String)
 
 
@@ -156,7 +132,6 @@ class BlendCreator(Base):
 class BlendPodcast(Base):
     __tablename__ = "blend_podcasts"
 
-<<<<<<< HEAD
     id = Column(
         String,
         primary_key=True
@@ -167,10 +142,6 @@ class BlendPodcast(Base):
         ForeignKey("blends.id")
     )
 
-=======
-    id = Column(String, primary_key=True)
-    blend_id = Column(String, ForeignKey("blends.id"))
->>>>>>> 4b86cf74806cefd0ce096ccc7f6e62369d18bb4b
     podcast_name = Column(String)
 
 
@@ -178,7 +149,6 @@ class BlendPodcast(Base):
 # BLEND EPISODES
 # =====================================
 
-<<<<<<< HEAD
 # =====================================
 # BLEND EPISODES
 # =====================================
@@ -191,12 +161,6 @@ class BlendEpisode(Base):
         primary_key=True
     )
 
-=======
-class BlendEpisode(Base):
-    __tablename__ = "blend_episodes"
-
-    id = Column(String, primary_key=True)
->>>>>>> 4b86cf74806cefd0ce096ccc7f6e62369d18bb4b
     blend_id = Column(
         String,
         ForeignKey("blends.id"),
@@ -204,7 +168,6 @@ class BlendEpisode(Base):
     )
 
     podcast_title = Column(String)
-<<<<<<< HEAD
 
     episode_title = Column(String)
 
@@ -212,13 +175,6 @@ class BlendEpisode(Base):
 
     published = Column(String)
 
-=======
-    episode_title = Column(String)
-    episode_id = Column(String)
-    published = Column(String)
-
-
->>>>>>> 4b86cf74806cefd0ce096ccc7f6e62369d18bb4b
 # =====================================
 # BLEND TOPICS
 # =====================================
@@ -226,7 +182,6 @@ class BlendEpisode(Base):
 class BlendTopic(Base):
     __tablename__ = "blend_topics"
 
-<<<<<<< HEAD
     id = Column(
         String,
         primary_key=True
@@ -237,8 +192,64 @@ class BlendTopic(Base):
         ForeignKey("blends.id")
     )
 
-=======
-    id = Column(String, primary_key=True)
-    blend_id = Column(String, ForeignKey("blends.id"))
->>>>>>> 4b86cf74806cefd0ce096ccc7f6e62369d18bb4b
     topic = Column(String)
+
+    # =====================================
+# USERS
+# =====================================
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(
+        String,
+        primary_key=True
+    )
+
+    blendz_id = Column(
+        String,
+        unique=True
+    )
+
+    google_sub = Column(
+        String,
+        unique=True
+    )
+
+    email = Column(
+        String,
+        unique=True
+    )
+
+    display_name = Column(String)
+
+    photo_url = Column(String)
+
+    created_at = Column(DateTime)
+
+    last_login = Column(DateTime)
+
+
+# =====================================
+# COMMUNITY ACTIVITY
+# =====================================
+
+class CommunityActivity(Base):
+    __tablename__ = "community_activity"
+
+    id = Column(
+        String,
+        primary_key=True
+    )
+
+    blend_id = Column(String)
+
+    blend_title = Column(String)
+
+    user_email = Column(String)
+
+    display_name = Column(String)
+
+    comment = Column(String)
+
+    created_at = Column(DateTime)
