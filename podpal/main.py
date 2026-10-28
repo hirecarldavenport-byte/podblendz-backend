@@ -93,9 +93,9 @@ def user_login(
     payload: dict,
     db: Session = Depends(get_db),
 ):
+    print("✅ USER LOGIN PAYLOAD:", payload)
 
-    print("✅ USER LOGIN:", payload)
-    return save_user(
+    result = save_user(
         db=db,
         blendz_id=payload.get("blendz_id"),
         google_sub=payload.get("google_sub"),
@@ -103,6 +103,14 @@ def user_login(
         display_name=payload.get("display_name"),
         photo_url=payload.get("photo_url"),
     )
+
+    print("✅ USER SAVE RESULT:", result)
+
+    return result
+
+
+
+
 
 
 # -------------------------------------------------
