@@ -7,6 +7,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.routing import APIRoute
 from podpal.routes.blend_feed_routes import router as blend_feed_router
+from fastapi.middleware.cors import CORSMiddleware
 
 from fastapi import Depends
 from sqlalchemy.orm import Session
@@ -44,6 +45,19 @@ print("✅ PodBlendz backend starting...")
 # ✅ APP
 # -------------------------------------------------
 app = FastAPI(title="PodBlendz Backend")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://www.podblendz.com",
+        "https://podblendz.com",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+print("✅ CORS middleware enabled")
 
 @app.on_event("startup")
 def startup_event():
