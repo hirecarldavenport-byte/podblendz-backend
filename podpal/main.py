@@ -10,6 +10,8 @@ from podpal.routes.blend_feed_routes import router as blend_feed_router
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
+from fastapi.middleware.cors import CORSMiddleware
+
 from podpal.db.session import SessionLocal
 from podpal.db.blend_store import (
     save_user,
@@ -43,6 +45,17 @@ print("✅ PodBlendz backend starting...")
 # ✅ APP
 # -------------------------------------------------
 app = FastAPI(title="PodBlendz Backend")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://www.podblendz.com",
+        "https://podblendz.com"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 def get_db():
     db = SessionLocal()
@@ -110,6 +123,7 @@ from podpal.routes.health import router as health_router
 from podpal.routes.s3_routes import router as s3_router
 from podpal.routes.narration_routes import router as narration_router
 from podpal.routes.blend_routes import router as blend_router
+from fastapi.middleware.cors import CORSMiddleware
 
 
 app.include_router(health_router)
