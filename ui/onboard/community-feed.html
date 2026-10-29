@@ -614,8 +614,9 @@ body{
 </div>
 
     <div class="post-user">
-      Alex Mercer
+      <span id="communityUserName">Community Member</span>
     </div>
+
 
     <div class="post-time">
       1h ago
@@ -1096,16 +1097,31 @@ function updateCreatorButtons() {
           "transparent";
       }
 
- 
-
 
 
     });
 
 }
 
+
 </script>
 
+<script>
+
+const user = JSON.parse(
+  localStorage.getItem("podblendzUser")
+);
+
+if (user) {
+  const nameElement =
+    document.getElementById("communityUserName");
+
+  if (nameElement) {
+    nameElement.textContent =
+      user.display_name;
+  }
+}
+</script>
 
 
 
