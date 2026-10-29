@@ -120,7 +120,13 @@ def user_login(
 
     print("✅ USER SAVE RESULT:", result)
 
-    return result
+    return {
+    "blendz_id": result.blendz_id,
+    "google_sub": result.google_sub,
+    "email": result.email,
+    "display_name": result.display_name,
+    "photo_url": result.photo_url
+}
 
 
 
