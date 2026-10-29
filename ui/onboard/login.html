@@ -182,6 +182,8 @@
 .then(data => {
   console.log("User saved:", data);
 
+  alert(JSON.stringify(data, null, 2));
+
   // Save complete user profile
   localStorage.setItem(
     "podblendzUser",
