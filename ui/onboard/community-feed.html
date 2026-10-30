@@ -1185,11 +1185,22 @@ function postComment(){
       ) || "[]"
     );
 
-  comments.unshift({
-    user:user.display_name,
-    text:text,
-    created:new Date().toISOString()
-  });
+    const selectedBlendId =
+  localStorage.getItem(
+    "dnaSeedBlendId"
+  );
+
+comments.unshift({
+  blendId: selectedBlendId,
+  blendTitle: document.getElementById(
+    "communityBlendTitle"
+  ).innerText,
+  user: user.display_name,
+  text: text,
+  created: new Date().toISOString()
+});
+
+ 
 
   localStorage.setItem(
     "podblendzComments",
@@ -1217,19 +1228,31 @@ function renderComments(){
       "commentsContainer"
     );
 
-  container.innerHTML =
-    comments.map(c => `
-      <div style="
-        padding:10px;
-        margin-top:8px;
-        background:#181818;
-        border-radius:12px;
-      ">
-        <strong>${c.user}</strong>
-        <div>${c.text}</div>
-      </div>
-    `).join("");
+    const selectedBlendId =
+  localStorage.getItem(
+    "dnaSeedBlendId"
+  );
+
+const blendComments =
+  comments.filter(
+    c => c.blendId === selectedBlendId
+  );
+
+container.innerHTML =
+  blendComments.map(c => `
+    <div style="
+      padding:10px;
+      margin-top:8px;
+      background:#181818;
+      border-radius:12px;
+    ">
+      <strong>${c.user}</strong>
+      <div>${c.text}</div>
+    </div>
+  `).join("");
 }
+
+
 
 renderComments();
 
@@ -1274,6 +1297,14 @@ function saveBlend(){
     "saveCount"
   ).innerText = count;
 }
+
+activities.unshift({
+  user:user.display_name,
+  blendId:blend.id,
+  blendTitle:blend.title,
+  type:"listen",
+  created:new Date().toISOString()
+});
 
 document.getElementById(
   "likeCount"
