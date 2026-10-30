@@ -628,6 +628,32 @@ body{
     id="communityComment"
     class="post-content">
 
+    <div id="commentsContainer"
+     style="margin-top:20px;">
+</div>
+
+<textarea
+  id="commentInput"
+  placeholder="Share your thoughts..."
+  style="
+    width:100%;
+    margin-top:12px;
+    background:#181818;
+    color:white;
+    border:none;
+    border-radius:12px;
+    padding:12px;
+  ">
+</textarea>
+
+<button
+  class="post-btn"
+  onclick="postComment()">
+  Comment
+</button>
+
+
+
     <p id="communityCommentText">
       Just listened to a blend.
     </p>
@@ -721,6 +747,16 @@ body{
 
   <div class="post-actions">
 
+  <span onclick="likeBlend()">
+    ❤️ <span id="likeCount">0</span>
+  </span>
+
+  <span onclick="saveBlend()">
+    📌 <span id="saveCount">0</span>
+  </span>
+
+</div>
+
     💬 18 Community Responses
 
   </div>
@@ -775,6 +811,14 @@ body{
   </main>
 
   <!-- RIGHT -->
+
+  <div class="widget">
+
+<h3>🎧 Listening Now</h3>
+
+<div id="listenerArea"></div>
+
+</div>
 
   <aside class="right">
 
@@ -1120,6 +1164,96 @@ if (user) {
     nameElement.textContent =
       user.display_name;
   }
+}
+
+function postComment(){
+
+  const user =
+    JSON.parse(
+      localStorage.getItem("podblendzUser")
+    );
+
+  const text =
+    document.getElementById(
+      "commentInput"
+    ).value;
+
+  if(!text.trim()) return;
+
+  const comments =
+    JSON.parse(
+      localStorage.getItem(
+        "podblendzComments"
+      ) || "[]"
+    );
+
+  comments.unshift({
+    user:user.display_name,
+    text:text,
+    created:new Date().toISOString()
+  });
+
+  localStorage.setItem(
+    "podblendzComments",
+    JSON.stringify(comments)
+  );
+
+  renderComments();
+
+  document.getElementById(
+    "commentInput"
+  ).value="";
+}
+
+function renderComments(){
+
+  const comments =
+    JSON.parse(
+      localStorage.getItem(
+        "podblendzComments"
+      ) || "[]"
+    );
+
+  const container =
+    document.getElementById(
+      "commentsContainer"
+    );
+
+  container.innerHTML =
+    comments.map(c => `
+      <div style="
+        padding:10px;
+        margin-top:8px;
+        background:#181818;
+        border-radius:12px;
+      ">
+        <strong>${c.user}</strong>
+        <div>${c.text}</div>
+      </div>
+    `).join("");
+}
+
+renderComments();
+
+function likeBlend(){
+
+  let count =
+    Number(
+      localStorage.getItem(
+        "blendLikes"
+      ) || 0
+    );
+
+  count++;
+
+  localStorage.setItem(
+    "blendLikes",
+    count
+  );
+
+  document.getElementById(
+    "likeCount"
+  ).innerText = count;
 }
 </script>
 
