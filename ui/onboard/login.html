@@ -163,7 +163,9 @@
     response.credential
   );
 
-  fetch(
+ const googleToken = response.credential;
+
+fetch(
   "https://podblendz-backend.onrender.com/users/login",
   {
     method: "POST",
@@ -179,28 +181,28 @@
     })
   }
 )
+.then(apiResponse => apiResponse.json())
 .then(data => {
   console.log("User saved:", data);
 
   alert(JSON.stringify(data, null, 2));
 
-  // Save complete user profile
   localStorage.setItem(
     "podblendzUser",
     JSON.stringify(data)
   );
 
-  // Optional: keep Google token too
-  console.log("Saving user:", data);
   localStorage.setItem(
     "googleToken",
-    response.credential
+    googleToken
   );
 
   window.location.href =
     "/community-feed.html";
 })
-
+.catch(err => {
+  console.error("Login save failed:", err);
+});
 
 
 }
