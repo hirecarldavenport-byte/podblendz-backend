@@ -605,7 +605,7 @@ body{
       🎧 Community
     </h1>
 
-    <div class="post" onclick="openCurrentBlend()">
+    <div class="post">
 
   <div class="post-header">
 
@@ -646,6 +646,11 @@ body{
   ">
 </textarea>
 
+<textarea
+  id="commentInput"
+  placeholder="Share your thoughts..."
+></textarea>
+
 <button
   class="post-btn"
   onclick="postComment()">
@@ -658,7 +663,10 @@ body{
       Just listened to a blend.
     </p>
 
-    <div class="blend-preview">
+    <div
+  class="blend-preview"
+  onclick="openCurrentBlend()">
+
 
   <h4 id="communityBlendTitle">
     What habits create extraordinary careers over decades?
@@ -938,7 +946,7 @@ document.getElementById(
     `https://podblendz-episode-audio.s3.us-east-1.amazonaws.com/blends/${blend.id}/final.mp3`;
 
   player.load();
-  player.play();
+  player.play().catch(() => {});
 
 }
 
@@ -1255,6 +1263,32 @@ function likeBlend(){
     "likeCount"
   ).innerText = count;
 }
+
+function saveBlend(){
+
+  let count =
+    Number(
+      localStorage.getItem(
+        "blendSaves"
+      ) || 0
+    );
+
+  count++;
+
+  localStorage.setItem(
+    "blendSaves",
+    count
+  );
+
+  document.getElementById(
+    "saveCount"
+  ).innerText = count;
+}
+
+document.getElementById(
+  "likeCount"
+).innerText =
+  localStorage.getItem("blendLikes") || 0;
 </script>
 
 
