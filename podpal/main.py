@@ -2,15 +2,15 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from fastapi import FastAPI
+from podpal.db.database import init_db
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.routing import APIRoute
 from podpal.routes.blend_feed_routes import router as blend_feed_router
+from fastapi.middleware.cors import CORSMiddleware
 
 from fastapi import Depends
 from sqlalchemy.orm import Session
-
-from fastapi.middleware.cors import CORSMiddleware
 
 from podpal.db.session import SessionLocal
 from podpal.db.blend_store import (
@@ -50,12 +50,18 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://www.podblendz.com",
-        "https://podblendz.com"
+        "https://podblendz.com",
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+print("✅ CORS middleware enabled")
+
+@app.on_event("startup")
+def startup_event():
+    init_db()
 
 def get_db():
     db = SessionLocal()
@@ -101,7 +107,9 @@ def user_login(
     payload: dict,
     db: Session = Depends(get_db),
 ):
-    return save_user(
+    print("✅ USER LOGIN PAYLOAD:", payload)
+
+    result = save_user(
         db=db,
         blendz_id=payload.get("blendz_id"),
         google_sub=payload.get("google_sub"),
@@ -109,6 +117,20 @@ def user_login(
         display_name=payload.get("display_name"),
         photo_url=payload.get("photo_url"),
     )
+
+    print("✅ USER SAVE RESULT:", result)
+
+    return {
+    "blendz_id": result.blendz_id,
+    "google_sub": result.google_sub,
+    "email": result.email,
+    "display_name": result.display_name,
+    "photo_url": result.photo_url
+}
+
+
+
+
 
 
 # -------------------------------------------------
@@ -123,7 +145,6 @@ from podpal.routes.health import router as health_router
 from podpal.routes.s3_routes import router as s3_router
 from podpal.routes.narration_routes import router as narration_router
 from podpal.routes.blend_routes import router as blend_router
-from fastapi.middleware.cors import CORSMiddleware
 
 
 app.include_router(health_router)
