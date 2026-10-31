@@ -1,6 +1,14 @@
 import sqlite3
+from pathlib import Path
 
-conn = sqlite3.connect("podblendz.db")
+# Find project root
+project_root = Path(__file__).resolve().parents[3]
+
+db_path = project_root / "podblendz.db"
+
+print(f"Using database: {db_path}")
+
+conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 
 cursor.execute("""
