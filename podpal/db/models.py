@@ -6,6 +6,11 @@ from sqlalchemy import (
     Integer,
     ForeignKey
 )
+import uuid
+
+from datetime import datetime
+
+from sqlalchemy import Text
 
 Base = declarative_base()
 
@@ -253,3 +258,43 @@ class CommunityActivity(Base):
     comment = Column(String)
 
     created_at = Column(DateTime)
+
+# =====================================
+# COMMUNITY Comments
+# =====================================
+
+class CommunityComment(Base):
+    __tablename__ = "community_comments"
+
+    id = Column(
+        String,
+        primary_key=True,
+        default=lambda: str(uuid.uuid4())
+    )
+
+    blend_id = Column(
+        String,
+        nullable=False,
+        index=True
+    )
+
+    user_name = Column(
+        String,
+        nullable=False
+    )
+
+    comment_text = Column(
+        Text,
+        nullable=False
+    )
+
+    created_at = Column(
+        DateTime,
+        default=datetime.utcnow
+    )
+
+    blend_title = Column(
+    String,
+    nullable=True
+)
+
