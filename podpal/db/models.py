@@ -264,6 +264,8 @@ class CommunityActivity(Base):
 # =====================================
 
 class CommunityComment(Base):
+
+
     __tablename__ = "community_comments"
 
     id = Column(
