@@ -1198,7 +1198,7 @@ function postComment(){
   );
 
   fetch(
-  "https://api.podblendz.com/community/comments",
+  "https://podblendz-backend.onrender.com/community/comments",
   {
     method:"POST",
     headers:{
@@ -1225,7 +1225,7 @@ function loadComments(){
   if(!currentBlendId) return;
 
   fetch(
-    `https://api.podblendz.com/community/comments/${currentBlendId}`
+    `https://podblendz-backend.onrender.com/community/comments/${currentBlendId}`
   )
   .then(r => r.json())
   .then(comments => {
