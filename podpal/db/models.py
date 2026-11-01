@@ -6,6 +6,11 @@ from sqlalchemy import (
     Integer,
     ForeignKey
 )
+import uuid
+
+from datetime import datetime
+
+from sqlalchemy import Text
 
 Base = declarative_base()
 
