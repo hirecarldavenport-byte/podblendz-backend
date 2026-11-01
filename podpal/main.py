@@ -18,6 +18,10 @@ from podpal.db.blend_store import (
     save_community_activity,
 )
 
+from podpal.community_routes import (
+    router as community_router
+)
+
 
 
 # -------------------------------------------------
@@ -152,6 +156,7 @@ app.include_router(s3_router)
 app.include_router(narration_router)
 app.include_router(blend_router)
 app.include_router(blend_feed_router)
+app.include_router(community_router)
 
 # -------------------------------------------------
 # USER LOGIN
