@@ -121,6 +121,8 @@ app.include_router(search_router)
 
 app.include_router(blend_publish_router)
 
+app.include_router(community_router)
+
 if blend_router:
     app.include_router(blend_router)
 
