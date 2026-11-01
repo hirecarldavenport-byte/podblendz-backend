@@ -854,7 +854,11 @@ body{
 
 <script>
 
+  let currentBlendId = null;
+
     function loadBlend(blend) {
+
+      currentBlendId = blend.id;
 
   console.log(blend);
 
@@ -863,6 +867,7 @@ body{
   .forEach(el => {
     el.classList.remove("active");
   });
+
 
 document
   .getElementById(`blend-${blend.id}`)
@@ -937,6 +942,8 @@ document.getElementById(
 
   player.load();
   player.play().catch(() => {});
+
+  loadComments();
 
 }
 
@@ -1190,17 +1197,61 @@ function postComment(){
     "dnaSeedBlendId"
   );
 
-comments.unshift({
-  blendId: selectedBlendId,
-  blendTitle: document.getElementById(
-    "communityBlendTitle"
-  ).innerText,
-  user: user.display_name,
-  text: text,
-  created: new Date().toISOString()
+  fetch(
+  "https://api.podblendz.com/community/comments",
+  {
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json"
+    },
+    body:JSON.stringify({
+      blend_id: currentBlendId,
+      blend_title:
+        document.getElementById(
+          "communityBlendTitle"
+        ).innerText,
+      user_name:
+        user.display_name,
+      comment: text
+    })
+  }
+)
+.then(() => {
+  loadComments();
 });
 
- 
+function loadComments(){
+
+  if(!currentBlendId) return;
+
+  fetch(
+    `https://api.podblendz.com/community/comments/${currentBlendId}`
+  )
+  .then(r => r.json())
+  .then(comments => {
+
+    const container =
+      document.getElementById(
+        "commentsContainer"
+      );
+
+    container.innerHTML =
+      comments.map(c => `
+        <div style="
+          padding:10px;
+          margin-top:8px;
+          background:#181818;
+          border-radius:12px;
+        ">
+          <strong>${c.user_name}</strong>
+          <div>${c.comment}</div>
+        </div>
+      `).join("");
+  });
+}
+
+
+
 
   localStorage.setItem(
     "podblendzComments",
