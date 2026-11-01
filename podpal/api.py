@@ -20,6 +20,10 @@ from podpal.db.blend_store import (
     save_community_activity
 )
 
+from podpal.community_routes import (
+    router as community_router
+)
+
 
 
 # ---------------------------------------------------------
