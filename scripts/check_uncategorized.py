@@ -12,7 +12,14 @@ ORDER BY created_at DESC
 
 rows = cur.fetchall()
 
+print("\n=== UNCATEGORIZED BLENDZ ===\n")
+
 for row in rows:
-    print(row)
+    print(f"ID: {row[0]}")
+    print(f"TITLE: {row[1]}")
+    print(f"BOARD: {row[2]}")
+    print("-" * 80)
+
+print(f"\nTotal Uncategorized: {len(rows)}")
 
 conn.close()
