@@ -646,11 +646,6 @@ body{
   ">
 </textarea>
 
-<textarea
-  id="commentInput"
-  placeholder="Share your thoughts..."
-></textarea>
-
 <button
   class="post-btn"
   onclick="postComment()">
@@ -1185,12 +1180,6 @@ function postComment(){
 
   if(!text.trim()) return;
 
-  const comments =
-    JSON.parse(
-      localStorage.getItem(
-        "podblendzComments"
-      ) || "[]"
-    );
 
     const selectedBlendId =
   localStorage.getItem(
@@ -1219,6 +1208,12 @@ function postComment(){
 .then(() => {
   loadComments();
 });
+
+
+  document.getElementById(
+    "commentInput"
+  ).value="";
+}
 
 function loadComments(){
 
@@ -1250,29 +1245,9 @@ function loadComments(){
   });
 }
 
-
-
-
-  localStorage.setItem(
-    "podblendzComments",
-    JSON.stringify(comments)
-  );
-
-  renderComments();
-
-  document.getElementById(
-    "commentInput"
-  ).value="";
-}
-
 function renderComments(){
 
-  const comments =
-    JSON.parse(
-      localStorage.getItem(
-        "podblendzComments"
-      ) || "[]"
-    );
+  
 
   const container =
     document.getElementById(
