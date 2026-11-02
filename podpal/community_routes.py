@@ -6,47 +6,29 @@ from podpal.db.models import CommunityComment
 from sqlalchemy import func
 
 router = APIRouter()
-
 @router.get("/community/feed")
 def get_community_feed(
     db: Session = Depends(get_db)
 ):
 
-    rows = (
-        db.query(
-            CommunityComment.blend_id,
-            CommunityComment.blend_title,
-            func.count(
-                CommunityComment.id
-            ).label("comment_count"),
-            func.max(
-                CommunityComment.created_at
-            ).label("latest_activity")
-        )
-        .group_by(
-            CommunityComment.blend_id,
-            CommunityComment.blend_title
-        )
+    comments = (
+        db.query(CommunityComment)
         .order_by(
-            func.max(
-                CommunityComment.created_at
-            ).desc()
+            CommunityComment.created_at.desc()
         )
         .all()
     )
 
     return [
         {
-            "blend_id": row.blend_id,
-            "blend_title": row.blend_title,
-            "comment_count": row.comment_count,
-            "latest_activity": str(
-                row.latest_activity
-            )
+            "blend_id": c.blend_id,
+            "blend_title": c.blend_title,
+            "user_name": c.user_name,
+            "comment_text": c.comment_text,
+            "created_at": str(c.created_at)
         }
-        for row in rows
+        for c in comments
     ]
-
 @router.post("/community/comments")
 def save_comment(
     payload: dict,
