@@ -3,8 +3,49 @@ from sqlalchemy.orm import Session
 
 from podpal.db.database import get_db
 from podpal.db.models import CommunityComment
+from sqlalchemy import func
 
 router = APIRouter()
+
+@router.get("/community/feed")
+def get_community_feed(
+    db: Session = Depends(get_db)
+):
+
+    rows = (
+        db.query(
+            CommunityComment.blend_id,
+            CommunityComment.blend_title,
+            func.count(
+                CommunityComment.id
+            ).label("comment_count"),
+            func.max(
+                CommunityComment.created_at
+            ).label("latest_activity")
+        )
+        .group_by(
+            CommunityComment.blend_id,
+            CommunityComment.blend_title
+        )
+        .order_by(
+            func.max(
+                CommunityComment.created_at
+            ).desc()
+        )
+        .all()
+    )
+
+    return [
+        {
+            "blend_id": row.blend_id,
+            "blend_title": row.blend_title,
+            "comment_count": row.comment_count,
+            "latest_activity": str(
+                row.latest_activity
+            )
+        }
+        for row in rows
+    ]
 
 @router.post("/community/comments")
 def save_comment(
