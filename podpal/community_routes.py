@@ -3,9 +3,10 @@ from sqlalchemy.orm import Session
 
 from podpal.db.database import get_db
 from podpal.db.models import CommunityComment
-from sqlalchemy import func
 
 router = APIRouter()
+
+
 @router.get("/community/feed")
 def get_community_feed(
     db: Session = Depends(get_db)
@@ -19,6 +20,11 @@ def get_community_feed(
         .all()
     )
 
+    print(
+        "COMMENTS FOUND:",
+        len(comments)
+    )
+
     return [
         {
             "blend_id": c.blend_id,
@@ -29,6 +35,8 @@ def get_community_feed(
         }
         for c in comments
     ]
+
+
 @router.post("/community/comments")
 def save_comment(
     payload: dict,
@@ -50,6 +58,7 @@ def save_comment(
     return {
         "success": True
     }
+
 
 @router.get(
     "/community/comments/{blend_id}"
