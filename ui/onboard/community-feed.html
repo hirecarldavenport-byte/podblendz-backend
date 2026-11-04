@@ -605,6 +605,8 @@ body{
       🎧 Community
     </h1>
 
+    <div id="activeDiscussions"></div>
+
     <div class="post">
 
   <div class="post-header">
@@ -1257,14 +1259,44 @@ function loadCommunityFeed(){
   .then(r => r.json())
   .then(items => {
 
-    console.log(
-      "COMMUNITY FEED:",
-      items
-    );
+    document.getElementById(
+      "activeDiscussions"
+    ).innerHTML =
+
+      items.map(item => `
+
+        <div class="post">
+
+          <div class="featured-label">
+            💬 Active Discussion
+          </div>
+
+          <strong>
+            ${item.blend_title}
+          </strong>
+
+          <div style="
+            margin-top:8px;
+            opacity:.8;
+          ">
+            ${item.user_name}
+          </div>
+
+          <div style="
+            margin-top:8px;
+          ">
+            ${item.comment_text}
+          </div>
+
+        </div>
+
+      `).join("");
 
   });
 
 }
+
+
 
 loadCommunityFeed();
 
