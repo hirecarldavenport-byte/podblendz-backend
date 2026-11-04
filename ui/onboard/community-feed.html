@@ -610,7 +610,7 @@ body{
   <div class="post-header">
 
     <div class="featured-label">
-  🔥 Featured Blend Discussion
+      Active Discussions
 </div>
 
     <div class="post-user">
@@ -710,7 +710,10 @@ body{
 
 </div>
 
-<div class="post">
+<div
+  class="post"
+  id="communityFeedContainer"
+>
 
   <div class="featured-label">
     ⚡ Recent Activity
@@ -848,6 +851,7 @@ body{
 <script src="scripts/blends.js"></script>
 
 <script>
+
 
   let currentBlendId = null;
 
@@ -1244,6 +1248,25 @@ function loadComments(){
       `).join("");
   });
 }
+
+function loadCommunityFeed(){
+
+  fetch(
+    "https://podblendz-backend.onrender.com/community/feed"
+  )
+  .then(r => r.json())
+  .then(items => {
+
+    console.log(
+      "COMMUNITY FEED:",
+      items
+    );
+
+  });
+
+}
+
+loadCommunityFeed();
 
 /*function renderComments(){
 
