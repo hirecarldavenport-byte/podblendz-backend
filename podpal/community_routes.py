@@ -111,6 +111,12 @@ def get_comments(
         .all()
     )
 
+    print(
+    "COMMENTS FOR BLEND:",
+    blend_id,
+    len(comments)
+)
+
     return [
         {
             "id": c.id,
