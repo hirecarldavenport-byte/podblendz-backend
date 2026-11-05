@@ -20,6 +20,8 @@ def get_community_feed(
         .all()
     )
 
+
+
     print(
         "TOTAL COMMENTS:",
         len(comments)
@@ -73,6 +75,11 @@ def save_comment(
         user_name=payload["user_name"],
         comment_text=payload["comment"]
     )
+
+    print(
+    "SAVING COMMENT:",
+    payload
+)
 
     db.add(comment)
     db.commit()
