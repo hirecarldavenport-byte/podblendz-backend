@@ -20,6 +20,11 @@ def get_community_feed(
         .all()
     )
 
+    print(
+        "TOTAL COMMENTS:",
+        len(comments)
+    )
+
     discussions = {}
 
     for c in comments:
@@ -43,9 +48,16 @@ def get_community_feed(
                 "comment_count"
             ] += 1
 
+    print(
+        "DISCUSSIONS:",
+        discussions
+    )
+
     return list(
         discussions.values()
     )
+
+
 
 @router.post("/community/comments")
 def save_comment(
