@@ -20,22 +20,32 @@ def get_community_feed(
         .all()
     )
 
-    print(
-        "COMMENTS FOUND:",
-        len(comments)
+    discussions = {}
+
+    for c in comments:
+
+        if c.blend_id not in discussions:
+
+            discussions[c.blend_id] = {
+                "blend_id": c.blend_id,
+                "blend_title": c.blend_title,
+                "latest_user": c.user_name,
+                "latest_comment": c.comment_text,
+                "latest_activity": str(
+                    c.created_at
+                ),
+                "comment_count": 1
+            }
+
+        else:
+
+            discussions[c.blend_id][
+                "comment_count"
+            ] += 1
+
+    return list(
+        discussions.values()
     )
-
-    return [
-        {
-            "blend_id": c.blend_id,
-            "blend_title": c.blend_title,
-            "user_name": c.user_name,
-            "comment_text": c.comment_text,
-            "created_at": str(c.created_at)
-        }
-        for c in comments
-    ]
-
 
 @router.post("/community/comments")
 def save_comment(
