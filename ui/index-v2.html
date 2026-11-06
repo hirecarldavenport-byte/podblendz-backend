@@ -569,9 +569,32 @@
 
 
     document.getElementById("generateBlendzBtn")
-      .addEventListener("click", () => {
-        window.location.href = "/onboard/topics.html";
-      });
+  .addEventListener("click", () => {
+
+    const token =
+      localStorage.getItem(
+        "googleToken"
+      );
+
+    if (!token) {
+
+      document
+        .getElementById("previewMessage")
+        .style.display = "block";
+
+      document
+        .getElementById("googleSignIn")
+        .scrollIntoView({
+          behavior: "smooth"
+        });
+
+      return;
+    }
+
+    window.location.href =
+      "/onboard/topics.html";
+
+  });
 
       document.getElementById("loginBtn")
   .addEventListener("click", () => {
