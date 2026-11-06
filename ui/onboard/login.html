@@ -182,30 +182,27 @@ fetch(
   }
 )
 .then(apiResponse => apiResponse.json())
-.then(data => {
-  console.log("User saved:", data);
+.then((data) => {
 
-  alert(JSON.stringify(data, null, 2));
+    console.log("User saved:", data);
 
-  localStorage.setItem(
-    "podblendzUser",
-    JSON.stringify(data)
-  );
+    localStorage.setItem(
+      "podblendzUser",
+      JSON.stringify(data)
+    );
 
-  localStorage.setItem(
-    "googleToken",
-    googleToken
-  );
+    window.location.href =
+      "/onboard/topics.html";
 
-  window.location.href =
-    "/community-feed.html";
 })
 .catch(err => {
-  console.error("Login save failed:", err);
+    console.error(
+      "Login save failed:",
+      err
+    );
 });
-
-
 }
+
 
 
 window.addEventListener("load", () => {
