@@ -310,3 +310,44 @@ class CommunityComment(Base):
     String,
     nullable=True
 )
+
+class CommunityVoiceThought(Base):
+
+    __tablename__ = "community_voice_thoughts"
+
+    id = Column(
+        String,
+        primary_key=True,
+        default=lambda: str(uuid.uuid4())
+    )
+
+    blend_id = Column(
+        String,
+        nullable=False,
+        index=True
+    )
+
+    blend_title = Column(
+        String,
+        nullable=True
+    )
+
+    user_name = Column(
+        String,
+        nullable=False
+    )
+
+    audio_url = Column(
+        String,
+        nullable=False
+    )
+
+    duration_seconds = Column(
+        Integer,
+        default=30
+    )
+
+    created_at = Column(
+        DateTime,
+        default=datetime.utcnow
+    )
