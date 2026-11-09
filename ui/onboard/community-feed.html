@@ -1295,36 +1295,58 @@ if (activity) {
       "activeDiscussions"
     ).innerHTML =
 
-      items.map(item => `
+    items.map(item => `
 
-        <div class="post">
+  <div class="post">
 
-          <div class="featured-label">
-            💬 Active Discussion
-          </div>
+    <div class="featured-label">
+      💬 Active Discussion
+    </div>
 
-          <strong>
-            ${item.blend_title}
-          </strong>
+    <strong
+      style="
+        font-size:1.1rem;
+        display:block;
+        margin-bottom:12px;
+      "
+    >
+      ${item.blend_title}
+    </strong>
 
-          <div style="
-            margin-top:8px;
-            opacity:.8;
-          ">
-            ${item.user_name}
-          </div>
+    <div
+      style="
+        color:#ff6a00;
+        font-size:.85rem;
+        margin-bottom:8px;
+      "
+    >
+      Latest Perspective
+    </div>
 
-          <div style="
-            margin-top:8px;
-          ">
-            ${item.comment_text}
-          </div>
+    <div
+      style="
+        color:rgba(255,255,255,.85);
+        margin-bottom:10px;
+      "
+    >
+      "${item.comment || "Join the discussion"}"
+    </div>
 
-        </div>
+    <div
+      style="
+        opacity:.6;
+        font-size:.9rem;
+      "
+    >
+      By
+      ${item.user_name || "Community Member"}
+    </div>
 
-      `).join("");
+  </div>
 
-  });
+`).join("");
+
+});
 
 }
 
