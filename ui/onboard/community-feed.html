@@ -1256,6 +1256,11 @@ function loadCommunityFeed(){
   .then(r => r.json())
   .then(items => {
 
+    console.log(
+  "COMMUNITY FEED:",
+  items
+);
+
     const activity =
   document.getElementById(
     "recentActivityContainer"
