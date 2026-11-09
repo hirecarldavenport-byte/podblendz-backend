@@ -605,6 +605,10 @@ body{
       🎧 Community
     </h1>
 
+    <div class="subtitle">
+  Discover, discuss, and extend podcast ideas.
+</div>
+
     <div id="activeDiscussions"></div>
 
     <div class="post">
@@ -721,20 +725,13 @@ body{
     ⚡ Recent Activity
   </div>
 
-  <div style="margin-bottom:12px;">
-    ⭐ Sarah followed
-    <strong>Lex Fridman Podcast</strong>
+  <div id="recentActivityContainer">
+
+  <div style="opacity:.6;">
+    Loading activity...
   </div>
 
-  <div style="margin-bottom:12px;">
-    🎧 James listened to
-    <strong>What habits create extraordinary careers?</strong>
-  </div>
-
-  <div>
-    📌 Maria saved
-    <strong>Why quality sleep matters</strong>
-  </div>
+</div>
 
 </div>
 
@@ -1258,6 +1255,41 @@ function loadCommunityFeed(){
   )
   .then(r => r.json())
   .then(items => {
+
+    const activity =
+  document.getElementById(
+    "recentActivityContainer"
+  );
+
+if (activity) {
+
+  activity.innerHTML =
+    items.slice(0,5).map(item => `
+
+      <div
+        style="
+          padding:12px;
+          margin-bottom:12px;
+          background:#181818;
+          border-radius:12px;
+        ">
+
+        💬 <strong>
+          ${item.user_name ||
+            "Community Member"}
+        </strong>
+
+        commented on
+
+        <strong>
+          ${item.blend_title}
+        </strong>
+
+      </div>
+
+    `).join("");
+
+}
 
     document.getElementById(
       "activeDiscussions"
