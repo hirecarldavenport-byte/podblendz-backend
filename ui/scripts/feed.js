@@ -434,6 +434,12 @@ if (selectedBoard) {
 
   container.innerHTML = html;
 
+  function openBoard(boardName) {
+
+  window.location.href =
+    `./feed.html?board=${encodeURIComponent(boardName)}`;
+
+}
 
 
 // ✅ OPEN BLEND
