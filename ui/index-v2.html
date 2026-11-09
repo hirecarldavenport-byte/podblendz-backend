@@ -751,21 +751,79 @@ document
 
   });
 
-  function handleCredentialResponse(response) {
+function handleCredentialResponse(response) {
 
-     console.log(
-    "Google Token:",
-    response.credential
-  );
+  const profile =
+    parseJwt(
+      response.credential
+    );
 
+  const user = {
+
+    googleSub:
+      profile.sub,
+
+    email:
+      profile.email,
+
+    displayName:
+      profile.name,
+
+    photoUrl:
+      profile.picture,
+
+    blendzId:
+      `BLZ-${profile.sub.slice(-8)}`
+
+  };
 
   localStorage.setItem(
     "googleToken",
     response.credential
   );
 
-  window.location.href =
-    "/onboard/topics.html";
+  fetch(
+    "https://podblendz-backend.onrender.com/users/login",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type":
+          "application/json"
+      },
+      body: JSON.stringify({
+        blendz_id:
+          user.blendzId,
+        google_sub:
+          user.googleSub,
+        email:
+          user.email,
+        display_name:
+          user.displayName,
+        photo_url:
+          user.photoUrl
+      })
+    }
+  )
+  .then(r => r.json())
+  .then(data => {
+
+    localStorage.setItem(
+      "podblendzUser",
+      JSON.stringify(data)
+    );
+
+    window.location.href =
+      "/onboard/topics.html";
+
+  })
+  .catch(err => {
+
+    console.error(
+      "Login failed:",
+      err
+    );
+
+  });
 
 }
 
