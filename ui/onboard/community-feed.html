@@ -1297,7 +1297,20 @@ if (activity) {
 
     items.map(item => `
 
-  <div class="post">
+  <div
+  class="post"
+  style="
+    cursor:pointer;
+    transition:.2s;
+  "
+  onclick="
+    document
+      .querySelector('.blend-preview')
+      ?.scrollIntoView({
+        behavior:'smooth'
+      });
+  "
+>
 
     <div class="featured-label">
       💬 Active Discussion
@@ -1318,6 +1331,7 @@ if (activity) {
         color:#ff6a00;
         font-size:.85rem;
         margin-bottom:8px;
+        font-weight:600;
       "
     >
       Latest Perspective
@@ -1329,7 +1343,7 @@ if (activity) {
         margin-bottom:10px;
       "
     >
-      "${item.comment || "Join the discussion"}"
+      "${item.comment || ""}"
     </div>
 
     <div
@@ -1339,7 +1353,7 @@ if (activity) {
       "
     >
       By
-      ${item.user_name || "Community Member"}
+      ${item.user_name || ""}
     </div>
 
   </div>
