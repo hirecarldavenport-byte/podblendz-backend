@@ -1314,12 +1314,13 @@ if (activity) {
     transition:.2s;
   "
   onclick="
-    document
-      .querySelector('.blend-preview')
-      ?.scrollIntoView({
-        behavior:'smooth'
-      });
-  "
+  localStorage.setItem(
+    'dnaSeedBlendId',
+    '${item.blend_id}'
+  );
+  window.location.reload();
+"
+ 
 >
 
     <div class="featured-label">
