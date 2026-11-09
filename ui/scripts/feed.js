@@ -268,6 +268,13 @@ function renderBoards() {
 
 }
 
+  function openBoard(boardName) {
+
+  window.location.href =
+    `./feed.html?board=${encodeURIComponent(boardName)}`;
+
+}
+
 function renderFeed() {
 
 
@@ -434,12 +441,7 @@ if (selectedBoard) {
 
   container.innerHTML = html;
 
-  function openBoard(boardName) {
 
-  window.location.href =
-    `./feed.html?board=${encodeURIComponent(boardName)}`;
-
-}
 
 
 // ✅ OPEN BLEND
