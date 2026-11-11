@@ -638,6 +638,15 @@ body{
      style="margin-top:20px;">
 </div>
 
+<div
+  id="replyTarget"
+  style="
+    color:#ff6a00;
+    margin-bottom:8px;
+    font-size:.9rem;
+  "
+></div>
+
 <textarea
   id="commentInput"
   placeholder="Share your thoughts..."
@@ -1177,6 +1186,8 @@ if (user) {
 
 function postComment(){
 
+  let replyingToUser = null;
+
   const user =
     JSON.parse(
       localStorage.getItem("podblendzUser")
@@ -1186,6 +1197,11 @@ function postComment(){
     document.getElementById(
       "commentInput"
     ).value;
+
+    const finalComment =
+  replyingToUser
+    ? `@${replyingToUser} ${text}`
+    : text;
 
   if(!text.trim()) return;
 
@@ -1210,12 +1226,20 @@ function postComment(){
         ).innerText,
       user_name:
         user.display_name,
-      comment: text
+      comment: finalComment
     })
   }
 )
 .then(() => {
+
   loadComments();
+
+  replyingToUser = null;
+
+  document.getElementById(
+    "replyTarget"
+  ).innerText = "";
+
 });
 
 
@@ -1239,18 +1263,41 @@ function loadComments(){
         "commentsContainer"
       );
 
-    container.innerHTML =
-      comments.map(c => `
-        <div style="
-          padding:10px;
-          margin-top:8px;
-          background:#181818;
-          border-radius:12px;
-        ">
-          <strong>${c.user_name}</strong>
-          <div>${c.comment}</div>
-        </div>
-      `).join("");
+      container.innerHTML =
+  comments.map(c => `
+    <div style="
+      padding:10px;
+      margin-top:8px;
+      background:#181818;
+      border-radius:12px;
+    ">
+
+      <strong>${c.user_name}</strong>
+
+      <div style="
+        margin-top:6px;
+      ">
+        ${c.comment}
+      </div>
+
+      <div
+        onclick="
+          replyToComment('${c.user_name}')
+        "
+        style="
+          margin-top:10px;
+          color:#ff6a00;
+          cursor:pointer;
+          font-size:.9rem;
+        "
+      >
+        ↳ Reply
+      </div>
+
+    </div>
+  `).join("");
+
+    
   });
 }
 
@@ -1381,9 +1428,19 @@ if (activity) {
 
 }
 
-
-
 loadCommunityFeed();
+
+function replyToComment(userName){
+
+  replyingToUser =
+    userName;
+
+  document.getElementById(
+    "replyTarget"
+  ).innerText =
+    `Replying to ${userName}`;
+
+}
 
 /*function renderComments(){
 
