@@ -774,7 +774,7 @@ body{
 
     <div
   class="blend-preview"
-  onclick="openCurrentBlend()">
+  onclick="openPlayerOverlay()"
 
 
   <h4 id="communityBlendTitle">
@@ -1530,16 +1530,6 @@ function replyToComment(userName){
 
 }
 
-  document.getElementById(
-    "commentInput"
-  ).scrollIntoView({
-    behavior:"smooth",
-    block:"center"
-  });
-
-  document.getElementById(
-    "commentInput"
-  ).focus();
 
   function openPlayerOverlay(){
 
@@ -1571,21 +1561,14 @@ function replyToComment(userName){
 
 }
 
-document
-  .getElementById(
-    "closePlayer"
-  )
-  .addEventListener(
-    "click",
-    () => {
+function closePlayerOverlay(){
 
-      document.getElementById(
-        "playerOverlay"
-      ).style.display =
-        "none";
+  document.getElementById(
+    "playerOverlay"
+  ).style.display =
+    "none";
 
-    }
-  );
+}
 
 
 /*function renderComments(){
@@ -1688,6 +1671,7 @@ document.getElementById(
     <button
       id="closePlayer"
       class="player-back"
+      onclick="closePlayerOverlay()"
     >
       ← Back
     </button>
