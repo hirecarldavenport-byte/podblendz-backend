@@ -181,8 +181,8 @@ body{
 .post{
   background:#0d0d0d;
   border:1px solid rgba(255,255,255,.08);
-  border-radius:22px;
-  padding:24px;
+  border-radius:16px;
+  padding:18px;
   margin-bottom:18px;
 }
 
@@ -746,40 +746,6 @@ body{
 
 
     <p class="community-subtitle">
-      <div class="post">
-
-  <div class="post-user">
-    🎤 Today's Community Question
-  </div>
-
-  <div class="post-content">
-
-    What podcast insight has changed
-    your behavior recently?
-
-  </div>
-
-  <div class="post-actions">
-
-  <span onclick="likeBlend()">
-    ❤️ <span id="likeCount">0</span>
-  </span>
-
-  <span onclick="saveBlend()">
-    📌 <span id="saveCount">0</span>
-  </span>
-
-</div>
-
-    💬 18 Community Responses
-
-  </div>
-
-
-
-
-
-
 
   <p class="dna-subtitle">
     Recommended because of your listening habits
@@ -1184,9 +1150,11 @@ if (user) {
   }
 }
 
+let replyingToUser = null;
+
 function postComment(){
 
-  let replyingToUser = null;
+
 
   const user =
     JSON.parse(
@@ -1274,6 +1242,16 @@ function loadComments(){
 
       <strong>${c.user_name}</strong>
 
+      <div
+  style="
+    font-size:.8rem;
+    color:#777;
+    margin-top:2px;
+  "
+>
+  Just now
+</div>
+
       <div style="
         margin-top:6px;
       ">
@@ -1338,7 +1316,7 @@ if (activity) {
         ">
 
         💬 <strong>
-          ${item.user_name ||
+          ${item.latest_user ||
             "Community Member"}
         </strong>
 
@@ -1440,7 +1418,30 @@ function replyToComment(userName){
   ).innerText =
     `Replying to ${userName}`;
 
+  document.getElementById(
+    "commentInput"
+  ).scrollIntoView({
+    behavior:"smooth",
+    block:"center"
+  });
+
+  document.getElementById(
+    "commentInput"
+  ).focus();
+
 }
+
+  document.getElementById(
+    "commentInput"
+  ).scrollIntoView({
+    behavior:"smooth",
+    block:"center"
+  });
+
+  document.getElementById(
+    "commentInput"
+  ).focus();
+
 
 /*function renderComments(){
 
