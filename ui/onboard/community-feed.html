@@ -2,608 +2,455 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PodBlendz Community</title>
+<meta name="description" content="Real conversations. Deeper perspectives. Discover, discuss, and extend podcast ideas on PodBlendz.">
+<meta name="theme-color" content="#050505">
+
+<!-- Share previews -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PodBlendz">
+<meta property="og:title" content="PodBlendz Community">
+<meta property="og:description" content="Where podcast knowledge comes together. Join the conversation.">
+<meta property="og:url" content="https://www.podblendz.com/community-feed.html">
+<!-- Add a 1200x630 image and uncomment:
+<meta property="og:image" content="https://www.podblendz.com/images/og-community.png">
+-->
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎧%3C/text%3E%3C/svg%3E">
 
 <style>
+*{margin:0;padding:0;box-sizing:border-box}
 
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
+:root{
+  --bg:#050505;
+  --card:#0d0d0d;
+  --card2:#141414;
+  --line:rgba(255,255,255,.09);
+  --orange:#ff6a00;
+  --muted:rgba(255,255,255,.6);
 }
 
 body{
-  background:#050505;
+  background:var(--bg);
   color:#fff;
-  font-family:-apple-system,BlinkMacSystemFont,
-  "Segoe UI",Roboto,sans-serif;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
 }
 
+button{font-family:inherit}
+
+/* ============ LAYOUT ============ */
 .layout{
   display:grid;
-  grid-template-columns:200px 1fr 300px;
+  grid-template-columns:220px minmax(0,1fr) 320px;
   min-height:100vh;
 }
 
-/* ============================
-   LEFT SIDEBAR
-============================ */
-  @media(max-width:1100px){
-
-  .sidebar{
-    display:none !important;
-  }
-
-}
-
-
+/* ============ LEFT SIDEBAR ============ */
 .sidebar{
   padding:24px;
-  border-right:1px solid rgba(255,255,255,.08);
+  border-right:1px solid var(--line);
 }
-
-.logo{
-  font-size:30px;
-  font-weight:700;
-  margin-bottom:30px;
-}
-
-.logo span{
-  color:#ff6a00;
-}
-
-.nav{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-
-.nav a{
-  color:#ddd;
-  text-decoration:none;
-  padding:12px 14px;
-  border-radius:12px;
-}
-
-.nav a.active{
-  background:#121212;
-  color:#ff6a00;
-}
+.logo{font-size:30px;font-weight:700;margin-bottom:6px}
+.logo span{color:var(--orange)}
+.tagline{color:var(--muted);font-size:.8rem}
 
 .section-title{
-  margin-top:40px;
-  margin-bottom:16px;
+  margin-top:36px;
+  margin-bottom:14px;
   font-size:.8rem;
   text-transform:uppercase;
   opacity:.6;
 }
-
-.topic{
-  margin-bottom:10px;
-  color:#ddd;
-}
+.topic{margin-bottom:12px;color:#ddd}
+.topic.clickable{cursor:pointer;transition:.2s}
+.topic.clickable:hover{color:var(--orange);padding-left:6px}
 
 .follow-card{
   display:flex;
   justify-content:space-between;
   align-items:center;
   margin-bottom:14px;
+  gap:8px;
+  font-size:.9rem;
 }
-
 .follow-btn{
   background:transparent;
-  color:white;
+  color:#fff;
   border:1px solid rgba(255,255,255,.15);
   border-radius:999px;
   padding:6px 14px;
   cursor:pointer;
 }
 
-.topic.clickable{
-  cursor:pointer;
-  transition:.2s;
-}
+/* ============ MAIN ============ */
+.main{padding:24px;min-width:0}
 
-.topic.clickable:hover{
-  color:#ff6a00;
-  padding-left:6px;
-}
-
-/* ============================
-   CENTER FEED
-============================ */
-
-.main{
-  padding:24px;
-}
-
-.topbar{
-  display:flex;
-  justify-content:space-between;
+/* app header (logo row, mobile look) */
+.app-header{
+  display:none;
   align-items:center;
-  margin-bottom:24px;
-}
-
-.search{
-  width:60%;
-  background:#0f0f0f;
-  border:1px solid rgba(255,106,0,.25);
-  color:white;
-  padding:14px;
-  border-radius:14px;
-}
-
-.search:focus{
-  outline:none;
-  border-color:#ff6a00;
-  box-shadow:0 0 0 3px rgba(255,106,0,.15);
-}
-
-.new-post-btn{
-  background:#ff6a00;
-  color:white;
-  border:none;
-  padding:12px 24px;
-  border-radius:999px;
-  cursor:pointer;
-  font-weight:600;
-}
-
-.page-title{
-  font-size:2rem;
-  margin-bottom:4px;
-}
-
-.subtitle{
-  opacity:.7;
-  margin-bottom:30px;
-}
-
-.tabs{
-  display:flex;
-  gap:30px;
-  margin-bottom:24px;
-}
-
-.tab{
-  cursor:pointer;
-  opacity:.6;
-}
-
-.tab.active{
-  color:#ff6a00;
-  opacity:1;
-}
-
-.post{
-  background:#0d0d0d;
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:16px;
-  padding:18px;
-  margin-bottom:18px;
-}
-
-.community-subtitle{
-  color:rgba(255,255,255,.65);
-  margin-bottom:18px;
-}
-
-.post-header{
-  margin-bottom:16px;
-}
-
-.post-user{
-  font-weight:700;
-}
-
-.post-time{
-  opacity:.5;
-  font-size:.9rem;
-}
-
-.post-content{
-  line-height:1.7;
-}
-
-.post-actions{
-  display:flex;
-  gap:28px;
-  margin-top:18px;
-  opacity:.7;
-}
-
-.blend-preview{
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255,106,0,.12),
-      rgba(255,106,0,.02)
-    );
-
-  border-radius:18px;
-  margin-top:10px;
-  padding:14px;
-  border:1px solid rgba(255,255,255,.05);
-}
-
-.blend-preview h4{
-  margin-bottom:10px;
-}
-
-/* ============================
-   RIGHT SIDEBAR
-============================ */
-
-.right{
-  padding:24px;
-  border-left:1px solid rgba(255,255,255,.08);
-}
-
-.widget{
-  background:#0d0d0d;
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:22px;
-  padding:22px;
-  margin-bottom:20px;
-}
-
-.widget h3{
+  justify-content:space-between;
   margin-bottom:14px;
 }
-
-.widget textarea{
-  width:100%;
-  background:#171717;
-  border:none;
-  color:white;
-  border-radius:14px;
-  padding:14px;
-  resize:none;
-}
-
-.widget:first-child{
-  display:none;
-}
-
-.post-btn{
-  background:#ff6a00;
-  color:white;
-  border:none;
-  border-radius:999px;
-  padding:10px 20px;
-  margin-top:10px;
+.brand{display:flex;align-items:center;gap:10px}
+.brand-icon{font-size:2rem}
+.brand-name{font-size:1.9rem;font-weight:800;line-height:1}
+.brand-name span{color:var(--orange)}
+.brand-tag{color:var(--muted);font-size:.8rem;margin-top:2px}
+.header-actions{display:flex;align-items:center;gap:12px}
+.icon-btn{
+  position:relative;
+  width:46px;height:46px;
+  border-radius:50%;
+  background:var(--card2);
+  border:1px solid var(--line);
+  color:#fff;
+  font-size:1.1rem;
   cursor:pointer;
 }
-
-.trend{
-  padding:10px 0;
-  border-bottom:1px solid rgba(255,255,255,.05);
+.icon-btn .dot{
+  position:absolute;top:10px;right:11px;
+  width:9px;height:9px;border-radius:50%;
+  background:var(--orange);
+}
+.avatar{
+  width:48px;height:48px;border-radius:50%;
+  background:linear-gradient(135deg,#ff6a00,#8a3ffc);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;border:2px solid rgba(255,255,255,.25);
 }
 
-.popular-blend{
+.page-title{font-size:2.3rem;font-weight:800;margin-bottom:4px}
+.subtitle{color:var(--muted);margin-bottom:22px}
+
+/* stats */
+.stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
   margin-bottom:18px;
 }
-
-.popular-blend{
-  margin-bottom:18px;
-  cursor:pointer;
-  padding:10px;
-  border-radius:12px;
-  transition:.2s;
-}
-
-.popular-blend:hover{
-  background:#181818;
-}
-
-.popular-blend.active {
-    background:#181818;
-    border-left:4px solid #ff6a00;
-    }
-
-.popular-blend small{
-  opacity:.6;
-}
-
-.dna-category{
-  color:#ff6a00;
-  font-size:.72rem;
-  font-weight:700;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-  margin-bottom:8px;
-}
-
-.dna-card{
-  background:#181818;
+.stat{
+  display:flex;align-items:center;gap:12px;
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:18px;
   padding:14px;
-  border-radius:14px;
-  margin-bottom:12px;
-  border-left:4px solid #ff6a00;
-  cursor:pointer;
-  transition:.2s;
+}
+.stat-icon{
+  width:44px;height:44px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.2rem;flex-shrink:0;
+}
+.stat-icon.green{background:rgba(46,204,113,.15)}
+.stat-icon.purple{background:rgba(138,99,255,.18)}
+.stat-icon.orange{background:rgba(255,106,0,.18)}
+.stat-num{font-size:1.4rem;font-weight:800;line-height:1.1}
+.stat-label{color:var(--muted);font-size:.8rem;line-height:1.25}
+
+/* search row */
+.searchrow{display:flex;gap:12px;margin-bottom:26px}
+.search-wrap{
+  flex:1;
+  display:flex;align-items:center;gap:10px;
+  background:#0f0f0f;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:16px;
+  padding:0 16px;
+}
+.search-wrap:focus-within{
+  border-color:var(--orange);
+  box-shadow:0 0 0 3px rgba(255,106,0,.15);
+}
+.search{
+  flex:1;background:none;border:none;color:#fff;
+  padding:15px 0;font-size:1rem;outline:none;
+}
+.filter-btn{
+  width:56px;border-radius:16px;
+  background:#0f0f0f;border:1px solid rgba(255,255,255,.14);
+  color:#fff;font-size:1.2rem;cursor:pointer;
+}
+.new-post-btn{
+  background:var(--orange);color:#fff;border:none;
+  padding:0 24px;border-radius:999px;cursor:pointer;font-weight:600;
 }
 
-.dna-card:hover{
-  background:#202020;
-}
-
-.dna-subtitle{
-  color:rgba(255,255,255,.6);
-  font-size:.85rem;
-  margin-top:-6px;
-  margin-bottom:16px;
-}
-
-/* ============================
-   MOBILE
-============================ */
-
-@media(max-width:1100px){
-
-  .layout{
-    grid-template-columns:1fr;
-  }
-
-  .sidebar{
-    display:none !important;
-  }
-
-
-  .subtitle{
+/* mobile board chips */
+.board-row{
   display:none;
-}
-
-  .right{
-  display:block;
-  border:none;
-  padding:0 14px 14px;
-}
- 
-
-  .main{
-    padding:14px;
-  }
-
-  .subtitle{
-  display:none;
-}
-
-  .search{
-    width:100%;
-    padding:12px;
-  }
-
-  .topbar{
-    flex-direction:column;
-    gap:12px;
-    align-items:stretch;
-    margin-bottom:16px;
-  }
-
-  .new-post-btn{
-  display:none;
-}
-
-  .new-post-btn{
-    padding:12px;
-    width:100%;
-  }
-
-
-
-  .page-title{
-    font-size:2.5rem;
-    line-height:1.05;
-    margin-bottom:8px;
-  }
-
-
-
-  .subtitle{
-    font-size:1rem;
-    margin-bottom:24px;
-  }
-
-  .tabs{
-    display:flex;
-    gap:20px;
-    overflow-x:auto;
-    padding-bottom:8px;
-  }
-
-  .tabs::-webkit-scrollbar{
-    display:none;
-  }
-
-  .post{
-    padding:18px;
-    cursor:pointer;
-    transition:.15s;
-
-
-  }
-
-  .post:hover{
-    border-color:#ff6a00;
-    }
-
-  .post:active{
-    transform:scale(.98);
-    border-color:#ff6a00;
-    }
-
-  .blend-preview{
-    padding:16px;
-  }
-
-  .blend-preview{
-  border:1px solid rgba(255,106,0,.25);
-}
-
-  .blend-preview h4{
-    font-size:1.2rem;
-    line-height:1.3;
-  }
-
-  audio{
-    width:100%;
-    max-width:100%;
-  }
-
-  @media(max-width:1100px){
-
-  .widget{
-    padding:16px;
-    margin-bottom:20px;
-  }
-
-  #dnaBlendsContainer{
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-  }
-
-  .mobile-board-row{
-  display:flex;
-  overflow-x:auto;
-  gap:8px;
-  position:sticky;
-  top:0;
-  z-index:100;
-}
-
-.mobile-board-row{
-  display:flex;
-  overflow-x:auto;
   gap:10px;
-  margin-bottom:20px;
+  overflow-x:auto;
+  margin-bottom:22px;
+  padding-bottom:4px;
+  scrollbar-width:none;
 }
-
-.mobile-board-row div{
-  background:#181818;
-  padding:8px 14px;
+.board-row::-webkit-scrollbar{display:none}
+.board-chip{
+  background:var(--card2);
+  border:1px solid var(--line);
+  color:#fff;
+  padding:9px 16px;
   border-radius:999px;
   white-space:nowrap;
   cursor:pointer;
+  font-size:.95rem;
+}
+.board-chip:active{border-color:var(--orange)}
+
+/* loading + error states */
+.skeleton{
+  height:64px;
+  border-radius:12px;
+  margin-bottom:10px;
+  background:linear-gradient(90deg,#161616 25%,#222 50%,#161616 75%);
+  background-size:200% 100%;
+  animation:shimmer 1.3s infinite;
+}
+@keyframes shimmer{
+  0%{background-position:200% 0}
+  100%{background-position:-200% 0}
+}
+.state-msg{color:var(--muted);font-size:.9rem;padding:8px 0}
+.state-msg button{
+  background:none;border:none;color:var(--orange);
+  cursor:pointer;font-size:.9rem;text-decoration:underline;
 }
 
+/* section heading */
+.section-head{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:16px;
+}
+.section-head h2{font-size:1.5rem;display:flex;align-items:center;gap:10px}
+.see-all{color:var(--muted);cursor:pointer;font-size:.95rem}
+
+/* ============ TRENDING CARDS ============ */
+.trend-card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:18px;
+  margin-bottom:18px;
+}
+.trend-top{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:14px;
+}
+.pill{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:7px 14px;border-radius:999px;
+  font-size:.95rem;border:1px solid;
+}
+.pill.blue{color:#5aa8ff;background:rgba(60,120,255,.12);border-color:rgba(90,168,255,.35)}
+.pill.pink{color:#ff6b9a;background:rgba(255,80,130,.12);border-color:rgba(255,107,154,.35)}
+.pill.gold{color:#ffb84d;background:rgba(255,170,60,.12);border-color:rgba(255,184,77,.35)}
+.pill.purple{color:#b48cff;background:rgba(150,100,255,.12);border-color:rgba(180,140,255,.35)}
+
+.badge{font-size:.9rem;font-weight:600}
+.badge.trending{color:var(--orange)}
+.badge.popular{color:#2ecc71}
+.badge.new{color:#4d9bff}
+
+.trend-title{font-size:1.3rem;font-weight:700;margin-bottom:14px;line-height:1.25}
+
+.trend-stats{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:8px;margin-bottom:16px;
+}
+.tstat{display:flex;align-items:center;gap:10px}
+.tstat-icon{font-size:1.2rem;opacity:.85}
+.tstat b{display:block;font-size:1.05rem}
+.tstat small{color:var(--muted);font-size:.78rem;line-height:1.2;display:block}
+
+.insight{
+  border-radius:14px;padding:14px 16px;margin-bottom:16px;border:1px solid;
+}
+.insight.blue{background:linear-gradient(135deg,rgba(20,60,130,.55),rgba(10,30,70,.5));border-color:rgba(90,168,255,.35)}
+.insight.purple{background:linear-gradient(135deg,rgba(80,40,140,.5),rgba(40,20,80,.5));border-color:rgba(180,140,255,.35)}
+.insight.gold{background:linear-gradient(135deg,rgba(120,70,10,.45),rgba(60,35,5,.5));border-color:rgba(255,184,77,.35)}
+.insight-label{
+  font-size:.78rem;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;margin-bottom:8px;
+}
+.insight.blue .insight-label{color:#5aa8ff}
+.insight.purple .insight-label{color:#b48cff}
+.insight.gold .insight-label{color:#ffb84d}
+.insight-text{font-size:1.05rem;line-height:1.45}
+
+.voices-label{color:var(--muted);font-size:.85rem;margin-bottom:10px}
+.voices{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-bottom:16px}
+.voice{display:flex;align-items:center;gap:8px;font-size:.9rem;color:#ddd}
+.voice-avatar{
+  width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,#444,#222);
+  border:1px solid rgba(255,255,255,.2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.75rem;font-weight:700;
+}
+.more-chip{
+  background:var(--card2);border-radius:999px;
+  padding:8px 14px;font-size:.85rem;color:#ddd;
+}
+
+.card-actions{display:flex;gap:10px;align-items:stretch}
+.act-btn{
+  display:flex;align-items:center;gap:8px;
+  background:var(--card2);
+  border:1px solid var(--line);
+  color:#fff;border-radius:999px;
+  padding:11px 16px;cursor:pointer;font-size:.95rem;
+}
+.act-btn.liked{border-color:#ff3b5c}
+.act-btn.listen{flex:1;justify-content:space-between}
+.act-btn.listen span{display:flex;align-items:center;gap:8px}
+.act-btn.saved{border-color:var(--orange);color:var(--orange)}
+
+/* ============ GENERIC POSTS ============ */
+.post{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:18px;
+  margin-bottom:18px;
+}
 .featured-label{
-  color:#ff6a00;
-  font-weight:700;
-  margin-bottom:10px;
-  text-transform:uppercase;
-  letter-spacing:.08em;
-  font-size:.75rem;
+  color:var(--orange);font-weight:700;margin-bottom:12px;
+  text-transform:uppercase;letter-spacing:.08em;font-size:.75rem;
+}
+.post-user{font-weight:700}
+.post-time{opacity:.5;font-size:.9rem}
+.post-content{line-height:1.7}
+
+.blend-preview{
+  background:linear-gradient(135deg,rgba(255,106,0,.14),rgba(255,106,0,.02));
+  border:1px solid rgba(255,106,0,.25);
+  border-radius:18px;margin-top:12px;padding:16px;cursor:pointer;
+}
+.blend-preview h4{margin-bottom:8px;font-size:1.15rem;line-height:1.3}
+.blend-preview p{opacity:.7}
+.tag{
+  background:#181818;border:1px solid var(--line);
+  padding:8px 12px;border-radius:999px;cursor:pointer;font-size:.9rem;
+}
+audio{width:100%;margin-top:14px}
+
+.comment{
+  padding:12px;margin-top:8px;background:#181818;border-radius:12px;
+}
+.comment small{display:block;color:#777;margin-top:2px;font-size:.8rem}
+.comment .reply{margin-top:10px;color:var(--orange);cursor:pointer;font-size:.9rem}
+
+#replyTarget{color:var(--orange);margin:12px 0 4px;font-size:.9rem}
+#commentInput{
+  width:100%;margin-top:8px;background:#181818;color:#fff;
+  border:none;border-radius:12px;padding:12px;resize:none;font-family:inherit;
+}
+.post-btn{
+  background:var(--orange);color:#fff;border:none;border-radius:999px;
+  padding:10px 20px;margin-top:10px;cursor:pointer;
 }
 
-
+.activity-item{
+  padding:12px;margin-bottom:10px;background:#181818;border-radius:12px;
 }
 
+.dna-card{
+  background:#181818;padding:14px;border-radius:14px;margin-bottom:12px;
+  border-left:4px solid var(--orange);cursor:pointer;transition:.2s;
+}
+.dna-card:hover{background:#202020}
+.dna-category{
+  color:var(--orange);font-size:.72rem;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;
+}
+.dna-sub{color:var(--muted);font-size:.85rem;margin-top:6px}
+.dna-intro{color:var(--muted);margin-bottom:14px;font-size:.9rem}
+
+/* ============ RIGHT SIDEBAR ============ */
+.right{padding:24px;border-left:1px solid var(--line)}
+.widget{
+  background:var(--card);border:1px solid var(--line);
+  border-radius:22px;padding:22px;margin-bottom:20px;
+}
+.widget h3{margin-bottom:14px}
+.dna-chip{
+  display:inline-block;background:#181818;border-radius:999px;
+  padding:8px 14px;margin:0 6px 8px 0;font-size:.9rem;
 }
 
-#playerOverlay{
-
+/* ============ BOTTOM NAV (mobile) ============ */
+.bottom-nav{
   display:none;
-
-  position:fixed;
-  inset:0;
-
-  z-index:9999;
-
-  backdrop-filter:blur(12px);
-
-  background:
-    rgba(0,0,0,.88);
-
-  justify-content:center;
-  align-items:center;
-
-  padding:20px;
-
+  position:fixed;left:0;right:0;bottom:0;z-index:500;
+  background:rgba(10,10,10,.96);
+  backdrop-filter:blur(14px);
+  border-top:1px solid var(--line);
+  padding:8px 8px calc(10px + env(safe-area-inset-bottom));
+  justify-content:space-around;align-items:flex-end;
+}
+.nav-item{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  color:rgba(255,255,255,.6);font-size:.78rem;text-decoration:none;
+  min-width:64px;padding-top:6px;
+}
+.nav-item .ico{font-size:1.4rem}
+.nav-item.active{color:var(--orange)}
+.fab{
+  width:64px;height:64px;border-radius:50%;border:none;
+  background:var(--orange);color:#fff;font-size:2rem;
+  margin-top:-26px;cursor:pointer;
+  box-shadow:0 6px 20px rgba(255,106,0,.45);
 }
 
+/* ============ PLAYER OVERLAY ============ */
+#playerOverlay{
+  display:none;position:fixed;inset:0;z-index:9999;
+  backdrop-filter:blur(12px);background:rgba(0,0,0,.88);
+  justify-content:center;align-items:center;padding:20px;
+}
 .player-card{
-
-  width:100%;
-  max-width:420px;
-
-  background:#111;
-
-  border-radius:24px;
-
-  padding:24px;
-
-  border:
-    1px solid
-    rgba(255,255,255,.08);
-
+  width:100%;max-width:420px;background:#111;border-radius:24px;
+  padding:24px;border:1px solid rgba(255,255,255,.08);
 }
-
 .player-back{
-
-  background:none;
-  border:none;
-
-  color:white;
-
-  font-size:1rem;
-
-  margin-bottom:20px;
-
+  background:none;border:none;color:#fff;font-size:1rem;
+  margin-bottom:20px;cursor:pointer;
 }
-
 .overlay-category{
-
-  color:#ff6a00;
-
-  font-size:.8rem;
-
-  text-transform:uppercase;
-
-  margin-bottom:10px;
-
+  color:var(--orange);font-size:.8rem;text-transform:uppercase;margin-bottom:10px;
 }
-
-.overlay-meta{
-
-  opacity:.6;
-
-  margin-top:10px;
-
-}
-
-.overlay-actions{
-
-  display:flex;
-
-  justify-content:space-around;
-
-  margin-top:20px;
-
-}
-
+.overlay-meta{opacity:.6;margin-top:10px}
+.overlay-actions{display:flex;justify-content:space-around;margin-top:20px}
 .overlay-actions button{
-
-  background:#181818;
-
-  border:none;
-
-  color:white;
-
-  width:48px;
-
-  height:48px;
-
-  border-radius:999px;
-
-  cursor:pointer;
-
+  background:#181818;border:none;color:#fff;
+  width:48px;height:48px;border-radius:999px;cursor:pointer;
 }
 
+/* ============ RESPONSIVE ============ */
+@media(max-width:1100px){
+  .layout{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .app-header{display:flex}
+  .main{padding:14px 14px 110px}
+  .right{border:none;padding:0 14px 110px}
+  .new-post-btn{display:none}
+  .board-row{display:flex}
+  .bottom-nav{display:flex}
+  .page-title{font-size:2.4rem;line-height:1.05}
+}
+
+@media(max-width:600px){
+  .stats{gap:8px}
+  .stat{flex-direction:column;align-items:flex-start;gap:8px;padding:12px}
+  .stat-num{font-size:1.2rem}
+  .trend-stats{grid-template-columns:1fr 1fr 1fr;gap:4px}
+  .tstat-icon{display:none}
+  .card-actions{flex-wrap:wrap}
+  .act-btn.listen{order:3;flex-basis:100%}
+}
 </style>
 </head>
 
@@ -611,1107 +458,639 @@ body{
 
 <div class="layout">
 
-  <!-- LEFT -->
-
+  <!-- ================= LEFT (desktop) ================= -->
   <aside class="sidebar">
 
-    <div class="logo">
-      PodBlendz<span>🎧</span>
-    </div>
+    <div class="logo">PodBlendz<span>🎧</span></div>
+    <div class="tagline">Where podcast knowledge comes together.</div>
 
-    <div class="section-title">
-      Community Boards
-    </div>
+    <div class="section-title">Community Boards</div>
 
-    <nav class="nav">
+    <div class="topic clickable" onclick="openBoard('AI')">🤖 AI &amp; Tech</div>
+    <div class="topic clickable" onclick="openBoard('Brain Health')">🧠 Health &amp; Mindset</div>
+    <div class="topic clickable" onclick="openBoard('Business')">💰 Finance &amp; Business</div>
+    <div class="topic clickable" onclick="openBoard('Media')">🎬 Media &amp; Culture</div>
+    <div class="topic clickable" onclick="openBoard('Science')">🔭 Science &amp; Space</div>
+    <div class="topic clickable" onclick="openBoard('Startups')">🚀 Startups</div>
+    <div class="topic clickable" onclick="openBoard('Relationships')">❤️ Relationships</div>
 
-  #
-    🔥 Trending
-  </a>
-
-  <a href="#">
-    👥  </a>
-
-
-</nav>
-
-<div
-  class="topic clickable"
-  onclick="openBoard('AI')">
-  AI & Tech
-</div>
-
-<div
-  class="topic clickable"
-  onclick="openBoard('Brain Health')">
-  Health & Mindset
-</div>
-
-<div
-  class="topic clickable"
-  onclick="openBoard('Business')">
-  Finance & Business
-</div>
-
-<div
-  class="topic clickable"
-  onclick="openBoard('Media')">
-  Media & Culture
-</div>
-
-<div
-  class="topic clickable"
-  onclick="openBoard('Science')">
-  Science & Space
-</div>
-
-<div
-  class="topic clickable"
-  onclick="openBoard('Startups')">
-  Startups
-</div>
-
-   
-
-    <div class="section-title">
-      Following
-
-      </div>
-      <div id="creatorFollowContainer">
-
-      </div>
-
+    <div class="section-title">Following</div>
+    <div id="creatorFollowContainer"></div>
 
   </aside>
 
-  <!-- CENTER -->
-
+  <!-- ================= CENTER ================= -->
   <main class="main">
 
-    <div class="topbar">
-
-      <input
-        class="search"
-        placeholder="Search topics, creators, or blends...">
-
-      <button class="new-post-btn">
-        + New Post
-      </button>
-
-    </div>
-
-    <h1 class="page-title">
-      🎧 Community
-    </h1>
-
-    <div class="subtitle">
-  Discover, discuss, and extend podcast ideas.
-</div>
-
-    <div id="activeDiscussions"></div>
-
-    <div class="post">
-
-  <div class="post-header">
-
-    <div class="featured-label">
-      Active Discussions
-</div>
-
-    <div class="post-user">
-      <span id="communityUserName">Community Member</span>
-    </div>
-
-
-    <div class="post-time">
-      1h ago
-    </div>
-
-  </div>
-
-  <div
-    id="communityComment"
-    class="post-content">
-
-    <div id="commentsContainer"
-     style="margin-top:20px;">
-</div>
-
-<div
-  id="replyTarget"
-  style="
-    color:#ff6a00;
-    margin-bottom:8px;
-    font-size:.9rem;
-  "
-></div>
-
-<textarea
-  id="commentInput"
-  placeholder="Share your thoughts..."
-  style="
-    width:100%;
-    margin-top:12px;
-    background:#181818;
-    color:white;
-    border:none;
-    border-radius:12px;
-    padding:12px;
-  ">
-</textarea>
-
-<button
-  class="post-btn"
-  onclick="postComment()">
-  Comment
-</button>
-
-
-
-    <p id="communityCommentText">
-      Just listened to a blend.
-    </p>
-
-    <div
-  class="blend-preview"
-  onclick="openPlayerOverlay()"
-
-
-  <h4 id="communityBlendTitle">
-    What habits create extraordinary careers over decades?
-  </h4>
-
-  <p id="communityBlendMeta">
-    27 clips • 5 creators • 8 min
-  </p>
-
-  <div
-  id="communityCreators"
-  style="
-    display:flex;
-    flex-wrap:wrap;
-    gap:8px;
-    margin-top:12px;
-  "
->
-</div>
-
-  <audio
-    id="communityAudio"
-    controls
-    style="width:100%; margin-top:15px;">
-  </audio>
-
-</div>
-
-    <div class="mobile-board-row">
-
-  <div onclick="openBoard('Brain Health')">
-    🧠 Brain Health
-  </div>
-
-  <div onclick="openBoard('AI')">
-    🤖 AI
-  </div>
-
-  <div onclick="openBoard('Business')">
-    💰 Business
-  </div>
-
-  <div onclick="openBoard('Relationships')">
-    ❤️ Relationships
-  </div>
-
-</div>
-
-<div
-  class="post"
-  id="communityFeedContainer"
->
-
-  <div class="featured-label">
-    ⚡ Recent Activity
-  </div>
-
-  <div id="recentActivityContainer">
-
-  <div style="opacity:.6;">
-    Loading activity...
-  </div>
-
-</div>
-
-</div>
-
-
-    <p class="community-subtitle">
-
-  <p class="dna-subtitle">
-    Recommended because of your listening habits
-  </p>
-
-  <div id="dnaBlendsContainer"></div>
-
-</div>
-
-  
-
-</div>
-
-    <div class="post">
-
-      <div class="post-header">
-        <div class="post-user">
-          PodBlendz Team
-        </div>
-
-        <div class="post-time">
-          2h ago
+    <!-- Mobile app header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-icon">🎧</div>
+        <div>
+          <div class="brand-name">Pod<span>Blendz</span></div>
+          <div class="brand-tag">Where podcast knowledge comes together.</div>
         </div>
       </div>
+      <div class="header-actions">
+        <button class="icon-btn" aria-label="Search"
+                onclick="document.getElementById('searchInput').focus()">🔍</button>
+        <button class="icon-btn" aria-label="Notifications">🔔<span class="dot"></span></button>
+        <div class="avatar" id="headerAvatar">PB</div>
+      </div>
+    </header>
+
+    <h1 class="page-title">Community</h1>
+    <div class="subtitle">Real conversations. Deeper perspectives. A smarter you.</div>
+
+    <!-- Stats -->
+    <section class="stats">
+      <div class="stat">
+        <div class="stat-icon green">👥</div>
+        <div>
+          <div class="stat-num">12,486</div>
+          <div class="stat-label">Active Listeners this week</div>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat-icon purple">🎙️</div>
+        <div>
+          <div class="stat-num">94,281</div>
+          <div class="stat-label">Podcast Perspectives explored</div>
+        </div>
+      </div>
+      <div class="stat">
+        <div class="stat-icon orange">💬</div>
+        <div>
+          <div class="stat-num">438</div>
+          <div class="stat-label">Active Discussions</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Search -->
+    <div class="searchrow">
+      <label class="search-wrap">
+        <span>🔍</span>
+        <input id="searchInput" class="search"
+               placeholder="Search topics, creators, or blends...">
+      </label>
+      <button class="filter-btn" aria-label="Filters">⚙️</button>
+      <button class="new-post-btn">+ New Post</button>
+    </div>
+
+    <!-- Mobile board chips -->
+    <div class="board-row">
+      <div class="board-chip" onclick="openBoard('Brain Health')">🧠 Brain Health</div>
+      <div class="board-chip" onclick="openBoard('AI')">🤖 AI</div>
+      <div class="board-chip" onclick="openBoard('Business')">💰 Business</div>
+      <div class="board-chip" onclick="openBoard('Relationships')">❤️ Relationships</div>
+      <div class="board-chip" onclick="openBoard('Science')">🔭 Science</div>
+      <div class="board-chip" onclick="openBoard('Startups')">🚀 Startups</div>
+    </div>
+
+    <!-- Trending Now -->
+    <div class="section-head">
+      <h2>🔥 Trending Now</h2>
+      <span class="see-all" onclick="openBoard('Trending')">See All ›</span>
+    </div>
+
+    <div id="trendingContainer"></div>
+
+    <!-- Active discussion (current blend) -->
+    <div class="post" id="currentDiscussion">
+
+      <div class="featured-label">💬 Active Discussion</div>
+
+      <div class="post-user" id="communityUserName">Community Member</div>
+      <div class="post-time">1h ago</div>
 
       <div class="post-content">
+        <p id="communityCommentText">Just listened to a blend.</p>
 
-        📌 What blends are you most excited
-        about this week?
+        <div class="blend-preview" onclick="openPlayerOverlay()">
+          <h4 id="communityBlendTitle">What habits create extraordinary careers over decades?</h4>
+          <p id="communityBlendMeta">27 clips • 5 creators</p>
+          <div id="communityCreators"
+               style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;"></div>
+          <audio id="communityAudio" controls
+                 onclick="event.stopPropagation()"></audio>
+        </div>
 
+        <div id="commentsContainer" style="margin-top:20px;"></div>
+        <div id="replyTarget"></div>
+
+        <textarea id="commentInput" rows="3"
+                  placeholder="Share your thoughts..."></textarea>
+        <button class="post-btn" onclick="postComment()">Comment</button>
       </div>
-
-      <div class="post-actions">
-        ❤️ 128
-        💬 36
-        🔁 24
-        🔗 Share
-      </div>
-
     </div>
 
-    
+    <!-- Other active discussions -->
+    <div id="activeDiscussions"></div>
+
+    <!-- Recent activity -->
+    <div class="post">
+      <div class="featured-label">⚡ Recent Activity</div>
+      <div id="recentActivityContainer">
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+      </div>
+    </div>
+
+    <!-- Recommended -->
+    <div class="post">
+      <div class="featured-label">Recommended for you</div>
+      <p class="dna-intro">Recommended because of your listening habits</p>
+      <div id="dnaBlendsContainer"></div>
+    </div>
+
+    <!-- Team post -->
+    <div class="post">
+      <div class="post-user">PodBlendz Team</div>
+      <div class="post-time" style="margin-bottom:12px;">2h ago</div>
+      <div class="post-content">📌 What blends are you most excited about this week?</div>
+      <div style="display:flex;gap:28px;margin-top:18px;opacity:.7;">
+        <span>❤️ 128</span><span>💬 36</span><span>🔁 24</span><span>🔗 Share</span>
+      </div>
+    </div>
+
   </main>
 
-  <!-- RIGHT -->
-
-  <div class="widget">
-
-<h3>🎧 Listening Now</h3>
-
-<div id="listenerArea"></div>
-
-</div>
-
+  <!-- ================= RIGHT (desktop / stacked on mobile) ================= -->
   <aside class="right">
 
     <div class="widget">
+      <h3>🎧 Listening Now</h3>
+      <div id="listenerArea" style="color:var(--muted);font-size:.9rem;">
+        12,486 listeners this week
+      </div>
+    </div>
 
-          <div class="widget">
-
-  <h3>🧬 Your Blendz DNA</h3>
-
-  <div class="active-boards">
-
-    <div class="dna-chip">🧠 Brain Health</div>
-    <div class="dna-chip">🤖 AI</div>
-    <div class="dna-chip">💰 Business</div>
-
-  </div>
-
+    <div class="widget">
+      <h3>🧬 Your Blendz DNA</h3>
+      <div>
+        <span class="dna-chip">🧠 Brain Health</span>
+        <span class="dna-chip">🤖 AI</span>
+        <span class="dna-chip">💰 Business</span>
+      </div>
     </div>
 
   </aside>
 
+</div>
+
+<!-- ================= BOTTOM NAV (mobile) ================= -->
+<nav class="bottom-nav">
+  <a class="nav-item" href="/index.html"><span class="ico">🏠</span>Home</a>
+  <a class="nav-item active" href="/community-feed.html"><span class="ico">👥</span>Community</a>
+  <button class="fab" aria-label="New post"
+          onclick="document.getElementById('commentInput').focus()">+</button>
+  <a class="nav-item" href="/feed.html"><span class="ico">🧭</span>Explore</a>
+  <a class="nav-item" href="/library.html"><span class="ico">📚</span>Library</a>
+</nav>
+
+<!-- ================= PLAYER OVERLAY ================= -->
+<div id="playerOverlay">
+  <div class="player-card">
+    <button id="closePlayer" class="player-back" onclick="closePlayerOverlay()">← Back</button>
+    <div id="overlayCategory" class="overlay-category">🎧 Blend Discussion</div>
+    <h2 id="overlayTitle">Loading...</h2>
+    <div id="overlayMeta" class="overlay-meta"></div>
+    <audio id="overlayAudio" controls style="width:100%;margin-top:20px;"></audio>
+    <div class="overlay-actions">
+      <button>❤️</button>
+      <button>💬</button>
+      <button>📌</button>
+      <button>📤</button>
+    </div>
+  </div>
 </div>
 
 <script src="scripts/blends.js"></script>
 
 <script>
+/* =====================================================
+   HELPERS
+===================================================== */
+const $ = id => document.getElementById(id);
 
-
-  let currentBlendId = null;
-
-    function loadBlend(blend) {
-
-      console.log(
-  "LOADING BLEND:",
-  blend.id,
-  blend.title
-);
-
-      currentBlendId = blend.id;
-
-  console.log(blend);
-
-  document
-  .querySelectorAll(".popular-blend")
-  .forEach(el => {
-    el.classList.remove("active");
-  });
-
-
-document
-  .getElementById(`blend-${blend.id}`)
-  ?.classList.add("active");
-
-  document.querySelectorAll(
-  ".popular-blend"
-).forEach(el => {
-  el.style.background = "";
-});
-
-
-  document.getElementById(
-    "communityBlendTitle"
-  ).innerText =
-    blend.title;
-
-  document.getElementById(
-    "communityBlendMeta"
-  ).innerText =
-    `${blend.clips} clips • ${blend.sources.length} creators`;
-
-    const creatorContainer =
-  document.getElementById(
-    "communityCreators"
-  );
-
-creatorContainer.innerHTML =
-  (blend.sources || [])
-    .map(source => `
-      <span
-        class="tag"
-        onclick="
-          event.stopPropagation();
-          window.location.href='/feed.html';
-        "
-        style="
-          background:#181818;
-          border:1px solid rgba(255,255,255,.08);
-          padding:8px 12px;
-          border-radius:999px;
-          cursor:pointer;
-        "
-      >
-        🎙 ${source}
-      </span>
-    `)
-    .join("");
-
-  document.getElementById(
-    "communityCommentText"
-  ).innerText =
-    `Just listened to "${blend.title}". Incredible synthesis.`;
-
-    document.getElementById(
-  "communityBlendTitle"
-).innerText =
-  blend.title;
-
-document.getElementById(
-  "communityBlendMeta"
-).innerText =
-  `${blend.clips} clips • ${blend.sources.length} creators`;
-
-  const player =
-    document.getElementById(
-      "communityAudio"
-    );
-
-  player.src =
-    `https://podblendz-episode-audio.s3.us-east-1.amazonaws.com/blends/${blend.id}/final.mp3`;
-
-  player.load();
-  player.play().catch(() => {});
-
-  loadComments();
-
+function esc(str){
+  return String(str ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#39;");
 }
 
+function initials(name){
+  return String(name).split(/\s+/).map(w => w[0]).join("").slice(0,2).toUpperCase();
+}
 
-  
+function getJSON(key, fallback){
+  try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
+  catch { return fallback; }
+}
 
-(function(){
+const blendList = (typeof BLENDS !== "undefined" && Array.isArray(BLENDS)) ? BLENDS : [];
 
- const selectedBlendId =
-  localStorage.getItem(
-    "dnaSeedBlendId"
-  );
+/* =====================================================
+   TRENDING CARDS (matches mockup)
+   Replace these with an API call when ready.
+===================================================== */
+const TRENDING = [
+  {
+    board:"Brain Health", icon:"🧠", color:"blue", badge:"trending", badgeText:"🔥 Trending",
+    title:"How can people improve brain health as they age?",
+    perspectives:87, contributions:231, sessions:"1.2K",
+    insightLabel:"✨ Collective Insight", insightColor:"blue",
+    insight:"Across neuroscience, longevity, and health podcasts, sleep quality was mentioned more consistently than supplements as a key driver of long-term cognitive health.",
+    voices:["Huberman Lab","Peter Attia","FoundMyFitness"], more:20,
+    likes:345, comments:82
+  },
+  {
+    board:"Relationships", icon:"❤️", color:"pink", badge:"popular", badgeText:"📈 Popular",
+    title:"How can couples strengthen relationships over time?",
+    perspectives:42, contributions:119, sessions:"894",
+    insightLabel:"📊 Consensus Trend", insightColor:"purple",
+    insight:"73% of relationship-focused podcasts emphasize curiosity and emotional safety over compatibility.",
+    voices:["Esther Perel","John Delony","Brené Brown"], more:18,
+    likes:220, comments:47
+  },
+  {
+    board:"Business", icon:"💰", color:"gold", badge:"new", badgeText:"● New",
+    title:"How to start your own business: Shared Perspectives",
+    perspectives:56, contributions:94, sessions:"702",
+    insightLabel:"✨ Collective Insight", insightColor:"gold",
+    insight:"Across founder interviews, talking to customers early was cited more often than raising capital as the first step.",
+    voices:["My First Million","Acquired","How I Built This"], more:14,
+    likes:158, comments:31
+  }
+];
 
+function renderTrending(){
+  const saved = getJSON("savedTrending", []);
+  const liked = getJSON("likedTrending", []);
 
-if (!selectedBlendId) return;
+  $("trendingContainer").innerHTML = TRENDING.map((t, i) => `
+    <article class="trend-card">
 
-fetch(
-  `https://api.podblendz.com/blend/${selectedBlendId}`
-)
-.then(response => response.json())
-.then(blend => {
-
-  loadBlend({
-    id: blend.id,
-    title: blend.title,
-    clips: blend.clip_count,
-    sources: blend.creators || []
-  });
-
-  const creatorContainer =
-  document.getElementById(
-    "creatorFollowContainer"
-  );
-
-creatorContainer.innerHTML = "";
-
-(blend.creators || []).forEach(
-
-  creator => {
-
-
-    creatorContainer.innerHTML += `
-
-    
-    
-
-      <div class="follow-card">
-
-        <span>${creator}</span>
-
-        <button
-          class="follow-btn"
-          data-creator="${creator}"
-          onclick="
-            toggleCreatorFollow(
-              '${creator}'
-            )
-          ">
-          Follow
-        </button>
-
+      <div class="trend-top">
+        <span class="pill ${t.color}">${t.icon} ${esc(t.board)}</span>
+        <span class="badge ${t.badge}">${esc(t.badgeText)}</span>
       </div>
 
-    `;
+      <div class="trend-title">${esc(t.title)}</div>
 
-  }
-);
+      <div class="trend-stats">
+        <div class="tstat"><span class="tstat-icon">🎙️</span>
+          <div><b>${t.perspectives}</b><small>Podcast Perspectives</small></div></div>
+        <div class="tstat"><span class="tstat-icon">💬</span>
+          <div><b>${t.contributions}</b><small>Listener Contributions</small></div></div>
+        <div class="tstat"><span class="tstat-icon">🎧</span>
+          <div><b>${esc(t.sessions)}</b><small>Listening Sessions</small></div></div>
+      </div>
 
-updateCreatorButtons();
-}); 
-})();
+      <div class="insight ${t.insightColor}">
+        <div class="insight-label">${esc(t.insightLabel)}</div>
+        <div class="insight-text">“${esc(t.insight)}”</div>
+      </div>
 
-  const popularContainer =
-  document.getElementById(
-    "dnaBlendsContainer"
-  );
+      <div class="voices-label">Featured Voices</div>
+      <div class="voices">
+        ${t.voices.map(v => `
+          <div class="voice">
+            <div class="voice-avatar">${esc(initials(v))}</div>${esc(v)}
+          </div>`).join("")}
+        <span class="more-chip">+${t.more} more</span>
+      </div>
 
-popularContainer.innerHTML = "";
+      <div class="card-actions">
+        <button class="act-btn ${liked.includes(i) ? "liked" : ""}"
+                onclick="toggleTrendLike(${i})">
+          ❤️ ${t.likes + (liked.includes(i) ? 1 : 0)}
+        </button>
+        <button class="act-btn" onclick="openBoard('${esc(t.board)}')">💬 ${t.comments}</button>
+        <button class="act-btn listen" onclick="listenToTrending(${i})">
+          <span>🎧 Listen to Blend</span><span>▶</span>
+        </button>
+        <button class="act-btn ${saved.includes(i) ? "saved" : ""}"
+                aria-label="Save" onclick="toggleTrendSave(${i})">🔖</button>
+      </div>
 
-BLENDS.slice(0, 3).forEach((blend, index) => {
+    </article>
+  `).join("");
+}
 
-    popularContainer.innerHTML += `
-  <div
-    class="dna-card"
-    onclick="loadBlend(BLENDS[${index}])">
+function toggleTrendLike(i){
+  let liked = getJSON("likedTrending", []);
+  liked = liked.includes(i) ? liked.filter(x => x !== i) : [...liked, i];
+  localStorage.setItem("likedTrending", JSON.stringify(liked));
+  renderTrending();
+}
 
-    <div class="dna-category">
-      Recommended
-    </div>
+function toggleTrendSave(i){
+  let saved = getJSON("savedTrending", []);
+  saved = saved.includes(i) ? saved.filter(x => x !== i) : [...saved, i];
+  localStorage.setItem("savedTrending", JSON.stringify(saved));
+  renderTrending();
+}
 
-    <strong>${blend.title}</strong>
+function listenToTrending(i){
+  const blend = blendList[i] || blendList[0];
+  if (!blend) return;
+  loadBlend(blend, true);
+  $("currentDiscussion").scrollIntoView({ behavior:"smooth", block:"start" });
+}
 
-    <div class="dna-subtitle">
-      ${blend.clips} clips •
-      ${blend.sources.length} creators
-    </div>
+/* =====================================================
+   LOAD A BLEND INTO THE DISCUSSION CARD
+===================================================== */
+let currentBlendId = null;
 
-  </div>
-`;
+function loadBlend(blend, autoplay = false){
 
-});
+  currentBlendId = blend.id;
 
+  const sources = blend.sources || [];
 
+  $("communityBlendTitle").innerText = blend.title;
+  $("communityBlendMeta").innerText =
+    `${blend.clips} clips • ${sources.length} creators`;
 
-function toggleCreatorFollow(
-  creator
-) {
+  $("communityCommentText").innerText =
+    `Just listened to "${blend.title}". Incredible synthesis.`;
 
-  let follows =
-    JSON.parse(
-      localStorage.getItem(
-        "followedCreators"
-      ) || "[]"
-    );
+  $("communityCreators").innerHTML = sources.map(source => `
+    <span class="tag"
+          onclick="event.stopPropagation(); window.location.href='/feed.html';">
+      🎙 ${esc(source)}
+    </span>`).join("");
 
-  if (
-    follows.includes(
-      creator
-    )
-  ) {
+  const player = $("communityAudio");
+  player.src =
+    `https://podblendz-episode-audio.s3.us-east-1.amazonaws.com/blends/${blend.id}/final.mp3`;
+  player.load();
+  if (autoplay) player.play().catch(() => {});
 
-    follows =
-      follows.filter(
-        c => c !== creator
-      );
+  loadComments();
+}
 
-  } else {
+/* =====================================================
+   SEEDED BLEND (from localStorage) + FOLLOW LIST
+===================================================== */
+function renderFollowList(creators){
+  $("creatorFollowContainer").innerHTML = creators.map(creator => `
+    <div class="follow-card">
+      <span>${esc(creator)}</span>
+      <button class="follow-btn" data-creator="${esc(creator)}">Follow</button>
+    </div>`).join("");
 
-    follows.push(
-      creator
-    );
-
-  }
-
-  localStorage.setItem(
-    "followedCreators",
-    JSON.stringify(follows)
-  );
+  document.querySelectorAll(".follow-btn").forEach(btn => {
+    btn.addEventListener("click", () => toggleCreatorFollow(btn.dataset.creator));
+  });
 
   updateCreatorButtons();
-
 }
 
-function openCurrentBlend() {
+(function seedBlend(){
 
-  const selectedBlendId =
-    localStorage.getItem(
-      "dnaSeedBlendId"
-    );
+  const selectedBlendId = localStorage.getItem("dnaSeedBlendId");
 
-  if (!selectedBlendId) return;
-
-  window.location.href =
-    `/blend.html?id=${selectedBlendId}`;
-}
-
-function openBoard(board){
-
-  window.location.href =
-    `/feed.html?board=${encodeURIComponent(board)}`;
-
-}
-
-function updateCreatorButtons() {
-
-  const follows =
-    JSON.parse(
-      localStorage.getItem(
-        "followedCreators"
-      ) || "[]"
-    );
-
-  document
-    .querySelectorAll(
-      ".follow-btn"
-    )
-    .forEach(btn => {
-
-      const creator =
-        btn.dataset.creator;
-
-      if (
-        follows.includes(
-          creator
-        )
-      ) {
-
-        btn.innerText =
-          "Following";
-
-        btn.style.background =
-          "#ff6a00";
-
-      } else {
-
-        btn.innerText =
-          "Follow";
-
-        btn.style.background =
-          "transparent";
-      }
-
-
-
-    });
-
-}
-
-
-</script>
-
-<script>
-
-const user = JSON.parse(
-  localStorage.getItem("podblendzUser")
-);
-
-if (user) {
-  const nameElement =
-    document.getElementById("communityUserName");
-
-  if (nameElement) {
-    nameElement.textContent =
-      user.display_name;
+  if (!selectedBlendId){
+    if (blendList[0]) loadBlend(blendList[0]);
+    return;
   }
+
+  fetch(`https://api.podblendz.com/blend/${selectedBlendId}`)
+    .then(r => r.json())
+    .then(blend => {
+      loadBlend({
+        id: blend.id,
+        title: blend.title,
+        clips: blend.clip_count,
+        sources: blend.creators || []
+      });
+      renderFollowList(blend.creators || []);
+    })
+    .catch(() => {
+      if (blendList[0]) loadBlend(blendList[0]);
+    });
+})();
+
+/* =====================================================
+   RECOMMENDED BLENDS
+===================================================== */
+function renderRecommended(){
+  $("dnaBlendsContainer").innerHTML = blendList.slice(0, 3).map((blend, index) => `
+    <div class="dna-card" onclick="loadBlend(BLENDS[${index}], true)">
+      <div class="dna-category">Recommended</div>
+      <strong>${esc(blend.title)}</strong>
+      <div class="dna-sub">${blend.clips} clips • ${(blend.sources || []).length} creators</div>
+    </div>`).join("");
+}
+renderRecommended();
+
+/* =====================================================
+   FOLLOWS
+===================================================== */
+function toggleCreatorFollow(creator){
+  let follows = getJSON("followedCreators", []);
+  follows = follows.includes(creator)
+    ? follows.filter(c => c !== creator)
+    : [...follows, creator];
+  localStorage.setItem("followedCreators", JSON.stringify(follows));
+  updateCreatorButtons();
+}
+
+function updateCreatorButtons(){
+  const follows = getJSON("followedCreators", []);
+  document.querySelectorAll(".follow-btn").forEach(btn => {
+    const on = follows.includes(btn.dataset.creator);
+    btn.innerText = on ? "Following" : "Follow";
+    btn.style.background = on ? "#ff6a00" : "transparent";
+  });
+}
+
+/* =====================================================
+   NAVIGATION
+===================================================== */
+function openBoard(board){
+  window.location.href = `/feed.html?board=${encodeURIComponent(board)}`;
+}
+
+function openCurrentBlend(){
+  const id = localStorage.getItem("dnaSeedBlendId");
+  if (id) window.location.href = `/blend.html?id=${id}`;
+}
+
+/* =====================================================
+   USER + COMMENTS
+===================================================== */
+const user = getJSON("podblendzUser", null);
+
+if (user && user.display_name){
+  $("communityUserName").textContent = user.display_name;
+  $("headerAvatar").textContent = initials(user.display_name);
 }
 
 let replyingToUser = null;
 
 function postComment(){
 
+  const text = $("commentInput").value;
+  if (!text.trim()) return;
 
+  if (!user || !user.display_name){
+    alert("Please sign in to comment.");
+    return;
+  }
 
-  const user =
-    JSON.parse(
-      localStorage.getItem("podblendzUser")
-    );
+  const finalComment = replyingToUser ? `@${replyingToUser} ${text}` : text;
 
-  const text =
-    document.getElementById(
-      "commentInput"
-    ).value;
+  const btn = document.querySelector(".post-btn");
+  btn.disabled = true;
+  btn.innerText = "Posting...";
 
-    const finalComment =
-  replyingToUser
-    ? `@${replyingToUser} ${text}`
-    : text;
-
-  if(!text.trim()) return;
-
-
-    const selectedBlendId =
-  localStorage.getItem(
-    "dnaSeedBlendId"
-  );
-
-  fetch(
-  "https://podblendz-backend.onrender.com/community/comments",
-  {
+  fetch("https://podblendz-backend.onrender.com/community/comments", {
     method:"POST",
-    headers:{
-      "Content-Type":"application/json"
-    },
-    body:JSON.stringify({
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({
       blend_id: currentBlendId,
-      blend_title:
-        document.getElementById(
-          "communityBlendTitle"
-        ).innerText,
-      user_name:
-        user.display_name,
+      blend_title: $("communityBlendTitle").innerText,
+      user_name: user.display_name,
       comment: finalComment
     })
-  }
-)
-.then(() => {
-
-  loadComments();
-
-  replyingToUser = null;
-
-  document.getElementById(
-    "replyTarget"
-  ).innerText = "";
-
-});
-
-
-  document.getElementById(
-    "commentInput"
-  ).value="";
+  })
+  .then(r => {
+    if (!r.ok) throw new Error("Request failed");
+    $("commentInput").value = "";
+    replyingToUser = null;
+    $("replyTarget").innerText = "";
+    loadComments();
+    loadCommunityFeed();
+  })
+  .catch(() => {
+    alert("Couldn't post your comment. Please try again in a moment.");
+  })
+  .finally(() => {
+    btn.disabled = false;
+    btn.innerText = "Comment";
+  });
 }
 
 function loadComments(){
 
-  if(!currentBlendId) return;
+  if (!currentBlendId) return;
 
-  fetch(
-    `https://podblendz-backend.onrender.com/community/comments/${currentBlendId}`
-  )
-  .then(r => r.json())
-  .then(comments => {
+  $("commentsContainer").innerHTML =
+    `<div class="skeleton"></div><div class="skeleton"></div>`;
 
-    const container =
-      document.getElementById(
-        "commentsContainer"
-      );
+  fetch(`https://podblendz-backend.onrender.com/community/comments/${currentBlendId}`)
+    .then(r => {
+      if (!r.ok) throw new Error("Request failed");
+      return r.json();
+    })
+    .then(comments => {
+      if (!comments.length){
+        $("commentsContainer").innerHTML =
+          `<div class="state-msg">No comments yet. Be the first to share your thoughts.</div>`;
+        return;
+      }
+      $("commentsContainer").innerHTML = comments.map(c => `
+        <div class="comment">
+          <strong>${esc(c.user_name)}</strong>
+          <small>Just now</small>
+          <div style="margin-top:6px;">${esc(c.comment)}</div>
+          <div class="reply" data-user="${esc(c.user_name)}">↳ Reply</div>
+        </div>`).join("");
 
-      container.innerHTML =
-  comments.map(c => `
-    <div style="
-      padding:10px;
-      margin-top:8px;
-      background:#181818;
-      border-radius:12px;
-    ">
-
-      <strong>${c.user_name}</strong>
-
-      <div
-  style="
-    font-size:.8rem;
-    color:#777;
-    margin-top:2px;
-  "
->
-  Just now
-</div>
-
-      <div style="
-        margin-top:6px;
-      ">
-        ${c.comment}
-      </div>
-
-      <div
-        onclick="
-          replyToComment('${c.user_name}')
-        "
-        style="
-          margin-top:10px;
-          color:#ff6a00;
-          cursor:pointer;
-          font-size:.9rem;
-        "
-      >
-        ↳ Reply
-      </div>
-
-    </div>
-  `).join("");
-
-    
-  });
+      document.querySelectorAll("#commentsContainer .reply").forEach(el => {
+        el.addEventListener("click", () => replyToComment(el.dataset.user));
+      });
+    })
+    .catch(() => {
+      $("commentsContainer").innerHTML =
+        `<div class="state-msg">Couldn't load comments. <button onclick="loadComments()">Retry</button></div>`;
+    });
 }
-
-function loadCommunityFeed(){
-
-  fetch(
-    "https://podblendz-backend.onrender.com/community/feed"
-  )
-  .then(r => r.json())
-  .then(items => {
-
-    console.log(
-  "FEED ITEM:",
-  items[0]
-);
-
-    console.log(
-  "COMMUNITY FEED:",
-  items
-);
-
-    const activity =
-  document.getElementById(
-    "recentActivityContainer"
-  );
-
-if (activity) {
-
-  activity.innerHTML =
-    items.slice(0,5).map(item => `
-
-      <div
-        style="
-          padding:12px;
-          margin-bottom:12px;
-          background:#181818;
-          border-radius:12px;
-        ">
-
-        💬 <strong>
-          ${item.latest_user ||
-            "Community Member"}
-        </strong>
-
-        commented on
-
-        <strong>
-          ${item.blend_title}
-        </strong>
-
-      </div>
-
-    `).join("");
-
-}
-
-    document.getElementById(
-      "activeDiscussions"
-    ).innerHTML =
-
-    items.map(item => `
-
-  <div
-  class="post"
-  style="
-    cursor:pointer;
-    transition:.2s;
-  "
-  onclick="
-  localStorage.setItem(
-    'dnaSeedBlendId',
-    '${item.blend_id}'
-  );
-  window.location.reload();
-"
- 
->
-
-    <div class="featured-label">
-      💬 Active Discussion
-    </div>
-
-    <strong
-      style="
-        font-size:1.1rem;
-        display:block;
-        margin-bottom:12px;
-      "
-    >
-      ${item.blend_title}
-    </strong>
-
-    <div
-      style="
-        color:#ff6a00;
-        font-size:.85rem;
-        margin-bottom:8px;
-        font-weight:600;
-      "
-    >
-      Latest Perspective
-    </div>
-
-    <div
-      style="
-        color:rgba(255,255,255,.85);
-        margin-bottom:10px;
-      "
-    >
-      "${item.latest_comment || ""}"
-    </div>
-
-    <div
-      style="
-        opacity:.6;
-        font-size:.9rem;
-      "
-    >
-      By
-      ${item.latest_user || ""}
-    </div>
-
-  </div>
-
-`).join("");
-
-});
-
-}
-
-loadCommunityFeed();
 
 function replyToComment(userName){
-
-  replyingToUser =
-    userName;
-
-  document.getElementById(
-    "replyTarget"
-  ).innerText =
-    `Replying to ${userName}`;
-
-  document.getElementById(
-    "commentInput"
-  ).scrollIntoView({
-    behavior:"smooth",
-    block:"center"
-  });
-
-  document.getElementById(
-    "commentInput"
-  ).focus();
-
+  replyingToUser = userName;
+  $("replyTarget").innerText = `Replying to ${userName}`;
+  $("commentInput").scrollIntoView({ behavior:"smooth", block:"center" });
+  $("commentInput").focus();
 }
 
+/* =====================================================
+   COMMUNITY FEED
+===================================================== */
+function loadCommunityFeed(){
 
-  function openPlayerOverlay(){
+  fetch("https://podblendz-backend.onrender.com/community/feed")
+    .then(r => {
+      if (!r.ok) throw new Error("Request failed");
+      return r.json();
+    })
+    .then(items => {
 
-  document.getElementById(
-    "overlayTitle"
-  ).innerText =
-    document.getElementById(
-      "communityBlendTitle"
-    ).innerText;
+      $("recentActivityContainer").innerHTML = items.length
+        ? items.slice(0, 5).map(item => `
+            <div class="activity-item">
+              💬 <strong>${esc(item.latest_user || "Community Member")}</strong>
+              commented on <strong>${esc(item.blend_title)}</strong>
+            </div>`).join("")
+        : `<div style="opacity:.6;">No activity yet.</div>`;
 
-  document.getElementById(
-    "overlayMeta"
-  ).innerText =
-    document.getElementById(
-      "communityBlendMeta"
-    ).innerText;
+      $("activeDiscussions").innerHTML = items.map(item => `
+        <div class="post" style="cursor:pointer;"
+             onclick="openDiscussion('${esc(item.blend_id)}')">
+          <div class="featured-label">💬 Active Discussion</div>
+          <strong style="font-size:1.1rem;display:block;margin-bottom:12px;">
+            ${esc(item.blend_title)}
+          </strong>
+          <div style="color:#ff6a00;font-size:.85rem;margin-bottom:8px;font-weight:600;">
+            Latest Perspective
+          </div>
+          <div style="color:rgba(255,255,255,.85);margin-bottom:10px;">
+            “${esc(item.latest_comment || "")}”
+          </div>
+          <div style="opacity:.6;font-size:.9rem;">By ${esc(item.latest_user || "")}</div>
+        </div>`).join("");
+    })
+    .catch(() => {
+      $("recentActivityContainer").innerHTML =
+        `<div class="state-msg">Couldn't load activity. <button onclick="loadCommunityFeed()">Retry</button></div>`;
+    });
+}
 
-  document.getElementById(
-    "overlayAudio"
-  ).src =
-    document.getElementById(
-      "communityAudio"
-    ).src;
+function openDiscussion(blendId){
+  localStorage.setItem("dnaSeedBlendId", blendId);
+  window.location.reload();
+}
 
-  document.getElementById(
-    "playerOverlay"
-  ).style.display =
-    "flex";
-
+/* =====================================================
+   PLAYER OVERLAY
+===================================================== */
+function openPlayerOverlay(){
+  $("overlayTitle").innerText = $("communityBlendTitle").innerText;
+  $("overlayMeta").innerText  = $("communityBlendMeta").innerText;
+  $("overlayAudio").src       = $("communityAudio").src;
+  $("playerOverlay").style.display = "flex";
 }
 
 function closePlayerOverlay(){
-
-  document.getElementById(
-    "playerOverlay"
-  ).style.display =
-    "none";
-
+  $("overlayAudio").pause();
+  $("playerOverlay").style.display = "none";
 }
 
-
-/*function renderComments(){
-
-  
-
-  const container =
-    document.getElementById(
-      "commentsContainer"
-    );
-
-    const selectedBlendId =
-  localStorage.getItem(
-    "dnaSeedBlendId"
-  );
-
-const blendComments =
-  comments.filter(
-    c => c.blendId === selectedBlendId
-  );
-
-container.innerHTML =
-  blendComments.map(c => `
-    <div style="
-      padding:10px;
-      margin-top:8px;
-      background:#181818;
-      border-radius:12px;
-    ">
-      <strong>${c.user}</strong>
-      <div>${c.text}</div>
-    </div>
-  `).join("");
-}
-
-
-
-renderComments();
-*/
-function likeBlend(){
-
-  let count =
-    Number(
-      localStorage.getItem(
-        "blendLikes"
-      ) || 0
-    );
-
-  count++;
-
-  localStorage.setItem(
-    "blendLikes",
-    count
-  );
-
-  document.getElementById(
-    "likeCount"
-  ).innerText = count;
-}
-
-function saveBlend(){
-
-  let count =
-    Number(
-      localStorage.getItem(
-        "blendSaves"
-      ) || 0
-    );
-
-  count++;
-
-  localStorage.setItem(
-    "blendSaves",
-    count
-  );
-
-  document.getElementById(
-    "saveCount"
-  ).innerText = count;
-}
-/*
-activities.unshift({
-  user:user.display_name,
-  blendId:blend.id,
-  blendTitle:blend.title,
-  type:"listen",
-  created:new Date().toISOString()
-});
-*/
-document.getElementById(
-  "likeCount"
-).innerText =
-  localStorage.getItem("blendLikes") || 0;
+/* =====================================================
+   INIT
+===================================================== */
+renderTrending();
+renderFollowList(getJSON("followedCreators", []));
+loadCommunityFeed();
 </script>
-
-<div id="playerOverlay">
-
-  <div class="player-card">
-
-    <button
-      id="closePlayer"
-      class="player-back"
-      onclick="closePlayerOverlay()"
-    >
-      ← Back
-    </button>
-
-    <div
-      id="overlayCategory"
-      class="overlay-category"
-    >
-      🎧 Blend Discussion
-    </div>
-
-    <h2 id="overlayTitle">
-      Loading...
-    </h2>
-
-    <div
-      id="overlayMeta"
-      class="overlay-meta"
-    >
-      24 clips • 4 creators
-    </div>
-
-    <audio
-      id="overlayAudio"
-      controls
-      style="width:100%;margin-top:20px;"
-    ></audio>
-
-    <div class="overlay-actions">
-
-      <button>❤️</button>
-      <button>💬</button>
-      <button>📌</button>
-      <button>📤</button>
-
-    </div>
-
-  </div>
-
-</div>
 
 </body>
 </html>
