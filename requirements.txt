@@ -33,3 +33,5 @@ uvicorn==0.42.0
 openai
 azure-cognitiveservices-speech
 requests
+google-auth
+requests
