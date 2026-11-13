@@ -361,6 +361,15 @@ a.more-chip:hover{color:var(--orange)}
 }
 .blend-preview h4{margin-bottom:8px;font-size:1.15rem;line-height:1.3}
 .blend-preview p{opacity:.7}
+
+/* ---- confidence badge ---- */
+.conf{display:inline-flex;align-items:center;gap:5px;font-size:.72rem;font-weight:700;
+  letter-spacing:.04em;padding:3px 10px;border-radius:999px;border:1px solid;white-space:nowrap}
+.conf.c-corroborated{color:#3ddc97;background:rgba(61,220,151,.12);border-color:rgba(61,220,151,.4)}
+.conf.c-supported{color:#5aa8ff;background:rgba(90,168,255,.12);border-color:rgba(90,168,255,.4)}
+.conf.c-emerging{color:#ffb84d;background:rgba(255,184,77,.12);border-color:rgba(255,184,77,.4)}
+.conf.c-contested{color:#ff6b6b;background:rgba(255,107,107,.12);border-color:rgba(255,107,107,.4)}
+.conf.c-unverified{color:#999;background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.15)}
 .tag{
   background:#181818;border:1px solid var(--line);
   padding:8px 12px;border-radius:999px;cursor:pointer;font-size:.9rem;
@@ -602,6 +611,7 @@ audio{width:100%;margin-top:14px}
         <div class="blend-preview" onclick="openPlayerOverlay()">
           <h4 id="communityBlendTitle">What habits create extraordinary careers over decades?</h4>
           <p id="communityBlendMeta">27 clips • 5 creators</p>
+          <div id="communityConfidence" style="margin-top:8px;"></div>
           <div id="communityCreators"
                style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;"></div>
           <audio id="communityAudio" controls
@@ -704,6 +714,16 @@ audio{width:100%;margin-top:14px}
    HELPERS
 ===================================================== */
 const $ = id => document.getElementById(id);
+
+function confBadge(blend){
+  var raw = blend && blend.confidence_label;
+  if(!raw) return "";                                   // no data yet -> no badge
+  var label = String(raw).replace(/^Verified$/i,"Corroborated"); // old rows
+  var key = label.toLowerCase().replace(/[^a-z]/g,"");
+  var known = ["corroborated","supported","emerging","contested","unverified"];
+  if(known.indexOf(key) < 0) key = "unverified";
+  return '<span class="conf c-'+key+'" title="Confidence in this blend\'s content">'+esc(label)+'</span>';
+}
 
 function esc(str){
   return String(str ?? "")
@@ -882,7 +902,7 @@ function renderTrendingCards(){
     const foot = [
       episodes ? `Based on <b>${episodes}</b> episode${episodes === 1 ? "" : "s"}` : `Based on <b>${b.clips || 0}</b> clips`,
       `<b>${sources.length}</b> creator${sources.length === 1 ? "" : "s"}`,
-      b.confidence_label ? `Confidence: <b>${esc(b.confidence_label)}</b>` : ""
+      confBadge(b) ? `Confidence: ${confBadge(b)}` : ""
     ].filter(Boolean).join(" · ");
 
     const isLiked = likesApi ? likedSet.has(String(b.id)) : liked.includes(String(b.id));
@@ -1129,6 +1149,8 @@ function loadBlend(blend, autoplay = false){
   $("communityBlendTitle").innerText = blend.title;
   $("communityBlendMeta").innerText =
     `${blend.clips} clips • ${sources.length} creators`;
+
+  $("communityConfidence").innerHTML = confBadge(blend);
 
   $("communityCommentText").innerText =
     `Just listened to "${blend.title}". Incredible synthesis.`;

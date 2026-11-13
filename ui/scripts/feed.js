@@ -35,6 +35,33 @@ function formatCreator(name) {
 }
 
 
+// ✅ CONFIDENCE BADGE (accepts old "Verified" rows too)
+function confBadge(blend) {
+
+  const raw = blend && blend.confidence_label;
+  if (!raw) return "";
+
+  const label = String(raw).replace(/^Verified$/i, "Corroborated");
+  let key = label.toLowerCase().replace(/[^a-z]/g, "");
+
+  if (!["corroborated","supported","emerging","contested","unverified"].includes(key)) {
+    key = "unverified";
+  }
+
+  const colors = {
+    corroborated:["#3ddc97","rgba(61,220,151,.12)","rgba(61,220,151,.4)"],
+    supported:["#5aa8ff","rgba(90,168,255,.12)","rgba(90,168,255,.4)"],
+    emerging:["#ffb84d","rgba(255,184,77,.12)","rgba(255,184,77,.4)"],
+    contested:["#ff6b6b","rgba(255,107,107,.12)","rgba(255,107,107,.4)"],
+    unverified:["#999","rgba(255,255,255,.05)","rgba(255,255,255,.15)"]
+  }[key];
+
+  return `<span style="display:inline-block;font-size:.72rem;font-weight:700;
+    letter-spacing:.04em;padding:3px 10px;border-radius:999px;
+    color:${colors[0]};background:${colors[1]};border:1px solid ${colors[2]};">
+    ${label}</span>`;
+}
+
 // ✅ SWITCH VIEWS
 function setView(view) {
 
@@ -432,6 +459,7 @@ if (selectedBoard) {
         <span>
           🎧 ${b.clips || 0} clips
         </span>
+        ${confBadge(b) ? `<span style="margin-left:10px;">${confBadge(b)}</span>` : ""}
 
       </div>
 
