@@ -692,7 +692,31 @@ function getJSON(key, fallback){
   catch { return fallback; }
 }
 
-const blendList = (typeof BLENDS !== "undefined" && Array.isArray(BLENDS)) ? BLENDS : [];
+/* BLENDS is filled in asynchronously by scripts/blends.js (API call),
+   so always read it live instead of copying it at startup. */
+function getBlends(){
+  return (typeof BLENDS !== "undefined" && Array.isArray(BLENDS)) ? BLENDS : [];
+}
+
+function whenBlendsReady(cb, tries = 50){
+  const list = getBlends();
+  if (list.length) return cb(list);
+  if (tries <= 0) return cb([]);
+  setTimeout(() => whenBlendsReady(cb, tries - 1), 200);
+}
+
+function formatCreator(name){
+  const known = {
+    "huberman_lab":"Huberman Lab",
+    "lex_fridman_podcast":"Lex Fridman Podcast",
+    "science_vs":"Science Vs",
+    "short_wave":"NPR Short Wave",
+    "diary_of_a_ceo":"The Diary of a CEO",
+    "dna_today":"DNA Today"
+  };
+  return known[name] ||
+    String(name).replace(/_/g," ").replace(/\b\w/g, c => c.toUpperCase());
+}
 
 /* =====================================================
    TRENDING CARDS (matches mockup)
@@ -796,9 +820,42 @@ function toggleTrendSave(i){
   renderTrending();
 }
 
+/* Small message bar so problems are visible instead of silent */
+function toast(msg){
+  let el = $("toast");
+  if (!el){
+    el = document.createElement("div");
+    el.id = "toast";
+    el.style.cssText =
+      "position:fixed;left:50%;bottom:110px;transform:translateX(-50%);" +
+      "background:#1a1a1a;border:1px solid #ff6a00;color:#fff;" +
+      "padding:12px 18px;border-radius:14px;z-index:10000;max-width:90%;" +
+      "font-size:.9rem;text-align:center;";
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.style.display = "block";
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.style.display = "none", 5000);
+}
+
 function listenToTrending(i){
-  const blend = blendList[i] || blendList[0];
-  if (!blend) return;
+
+  const list = getBlends();
+
+  if (!list.length){
+    console.warn("BLENDS is empty or not loaded yet.");
+    toast("Blends are still loading. Try again in a moment.");
+    return;
+  }
+
+  // Prefer a blend from the same board as the card; fall back to position
+  const t = TRENDING[i];
+  const match = list.find(b =>
+    String(b.board || "").toLowerCase() === t.board.toLowerCase()
+  );
+  const blend = match || list[i] || list[0];
+
   loadBlend(blend, true);
   $("currentDiscussion").scrollIntoView({ behavior:"smooth", block:"start" });
 }
@@ -824,14 +881,23 @@ function loadBlend(blend, autoplay = false){
   $("communityCreators").innerHTML = sources.map(source => `
     <span class="tag"
           onclick="event.stopPropagation(); window.location.href='/feed.html';">
-      🎙 ${esc(source)}
+      🎙 ${esc(formatCreator(source))}
     </span>`).join("");
 
   const player = $("communityAudio");
   player.src =
     `https://podblendz-episode-audio.s3.us-east-1.amazonaws.com/blends/${blend.id}/final.mp3`;
+  player.onerror = () => {
+    console.warn("Audio failed to load:", player.src);
+    toast("This blend's audio couldn't be loaded.");
+  };
   player.load();
-  if (autoplay) player.play().catch(() => {});
+  if (autoplay){
+    player.play().catch(err => {
+      console.warn("Playback blocked or failed:", err);
+      toast("Tap the play button on the player to start the blend.");
+    });
+  }
 
   loadComments();
 }
@@ -858,7 +924,7 @@ function renderFollowList(creators){
   const selectedBlendId = localStorage.getItem("dnaSeedBlendId");
 
   if (!selectedBlendId){
-    if (blendList[0]) loadBlend(blendList[0]);
+    whenBlendsReady(list => { if (list[0]) loadBlend(list[0]); });
     return;
   }
 
@@ -874,22 +940,27 @@ function renderFollowList(creators){
       renderFollowList(blend.creators || []);
     })
     .catch(() => {
-      if (blendList[0]) loadBlend(blendList[0]);
+      whenBlendsReady(list => { if (list[0]) loadBlend(list[0]); });
     });
 })();
 
 /* =====================================================
    RECOMMENDED BLENDS
 ===================================================== */
-function renderRecommended(){
-  $("dnaBlendsContainer").innerHTML = blendList.slice(0, 3).map((blend, index) => `
-    <div class="dna-card" onclick="loadBlend(BLENDS[${index}], true)">
+function renderRecommended(list){
+  $("dnaBlendsContainer").innerHTML = list.slice(0, 3).map((blend, index) => `
+    <div class="dna-card" onclick="loadBlend(getBlends()[${index}], true)">
       <div class="dna-category">Recommended</div>
       <strong>${esc(blend.title)}</strong>
       <div class="dna-sub">${blend.clips} clips • ${(blend.sources || []).length} creators</div>
     </div>`).join("");
 }
-renderRecommended();
+$("dnaBlendsContainer").innerHTML = `<div class="skeleton"></div><div class="skeleton"></div>`;
+whenBlendsReady(list => {
+  if (list.length) renderRecommended(list);
+  else $("dnaBlendsContainer").innerHTML =
+    `<div class="state-msg">Recommendations couldn't load right now.</div>`;
+});
 
 /* =====================================================
    FOLLOWS
