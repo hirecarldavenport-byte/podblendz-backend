@@ -122,6 +122,8 @@ button{font-family:inherit}
   border-radius:18px;
   padding:14px;
 }
+.player-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.player-actions .act-btn{padding:9px 16px;font-size:.9rem}
 .stat.link{cursor:pointer;transition:.2s}
 .stat.link:hover,.stat.link:focus-visible{border-color:var(--orange);transform:translateY(-2px);outline:none}
 .stat-icon{
@@ -604,6 +606,11 @@ audio{width:100%;margin-top:14px}
                style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;"></div>
           <audio id="communityAudio" controls
                  onclick="event.stopPropagation()"></audio>
+          <div class="player-actions">
+            <button class="act-btn" id="playerLike" onclick="event.stopPropagation(); likeBlend({id: currentBlendId})">❤️ Like</button>
+            <button class="act-btn" id="playerSave" onclick="event.stopPropagation(); saveBlend({id: currentBlendId})">🔖 Save</button>
+            <a class="act-btn" href="/library.html" onclick="event.stopPropagation()" style="text-decoration:none">📚 My Library</a>
+          </div>
         </div>
 
         <div id="commentsContainer" style="margin-top:20px;"></div>
@@ -846,7 +853,9 @@ function voicesHTML(b){
   }).join("") + (more > 0 ? `<a class="more-chip" href="${boardLink}">+${more} more</a>` : "");
 }
 
-function renderTrending(){
+function renderTrending(){ renderTrendingCards(); refreshPlayerButtons(); }
+
+function renderTrendingCards(){
 
   const box = $("trendingContainer");
   if (!getBlends().length) return;
@@ -957,10 +966,11 @@ function loadLikes(){
     .catch(() => { likesApi = false; });
 }
 
-function toggleTrendLike(i){
+function toggleTrendLike(i){ likeBlend(trendingBlends[i]); }
 
-  const b = trendingBlends[i];
-  if (!b) return;
+function likeBlend(b){
+
+  if (!b || b.id === null || b.id === undefined) return;
 
   // Routes not available: keep the old this-browser-only behavior
   if (!likesApi){
@@ -1008,10 +1018,28 @@ function toggleTrendLike(i){
     .catch(() => undo("Couldn't save your like. Please try again."));
 }
 
-function toggleTrendSave(i){
-  if (!trendingBlends[i]) return;
-  toggleStored("savedBlends", trendingBlends[i].id);
+function toggleTrendSave(i){ saveBlend(trendingBlends[i]); }
+
+function saveBlend(b){
+  if (!b || b.id === null || b.id === undefined) return;
+  toggleStored("savedBlends", b.id);
   renderTrending();
+  toast(getJSON("savedBlends", []).includes(String(b.id))
+    ? "Saved to your Library." : "Removed from your Library.");
+}
+
+/* keep the player's Like / Save buttons in sync */
+function refreshPlayerButtons(){
+  const like = $("playerLike"), save = $("playerSave");
+  if (!like || !save || currentBlendId === null) return;
+  const id = String(currentBlendId);
+  const liked = likesApi ? likedSet.has(id) : getJSON("likedBlends", []).includes(id);
+  const saved = getJSON("savedBlends", []).includes(id);
+  const n = likesApi ? (likeCounts[id] || 0) : 0;
+  like.className = "act-btn" + (liked ? " liked" : "");
+  like.textContent = "❤️ " + (liked ? "Liked" : "Like") + (n ? " · " + n : "");
+  save.className = "act-btn" + (saved ? " saved" : "");
+  save.textContent = saved ? "🔖 Saved" : "🔖 Save";
 }
 
 /* Real numbers for the stat tiles */
@@ -1038,6 +1066,13 @@ function renderDNA(){
         return `<span class="dna-chip">${st.icon} ${esc(board)}</span>`;
       }).join("")
     : `<div class="dna-empty">Listen to a few blends and your interests show up here.</div>`;
+}
+
+function recordRecent(blend){
+  if (blend.id === null || blend.id === undefined) return;
+  let list = getJSON("recentBlends", []).filter(r => String(r.id) !== String(blend.id));
+  list.unshift({ id: String(blend.id), at: Date.now() });
+  try { localStorage.setItem("recentBlends", JSON.stringify(list.slice(0, 30))); } catch {}
 }
 
 function recordListen(blend){
@@ -1109,7 +1144,7 @@ function loadBlend(blend, autoplay = false){
     la.innerHTML = `<strong style="color:#fff;display:block;margin-bottom:4px;">${esc(blend.title)}</strong>` +
       `${blend.clips || 0} clips • ${sources.length} creators`;
   }
-  if (autoplay) recordListen(blend);
+  if (autoplay){ recordListen(blend); recordRecent(blend); }
 
   const player = $("communityAudio");
   player.src =
@@ -1127,6 +1162,7 @@ function loadBlend(blend, autoplay = false){
   }
 
   loadComments();
+  refreshPlayerButtons();
 }
 
 /* =====================================================
