@@ -468,20 +468,25 @@ if (token) {
 
 }
 
-if (user?.photoUrl) {
+const savedUser = (() => {
+  try { return JSON.parse(localStorage.getItem("pbUser")); }
+  catch { return null; }
+})();
+
+if (savedUser?.photoUrl) {
 
   document
     .querySelector(".profile-avatar")
     ?.setAttribute(
       "src",
-      user.photoUrl
+      savedUser.photoUrl
     );
 
   document
     .querySelector(".composer-avatar")
     ?.setAttribute(
       "src",
-      user.photoUrl
+      savedUser.photoUrl
     );
 
 }
@@ -510,13 +515,17 @@ function openBlend(id){
 </script>
 
 <script>
-/* ✅ Deep link: feed.html?creator=huberman_lab opens that contributor card */
+/* ✅ Deep links:
+     feed.html?creator=huberman_lab  -> opens that contributor card
+     feed.html?view=creators         -> opens the Top Creators list
+     feed.html?view=boards           -> opens the Boards list            */
 (function(){
 
-  const creator =
-    new URLSearchParams(window.location.search).get("creator");
+  const params  = new URLSearchParams(window.location.search);
+  const creator = params.get("creator");
+  const view    = params.get("view");
 
-  if (!creator) return;
+  if (!creator && view !== "creators" && view !== "boards") return;
 
   let tries = 0;
 
@@ -532,12 +541,21 @@ function openBlend(id){
 
       clearInterval(timer);
 
-      // Highlight the "Top Creators" tab
       const tabs = document.querySelectorAll(".tab");
-      tabs.forEach(t => t.classList.remove("active"));
-      tabs[1]?.classList.add("active");
+      let activeTab = 1;                        // Top Creators
 
-      openCreator(creator);
+      if (creator) {
+        openCreator(creator);
+      } else if (view === "creators") {
+        setView("creators");
+      } else {
+        setView("following");
+        activeTab = 2;                          // Boards
+      }
+
+      // set the highlight last (setView clears it)
+      tabs.forEach(t => t.classList.remove("active"));
+      tabs[activeTab]?.classList.add("active");
 
     } else if (++tries > 50) {
       clearInterval(timer);

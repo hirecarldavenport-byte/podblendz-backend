@@ -122,6 +122,8 @@ button{font-family:inherit}
   border-radius:18px;
   padding:14px;
 }
+.stat.link{cursor:pointer;transition:.2s}
+.stat.link:hover,.stat.link:focus-visible{border-color:var(--orange);transform:translateY(-2px);outline:none}
 .stat-icon{
   width:44px;height:44px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
@@ -527,21 +529,24 @@ audio{width:100%;margin-top:14px}
 
     <!-- Stats -->
     <section class="stats">
-      <div class="stat">
+      <div class="stat link" role="link" tabindex="0" aria-label="Browse all Blendz"
+           onclick="window.location.href='/feed.html'">
         <div class="stat-icon green">🎧</div>
         <div>
           <div class="stat-num" id="statBlends">—</div>
           <div class="stat-label">Blendz available</div>
         </div>
       </div>
-      <div class="stat">
+      <div class="stat link" role="link" tabindex="0" aria-label="Browse all creators"
+           onclick="window.location.href='/feed.html?view=creators'">
         <div class="stat-icon purple">🎙️</div>
         <div>
           <div class="stat-num" id="statCreators">—</div>
           <div class="stat-label">Creators featured</div>
         </div>
       </div>
-      <div class="stat">
+      <div class="stat link" role="link" tabindex="0" aria-label="Jump to discussions"
+           onclick="document.getElementById('recentActivity').scrollIntoView({behavior:'smooth'})">
         <div class="stat-icon orange">💬</div>
         <div>
           <div class="stat-num" id="statDiscussions">—</div>
@@ -614,7 +619,7 @@ audio{width:100%;margin-top:14px}
     <div id="activeDiscussions"></div>
 
     <!-- Recent activity -->
-    <div class="post">
+    <div class="post" id="recentActivity">
       <div class="featured-label">⚡ Recent Activity</div>
       <div id="recentActivityContainer">
         <div class="skeleton"></div>
@@ -1095,7 +1100,7 @@ function loadBlend(blend, autoplay = false){
 
   $("communityCreators").innerHTML = sources.map(source => `
     <span class="tag"
-          onclick="event.stopPropagation(); window.location.href='/feed.html';">
+          onclick="event.stopPropagation(); window.location.href='/feed.html?creator=${encodeURIComponent(source)}';">
       🎙 ${esc(formatCreator(source))}
     </span>`).join("");
 
@@ -1509,6 +1514,12 @@ function pickSearchResult(i){
 /* =====================================================
    INIT
 ===================================================== */
+document.querySelectorAll(".stat.link").forEach(el => {
+  el.addEventListener("keydown", e => {
+    if (e.key === "Enter" || e.key === " "){ e.preventDefault(); el.click(); }
+  });
+});
+
 renderDNA();
 loadLikes();
 whenBlendsReady(list => {
