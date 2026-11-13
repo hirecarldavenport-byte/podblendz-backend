@@ -67,23 +67,6 @@ button{font-family:inherit}
 .topic.clickable{cursor:pointer;transition:.2s}
 .topic.clickable:hover{color:var(--orange);padding-left:6px}
 
-.follow-card{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:14px;
-  gap:8px;
-  font-size:.9rem;
-}
-.follow-btn{
-  background:transparent;
-  color:#fff;
-  border:1px solid rgba(255,255,255,.15);
-  border-radius:999px;
-  padding:6px 14px;
-  cursor:pointer;
-}
-
 /* ============ MAIN ============ */
 .main{padding:24px;min-width:0}
 
@@ -153,6 +136,7 @@ button{font-family:inherit}
 /* search row */
 .searchrow{display:flex;gap:12px;margin-bottom:26px}
 .search-wrap{
+  position:relative;
   flex:1;
   display:flex;align-items:center;gap:10px;
   background:#0f0f0f;
@@ -177,6 +161,32 @@ button{font-family:inherit}
   background:var(--orange);color:#fff;border:none;
   padding:0 24px;border-radius:999px;cursor:pointer;font-weight:600;
 }
+
+/* search suggestions */
+.search-results{
+  display:none;
+  position:absolute;
+  left:0;right:0;top:calc(100% + 8px);
+  background:#101010;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:16px;
+  overflow:hidden;
+  z-index:800;
+  box-shadow:0 12px 32px rgba(0,0,0,.6);
+  max-height:70vh;
+  overflow-y:auto;
+}
+.sr-item{
+  padding:12px 16px;
+  cursor:pointer;
+  border-bottom:1px solid var(--line);
+}
+.sr-item:last-child{border-bottom:none}
+.sr-item.active,.sr-item:hover{background:#1a1a1a}
+.sr-title{font-size:.98rem;line-height:1.3}
+.sr-title mark{background:none;color:var(--orange);font-weight:700}
+.sr-meta{color:var(--muted);font-size:.78rem;margin-top:4px}
+.sr-empty{padding:14px 16px;color:var(--muted);font-size:.9rem}
 
 /* mobile board chips */
 .board-row{
@@ -479,9 +489,6 @@ audio{width:100%;margin-top:14px}
     <div class="topic clickable" onclick="openBoard('Startups')">🚀 Startups</div>
     <div class="topic clickable" onclick="openBoard('Relationships')">❤️ Relationships</div>
 
-    <div class="section-title">Following</div>
-    <div id="creatorFollowContainer"></div>
-
   </aside>
 
   <!-- ================= CENTER ================= -->
@@ -534,11 +541,13 @@ audio{width:100%;margin-top:14px}
 
     <!-- Search -->
     <div class="searchrow">
-      <label class="search-wrap">
+      <div class="search-wrap" id="searchWrap">
         <span>🔍</span>
-        <input id="searchInput" class="search"
-               placeholder="Search topics, creators, or blends...">
-      </label>
+        <input id="searchInput" class="search" type="text" autocomplete="off"
+               placeholder="Search topics, creators, or blends..."
+               aria-label="Search blends">
+        <div id="searchResults" class="search-results" role="listbox"></div>
+      </div>
       <button class="filter-btn" aria-label="Filters">⚙️</button>
       <button class="new-post-btn">+ New Post</button>
     </div>
@@ -646,7 +655,7 @@ audio{width:100%;margin-top:14px}
 
 <!-- ================= BOTTOM NAV (mobile) ================= -->
 <nav class="bottom-nav">
-  <a class="nav-item" href="/index.html"><span class="ico">🏠</span>Home</a>
+  <a class="nav-item" href="/feed.html"><span class="ico">🏠</span>Home</a>
   <a class="nav-item active" href="/community-feed.html"><span class="ico">👥</span>Community</a>
   <button class="fab" aria-label="New post"
           onclick="document.getElementById('commentInput').focus()">+</button>
@@ -947,22 +956,8 @@ function loadBlend(blend, autoplay = false){
 }
 
 /* =====================================================
-   SEEDED BLEND (from localStorage) + FOLLOW LIST
+   SEEDED BLEND (from localStorage)
 ===================================================== */
-function renderFollowList(creators){
-  $("creatorFollowContainer").innerHTML = creators.map(creator => `
-    <div class="follow-card">
-      <span>${esc(creator)}</span>
-      <button class="follow-btn" data-creator="${esc(creator)}">Follow</button>
-    </div>`).join("");
-
-  document.querySelectorAll(".follow-btn").forEach(btn => {
-    btn.addEventListener("click", () => toggleCreatorFollow(btn.dataset.creator));
-  });
-
-  updateCreatorButtons();
-}
-
 (function seedBlend(){
 
   const selectedBlendId = localStorage.getItem("dnaSeedBlendId");
@@ -981,7 +976,6 @@ function renderFollowList(creators){
         clips: blend.clip_count,
         sources: blend.creators || []
       });
-      renderFollowList(blend.creators || []);
     })
     .catch(() => {
       whenBlendsReady(list => { if (list[0]) loadBlend(list[0]); });
@@ -1005,27 +999,6 @@ whenBlendsReady(list => {
   else $("dnaBlendsContainer").innerHTML =
     `<div class="state-msg">Recommendations couldn't load right now.</div>`;
 });
-
-/* =====================================================
-   FOLLOWS
-===================================================== */
-function toggleCreatorFollow(creator){
-  let follows = getJSON("followedCreators", []);
-  follows = follows.includes(creator)
-    ? follows.filter(c => c !== creator)
-    : [...follows, creator];
-  localStorage.setItem("followedCreators", JSON.stringify(follows));
-  updateCreatorButtons();
-}
-
-function updateCreatorButtons(){
-  const follows = getJSON("followedCreators", []);
-  document.querySelectorAll(".follow-btn").forEach(btn => {
-    const on = follows.includes(btn.dataset.creator);
-    btn.innerText = on ? "Following" : "Follow";
-    btn.style.background = on ? "#ff6a00" : "transparent";
-  });
-}
 
 /* =====================================================
    NAVIGATION
@@ -1200,11 +1173,133 @@ function closePlayerOverlay(){
 }
 
 /* =====================================================
+   SEARCH (type-ahead over all blends)
+===================================================== */
+let searchMatches = [];
+let searchActive = -1;
+
+function highlight(text, q){
+  const i = text.toLowerCase().indexOf(q);
+  if (!q || i < 0) return esc(text);
+  return esc(text.slice(0, i)) +
+    "<mark>" + esc(text.slice(i, i + q.length)) + "</mark>" +
+    esc(text.slice(i + q.length));
+}
+
+function closeSearch(){
+  $("searchResults").style.display = "none";
+  searchActive = -1;
+}
+
+function setActive(i){
+  const items = document.querySelectorAll("#searchResults .sr-item");
+  items.forEach(el => el.classList.remove("active"));
+  searchActive = i;
+  if (items[i]){
+    items[i].classList.add("active");
+    items[i].scrollIntoView({ block:"nearest" });
+  }
+}
+
+function runSearch(raw){
+
+  const q = raw.trim().toLowerCase();
+  const box = $("searchResults");
+
+  if (!q){ closeSearch(); return; }
+
+  const list = getBlends();
+  box.style.display = "block";
+
+  if (!list.length){
+    box.innerHTML = `<div class="sr-empty">Blends are still loading...</div>`;
+    return;
+  }
+
+  const words = q.split(/\s+/);
+  const scored = [];
+
+  list.forEach(b => {
+    const title = String(b.title || "").toLowerCase();
+    const hay = (title + " " + String(b.board || "") + " " +
+      (b.sources || []).map(formatCreator).join(" ")).toLowerCase();
+
+    if (!words.every(w => hay.includes(w))) return;
+
+    let score = 0;
+    if (title.startsWith(q)) score += 3;
+    if (title.includes(q)) score += 2;
+    words.forEach(w => { if (title.includes(w)) score += 1; });
+    scored.push({ b, score });
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+  searchMatches = scored.slice(0, 8).map(s => s.b);
+
+  if (!searchMatches.length){
+    box.innerHTML = `<div class="sr-empty">No blends found for "${esc(raw.trim())}".</div>`;
+    return;
+  }
+
+  box.innerHTML = searchMatches.map((b, i) => `
+    <div class="sr-item" role="option" data-i="${i}">
+      <div class="sr-title">${highlight(String(b.title || ""), q)}</div>
+      <div class="sr-meta">
+        ${esc(b.board || "General")} • ${b.clips || 0} clips
+        ${(b.sources || []).length ? " • " + esc(formatCreator(b.sources[0])) : ""}
+      </div>
+    </div>`).join("");
+
+  searchActive = -1;
+}
+
+function pickSearchResult(i){
+  const b = searchMatches[i];
+  if (!b) return;
+  closeSearch();
+  $("searchInput").value = b.title;
+  $("searchInput").blur();
+  loadBlend(b, true);
+  $("currentDiscussion").scrollIntoView({ behavior:"smooth", block:"start" });
+}
+
+(function initSearch(){
+
+  const input = $("searchInput");
+  const box = $("searchResults");
+
+  input.addEventListener("input", () => runSearch(input.value));
+  input.addEventListener("focus", () => { if (input.value.trim()) runSearch(input.value); });
+
+  input.addEventListener("keydown", e => {
+    const n = searchMatches.length;
+    if (box.style.display !== "block" || !n) return;
+
+    if (e.key === "ArrowDown"){ e.preventDefault(); setActive((searchActive + 1) % n); }
+    else if (e.key === "ArrowUp"){ e.preventDefault(); setActive((searchActive - 1 + n) % n); }
+    else if (e.key === "Enter"){ e.preventDefault(); pickSearchResult(searchActive >= 0 ? searchActive : 0); }
+    else if (e.key === "Escape"){ closeSearch(); }
+  });
+
+  // mousedown (not click) so the input doesn't blur first
+  box.addEventListener("mousedown", e => {
+    const item = e.target.closest(".sr-item");
+    if (!item) return;
+    e.preventDefault();
+    pickSearchResult(Number(item.dataset.i));
+  });
+
+  document.addEventListener("click", e => {
+    if (!$("searchWrap").contains(e.target)) closeSearch();
+  });
+
+})();
+
+/* =====================================================
    INIT
 ===================================================== */
 renderTrending();
 whenBlendsReady(list => { if (list.length) renderTrending(); });
-renderFollowList(getJSON("followedCreators", []));
 loadCommunityFeed();
 </script>
 
