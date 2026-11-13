@@ -282,7 +282,12 @@ button{font-family:inherit}
 
 .voices-label{color:var(--muted);font-size:.85rem;margin-bottom:10px}
 .voices{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-bottom:16px}
-.voice{display:flex;align-items:center;gap:8px;font-size:.9rem;color:#ddd}
+.voice{display:flex;align-items:center;gap:8px;font-size:.9rem;color:#ddd;text-decoration:none}
+a.voice{cursor:pointer;transition:.2s}
+a.voice:hover{color:var(--orange)}
+a.voice:hover .voice-avatar{border-color:var(--orange)}
+a.more-chip{text-decoration:none;cursor:pointer}
+a.more-chip:hover{color:var(--orange)}
 .voice-avatar{
   width:36px;height:36px;border-radius:50%;
   background:linear-gradient(135deg,#444,#222);
@@ -752,6 +757,49 @@ const TRENDING = [
   }
 ];
 
+/* Featured Voices: use real creators from the blends on each board,
+   so every voice can link to its contributor card in feed.html.
+   Falls back to the placeholder names (not linked) until blends load. */
+function voiceHTML(t){
+
+  const boardBlends = getBlends().filter(b =>
+    String(b.board || "").toLowerCase() === t.board.toLowerCase()
+  );
+
+  const counts = {};
+  boardBlends.forEach(b => (b.sources || []).forEach(s => {
+    counts[s] = (counts[s] || 0) + 1;
+  }));
+
+  const ranked = Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([id]) => id);
+
+  const boardLink = `/feed.html?board=${encodeURIComponent(t.board)}`;
+
+  if (!ranked.length){
+    return `
+      ${t.voices.map(v => `
+        <div class="voice">
+          <div class="voice-avatar">${esc(initials(v))}</div>${esc(v)}
+        </div>`).join("")}
+      <span class="more-chip">+${t.more} more</span>`;
+  }
+
+  const top = ranked.slice(0, 3);
+  const more = Math.max(ranked.length - top.length, 0);
+
+  return `
+    ${top.map(id => {
+      const name = formatCreator(id);
+      return `
+        <a class="voice" href="/feed.html?creator=${encodeURIComponent(id)}">
+          <div class="voice-avatar">${esc(initials(name))}</div>${esc(name)}
+        </a>`;
+    }).join("")}
+    ${more ? `<a class="more-chip" href="${boardLink}">+${more} more</a>` : ""}`;
+}
+
 function renderTrending(){
   const saved = getJSON("savedTrending", []);
   const liked = getJSON("likedTrending", []);
@@ -782,11 +830,7 @@ function renderTrending(){
 
       <div class="voices-label">Featured Voices</div>
       <div class="voices">
-        ${t.voices.map(v => `
-          <div class="voice">
-            <div class="voice-avatar">${esc(initials(v))}</div>${esc(v)}
-          </div>`).join("")}
-        <span class="more-chip">+${t.more} more</span>
+        ${voiceHTML(t)}
       </div>
 
       <div class="card-actions">
@@ -1159,6 +1203,7 @@ function closePlayerOverlay(){
    INIT
 ===================================================== */
 renderTrending();
+whenBlendsReady(list => { if (list.length) renderTrending(); });
 renderFollowList(getJSON("followedCreators", []));
 loadCommunityFeed();
 </script>

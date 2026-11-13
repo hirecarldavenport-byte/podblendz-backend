@@ -509,6 +509,44 @@ function openBlend(id){
 
 </script>
 
+<script>
+/* ✅ Deep link: feed.html?creator=huberman_lab opens that contributor card */
+(function(){
+
+  const creator =
+    new URLSearchParams(window.location.search).get("creator");
+
+  if (!creator) return;
+
+  let tries = 0;
+
+  const timer = setInterval(() => {
+
+    const ready =
+      typeof BLENDS !== "undefined" &&
+      Array.isArray(BLENDS) &&
+      BLENDS.length > 0 &&
+      typeof openCreator === "function";
+
+    if (ready) {
+
+      clearInterval(timer);
+
+      // Highlight the "Top Creators" tab
+      const tabs = document.querySelectorAll(".tab");
+      tabs.forEach(t => t.classList.remove("active"));
+      tabs[1]?.classList.add("active");
+
+      openCreator(creator);
+
+    } else if (++tries > 50) {
+      clearInterval(timer);
+    }
+
+  }, 200);
+
+})();
+</script>
+
 </body>
 </html>
-
