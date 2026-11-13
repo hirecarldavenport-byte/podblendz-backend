@@ -351,3 +351,43 @@ class CommunityVoiceThought(Base):
         DateTime,
         default=datetime.utcnow
     )
+
+# =====================================
+# BLEND LIKES  (one like per person per blend)
+# =====================================
+
+from sqlalchemy import UniqueConstraint
+
+
+class BlendLike(Base):
+
+    __tablename__ = "blend_likes"
+
+    __table_args__ = (
+        # the database itself stops double-likes
+        UniqueConstraint("blend_id", "user_sub", name="uq_blend_like_user"),
+    )
+
+    id = Column(
+        String,
+        primary_key=True,
+        default=lambda: str(uuid.uuid4())
+    )
+
+    blend_id = Column(
+        String,
+        nullable=False,
+        index=True
+    )
+
+    # verified Google account id (same value as users.google_sub)
+    user_sub = Column(
+        String,
+        nullable=False,
+        index=True
+    )
+
+    created_at = Column(
+        DateTime,
+        default=datetime.utcnow
+    )
