@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Library · PodBlendz</title>
+<meta name="description" content="Your saved blends, liked blends and recently played blends on PodBlendz.">
+<meta name="theme-color" content="#050505">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎧%3C/text%3E%3C/svg%3E">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --bg:#050505;
+  --card:#0d0d0d;
+  --card2:#141414;
+  --line:rgba(255,255,255,.09);
+  --orange:#ff6a00;
+  --muted:rgba(255,255,255,.6);
+}
+
+body{
+  background:var(--bg);
+  color:#fff;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+}
+
+a{color:inherit}
+button{font-family:inherit}
+
+.wrap{max-width:760px;margin:0 auto;padding:24px 16px 130px}
+
+/* header */
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:26px;gap:12px}
+.brand{font-size:1.7rem;font-weight:800;text-decoration:none}
+.brand span{color:var(--orange)}
+.toplinks{display:flex;gap:6px}
+.toplinks a{
+  color:var(--muted);text-decoration:none;padding:8px 14px;border-radius:999px;font-size:.95rem;
+}
+.toplinks a:hover{color:#fff;background:var(--card2)}
+.toplinks a.active{color:var(--orange);background:var(--card2)}
+
+h1{font-size:2.3rem;font-weight:800;margin-bottom:4px}
+.subtitle{color:var(--muted);margin-bottom:22px}
+
+/* tabs */
+.tabs{display:flex;gap:10px;margin-bottom:22px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{
+  background:var(--card2);border:1px solid var(--line);color:var(--muted);
+  padding:10px 18px;border-radius:999px;cursor:pointer;font-size:.95rem;white-space:nowrap;
+}
+.tab.active{background:var(--orange);border-color:var(--orange);color:#fff}
+.tab small{opacity:.8;margin-left:4px}
+
+/* cards */
+.card{
+  background:var(--card);border:1px solid var(--line);
+  border-radius:20px;padding:18px;margin-bottom:14px;
+}
+.pill{
+  display:inline-flex;align-items:center;gap:8px;padding:6px 13px;border-radius:999px;
+  font-size:.85rem;border:1px solid;margin-bottom:12px;
+}
+.pill.blue{color:#5aa8ff;background:rgba(60,120,255,.12);border-color:rgba(90,168,255,.35)}
+.pill.pink{color:#ff6b9a;background:rgba(255,80,130,.12);border-color:rgba(255,107,154,.35)}
+.pill.gold{color:#ffb84d;background:rgba(255,170,60,.12);border-color:rgba(255,184,77,.35)}
+.pill.purple{color:#b48cff;background:rgba(150,100,255,.12);border-color:rgba(180,140,255,.35)}
+.card h3{font-size:1.2rem;line-height:1.3;margin-bottom:8px;overflow-wrap:anywhere}
+.meta{color:var(--muted);font-size:.85rem;margin-bottom:14px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.btn{
+  background:var(--card2);border:1px solid var(--line);color:#fff;
+  border-radius:999px;padding:10px 18px;cursor:pointer;font-size:.92rem;text-decoration:none;
+}
+.btn:hover{border-color:var(--orange)}
+.btn.primary{background:var(--orange);border-color:var(--orange);font-weight:600}
+.btn.quiet{color:var(--muted)}
+
+/* states */
+.empty{
+  background:var(--card);border:1px dashed rgba(255,255,255,.18);border-radius:20px;
+  padding:34px 22px;text-align:center;
+}
+.empty .big{font-size:2.2rem;margin-bottom:10px}
+.empty p{color:var(--muted);line-height:1.5;margin-bottom:16px}
+.skeleton{
+  height:120px;border-radius:20px;margin-bottom:14px;
+  background:linear-gradient(90deg,#161616 25%,#222 50%,#161616 75%);
+  background-size:200% 100%;animation:shimmer 1.3s infinite;
+}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.note{color:var(--muted);font-size:.8rem;margin-top:22px;text-align:center}
+.clear{display:block;margin:6px auto 0;background:none;border:none;color:var(--muted);cursor:pointer;text-decoration:underline;font-size:.85rem}
+
+/* bottom nav (mobile) */
+.bottom-nav{
+  display:none;position:fixed;left:0;right:0;bottom:0;z-index:500;
+  background:rgba(10,10,10,.96);backdrop-filter:blur(14px);
+  border-top:1px solid var(--line);
+  padding:8px 8px calc(10px + env(safe-area-inset-bottom));
+  justify-content:space-around;align-items:flex-end;
+}
+.nav-item{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  color:rgba(255,255,255,.6);font-size:.78rem;text-decoration:none;min-width:64px;padding-top:6px;
+}
+.nav-item .ico{font-size:1.4rem}
+.nav-item.active{color:var(--orange)}
+.fab{
+  width:64px;height:64px;border-radius:50%;border:none;background:var(--orange);color:#fff;
+  font-size:2rem;margin-top:-26px;cursor:pointer;box-shadow:0 6px 20px rgba(255,106,0,.45);
+}
+
+@media(max-width:800px){
+  .toplinks{display:none}
+  .bottom-nav{display:flex}
+  h1{font-size:2.2rem}
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrap">
+
+  <header class="top">
+    <a class="brand" href="/feed.html">Pod<span>Blendz</span></a>
+    <nav class="toplinks">
+      <a href="/feed.html">Home</a>
+      <a href="/community-feed.html">Community</a>
+      <a href="/library.html" class="active">Library</a>
+    </nav>
+  </header>
+
+  <h1>My Library</h1>
+  <p class="subtitle">Your saved blends, likes and listening history.</p>
+
+  <div class="tabs" role="tablist">
+    <button class="tab active" data-tab="saved"  role="tab">🔖 Saved <small id="nSaved"></small></button>
+    <button class="tab"        data-tab="liked"  role="tab">❤️ Liked <small id="nLiked"></small></button>
+    <button class="tab"        data-tab="recent" role="tab">🕘 Recent <small id="nRecent"></small></button>
+  </div>
+
+  <div id="list"><div class="skeleton"></div><div class="skeleton"></div></div>
+
+  <p class="note" id="note"></p>
+
+</div>
+
+<nav class="bottom-nav">
+  <a class="nav-item" href="/feed.html"><span class="ico">🏠</span>Home</a>
+  <a class="nav-item" href="/community-feed.html"><span class="ico">👥</span>Community</a>
+  <button class="fab" aria-label="Community" onclick="location.href='/community-feed.html'">+</button>
+  <a class="nav-item" href="/feed.html"><span class="ico">🧭</span>Explore</a>
+  <a class="nav-item active" href="/library.html"><span class="ico">📚</span>Library</a>
+</nav>
+
+<script src="scripts/blends.js"></script>
+
+<script>
+const $ = id => document.getElementById(id);
+
+function esc(str){
+  return String(str ?? "")
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
+
+function getJSON(key, fallback){
+  try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
+  catch { return fallback; }
+}
+
+/* BLENDS is filled in asynchronously by scripts/blends.js */
+function getBlends(){
+  return (typeof BLENDS !== "undefined" && Array.isArray(BLENDS)) ? BLENDS : [];
+}
+
+function whenBlendsReady(cb, tries = 50){
+  const list = getBlends();
+  if (list.length) return cb(list);
+  if (tries <= 0) return cb([]);
+  setTimeout(() => whenBlendsReady(cb, tries - 1), 200);
+}
+
+function boardStyle(board){
+  const k = String(board || "").toLowerCase();
+  const map = [
+    ["brain","🧠","blue"],["health","🧠","blue"],["relationship","❤️","pink"],
+    ["business","💰","gold"],["finance","💰","gold"],["startup","🚀","gold"],
+    ["ai","🤖","purple"],["tech","🤖","purple"],["science","🔭","blue"],["media","🎬","purple"]
+  ];
+  const hit = map.find(([w]) => k.includes(w));
+  return hit ? { icon:hit[1], color:hit[2] } : { icon:"🎧", color:"purple" };
+}
+
+/* ---------- state ---------- */
+let currentTab = "saved";
+let likedIds = [];          // from the server when signed in, else this browser
+let likedFromServer = false;
+
+function savedIds(){ return getJSON("savedBlends", []).map(String); }
+function recentIds(){ return getJSON("recentBlends", []).map(r => String(r.id)); }
+
+function idsFor(tab){
+  if (tab === "saved")  return savedIds();
+  if (tab === "liked")  return likedIds;
+  return recentIds();
+}
+
+function findBlends(ids){
+  const byId = new Map(getBlends().map(b => [String(b.id), b]));
+  return ids.map(id => byId.get(String(id))).filter(Boolean);
+}
+
+/* ---------- actions ---------- */
+function listen(id){
+  try { localStorage.setItem("dnaSeedBlendId", id); } catch {}
+  window.location.href = "/community-feed.html";
+}
+
+function removeSaved(id){
+  const next = savedIds().filter(x => x !== String(id));
+  localStorage.setItem("savedBlends", JSON.stringify(next));
+  render();
+}
+
+function clearRecent(){
+  localStorage.setItem("recentBlends", "[]");
+  render();
+}
+
+/* ---------- render ---------- */
+const EMPTY = {
+  saved:  { icon:"🔖", text:"Nothing saved yet. Tap the 🔖 on any blend to keep it here." },
+  liked:  { icon:"❤️", text:"No liked blends yet. Tap the ❤️ on a blend you love." },
+  recent: { icon:"🕘", text:"Nothing played yet. Listen to a blend and it will show up here." }
+};
+
+function render(){
+
+  document.querySelectorAll(".tab").forEach(t =>
+    t.classList.toggle("active", t.dataset.tab === currentTab));
+
+  $("nSaved").textContent  = findBlends(savedIds()).length  || "";
+  $("nLiked").textContent  = findBlends(likedIds).length    || "";
+  $("nRecent").textContent = findBlends(recentIds()).length || "";
+
+  const items = findBlends(idsFor(currentTab));
+
+  if (!items.length){
+    const e = EMPTY[currentTab];
+    $("list").innerHTML = `
+      <div class="empty">
+        <div class="big">${e.icon}</div>
+        <p>${e.text}</p>
+        <a class="btn primary" href="/community-feed.html">Browse blends</a>
+      </div>`;
+    $("note").textContent = "";
+    return;
+  }
+
+  $("list").innerHTML = items.map(b => {
+    const st = boardStyle(b.board);
+    const label = (!b.board || b.board === "Uncategorized") ? "General" : b.board;
+    const creators = (b.sources || []).length;
+    const mins = b.duration_ms ? Math.max(1, Math.round(b.duration_ms / 60000)) : null;
+    return `
+      <div class="card">
+        <span class="pill ${st.color}">${st.icon} ${esc(label)}</span>
+        <h3>${esc(b.title)}</h3>
+        <div class="meta">${creators} creator${creators === 1 ? "" : "s"} • ${b.clips || 0} clips${mins ? " • " + mins + " min" : ""}</div>
+        <div class="row">
+          <button class="btn primary" data-listen="${esc(b.id)}">▶ Listen</button>
+          ${currentTab === "saved" ? `<button class="btn quiet" data-remove="${esc(b.id)}">Remove</button>` : ""}
+        </div>
+      </div>`;
+  }).join("") +
+  (currentTab === "recent" ? `<button class="clear" id="clearBtn">Clear history</button>` : "");
+
+  $("note").textContent = currentTab === "liked" && likedFromServer
+    ? "Likes are saved to your account."
+    : "Saved on this device.";
+}
+
+/* one click handler for the whole list */
+document.addEventListener("click", e => {
+  const l = e.target.closest("[data-listen]");
+  if (l) return listen(l.dataset.listen);
+  const r = e.target.closest("[data-remove]");
+  if (r) return removeSaved(r.dataset.remove);
+  if (e.target.id === "clearBtn") return clearRecent();
+  const t = e.target.closest(".tab");
+  if (t){ currentTab = t.dataset.tab; render(); }
+});
+
+/* ---------- liked: use the account if signed in, else this browser ---------- */
+function loadLiked(){
+
+  likedIds = getJSON("likedBlends", []).map(String);
+
+  const token = (() => { try { return localStorage.getItem("googleToken"); } catch { return null; } })();
+  if (!token) return Promise.resolve();
+
+  return fetch("https://podblendz-backend.onrender.com/community/likes", {
+    headers: { "Authorization": "Bearer " + token }
+  })
+    .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+    .then(d => {
+      if ((d.liked || []).length || likedIds.length === 0){
+        likedIds = (d.liked || []).map(String);
+        likedFromServer = true;
+      }
+    })
+    .catch(() => {});
+}
+
+/* ---------- start ---------- */
+whenBlendsReady(list => {
+  if (!list.length){
+    $("list").innerHTML = `<div class="empty"><div class="big">📡</div>
+      <p>We couldn't load the blends right now. Please try again in a moment.</p>
+      <button class="btn primary" onclick="location.reload()">Retry</button></div>`;
+    return;
+  }
+  loadLiked().then(render);
+});
+</script>
+
+</body>
+</html>
