@@ -187,6 +187,12 @@ button{font-family:inherit}
 .sr-title mark{background:none;color:var(--orange);font-weight:700}
 .sr-meta{color:var(--muted);font-size:.78rem;margin-top:4px}
 .sr-empty{padding:14px 16px;color:var(--muted);font-size:.9rem}
+.sr-head{padding:10px 16px 6px;color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.08em}
+.sr-more{padding:12px 16px;color:var(--orange);cursor:pointer;font-weight:600;text-align:center;border-top:1px solid var(--line)}
+.sr-more:hover{background:#1a1a1a}
+.dna-empty{color:var(--muted);font-size:.9rem}
+.join-btn{background:var(--card2);border:1px solid var(--line);color:#fff;border-radius:999px;padding:10px 18px;margin-top:16px;cursor:pointer}
+.join-btn:hover{border-color:var(--orange)}
 
 /* mobile board chips */
 .board-row{
@@ -264,7 +270,7 @@ button{font-family:inherit}
 .badge.popular{color:#2ecc71}
 .badge.new{color:#4d9bff}
 
-.trend-title{font-size:1.3rem;font-weight:700;margin-bottom:14px;line-height:1.25}
+.trend-title{font-size:1.3rem;font-weight:700;margin-bottom:14px;line-height:1.25;overflow-wrap:anywhere}
 
 .trend-stats{
   display:grid;grid-template-columns:repeat(3,1fr);
@@ -288,7 +294,7 @@ button{font-family:inherit}
 .insight.blue .insight-label{color:#5aa8ff}
 .insight.purple .insight-label{color:#b48cff}
 .insight.gold .insight-label{color:#ffb84d}
-.insight-text{font-size:1.05rem;line-height:1.45}
+.insight-text{font-size:1.05rem;line-height:1.45;overflow-wrap:anywhere}
 
 .voices-label{color:var(--muted);font-size:.85rem;margin-bottom:10px}
 .voices{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-bottom:16px}
@@ -322,6 +328,11 @@ a.more-chip:hover{color:var(--orange)}
 .act-btn.listen{flex:1;justify-content:space-between}
 .act-btn.listen span{display:flex;align-items:center;gap:8px}
 .act-btn.saved{border-color:var(--orange);color:var(--orange)}
+
+.insight.pink{background:linear-gradient(135deg,rgba(130,30,70,.5),rgba(70,15,40,.5));border-color:rgba(255,107,154,.35)}
+.insight.pink .insight-label{color:#ff6b9a}
+.insight-foot{color:var(--muted);font-size:.78rem;margin-top:10px}
+.insight-foot b{color:#fff;font-weight:600}
 
 /* ============ GENERIC POSTS ============ */
 .post{
@@ -517,23 +528,23 @@ audio{width:100%;margin-top:14px}
     <!-- Stats -->
     <section class="stats">
       <div class="stat">
-        <div class="stat-icon green">👥</div>
+        <div class="stat-icon green">🎧</div>
         <div>
-          <div class="stat-num">12,486</div>
-          <div class="stat-label">Active Listeners this week</div>
+          <div class="stat-num" id="statBlends">—</div>
+          <div class="stat-label">Blendz available</div>
         </div>
       </div>
       <div class="stat">
         <div class="stat-icon purple">🎙️</div>
         <div>
-          <div class="stat-num">94,281</div>
-          <div class="stat-label">Podcast Perspectives explored</div>
+          <div class="stat-num" id="statCreators">—</div>
+          <div class="stat-label">Creators featured</div>
         </div>
       </div>
       <div class="stat">
         <div class="stat-icon orange">💬</div>
         <div>
-          <div class="stat-num">438</div>
+          <div class="stat-num" id="statDiscussions">—</div>
           <div class="stat-label">Active Discussions</div>
         </div>
       </div>
@@ -565,10 +576,10 @@ audio{width:100%;margin-top:14px}
     <!-- Trending Now -->
     <div class="section-head">
       <h2>🔥 Trending Now</h2>
-      <span class="see-all" onclick="openBoard('Trending')">See All ›</span>
+      <span class="see-all" onclick="window.location.href='/feed.html'">See All ›</span>
     </div>
 
-    <div id="trendingContainer"></div>
+    <div id="trendingContainer"><div class="skeleton" style="height:240px"></div></div>
 
     <!-- Active discussion (current blend) -->
     <div class="post" id="currentDiscussion">
@@ -623,9 +634,7 @@ audio{width:100%;margin-top:14px}
       <div class="post-user">PodBlendz Team</div>
       <div class="post-time" style="margin-bottom:12px;">2h ago</div>
       <div class="post-content">📌 What blends are you most excited about this week?</div>
-      <div style="display:flex;gap:28px;margin-top:18px;opacity:.7;">
-        <span>❤️ 128</span><span>💬 36</span><span>🔁 24</span><span>🔗 Share</span>
-      </div>
+      <button class="join-btn" onclick="document.getElementById('commentInput').focus();document.getElementById('currentDiscussion').scrollIntoView({behavior:'smooth'})">💬 Join the conversation</button>
     </div>
 
   </main>
@@ -634,19 +643,15 @@ audio{width:100%;margin-top:14px}
   <aside class="right">
 
     <div class="widget">
-      <h3>🎧 Listening Now</h3>
+      <h3>🎧 Now Playing</h3>
       <div id="listenerArea" style="color:var(--muted);font-size:.9rem;">
-        12,486 listeners this week
+        Pick a blend to start listening.
       </div>
     </div>
 
     <div class="widget">
       <h3>🧬 Your Blendz DNA</h3>
-      <div>
-        <span class="dna-chip">🧠 Brain Health</span>
-        <span class="dna-chip">🤖 AI</span>
-        <span class="dna-chip">💰 Business</span>
-      </div>
+      <div id="dnaChips"></div>
     </div>
 
   </aside>
@@ -733,144 +738,309 @@ function formatCreator(name){
 }
 
 /* =====================================================
-   TRENDING CARDS (matches mockup)
-   Replace these with an API call when ready.
+   COMMUNITY DATA + TRENDING (built from your real blends)
 ===================================================== */
-const TRENDING = [
-  {
-    board:"Brain Health", icon:"🧠", color:"blue", badge:"trending", badgeText:"🔥 Trending",
-    title:"How can people improve brain health as they age?",
-    perspectives:87, contributions:231, sessions:"1.2K",
-    insightLabel:"✨ Collective Insight", insightColor:"blue",
-    insight:"Across neuroscience, longevity, and health podcasts, sleep quality was mentioned more consistently than supplements as a key driver of long-term cognitive health.",
-    voices:["Huberman Lab","Peter Attia","FoundMyFitness"], more:20,
-    likes:345, comments:82
-  },
-  {
-    board:"Relationships", icon:"❤️", color:"pink", badge:"popular", badgeText:"📈 Popular",
-    title:"How can couples strengthen relationships over time?",
-    perspectives:42, contributions:119, sessions:"894",
-    insightLabel:"📊 Consensus Trend", insightColor:"purple",
-    insight:"73% of relationship-focused podcasts emphasize curiosity and emotional safety over compatibility.",
-    voices:["Esther Perel","John Delony","Brené Brown"], more:18,
-    likes:220, comments:47
-  },
-  {
-    board:"Business", icon:"💰", color:"gold", badge:"new", badgeText:"● New",
-    title:"How to start your own business: Shared Perspectives",
-    perspectives:56, contributions:94, sessions:"702",
-    insightLabel:"✨ Collective Insight", insightColor:"gold",
-    insight:"Across founder interviews, talking to customers early was cited more often than raising capital as the first step.",
-    voices:["My First Million","Acquired","How I Built This"], more:14,
-    likes:158, comments:31
-  }
+let feedItems = [];          // discussions from /community/feed
+let trendingBlends = [];     // the blends currently shown as cards
+
+const BOARD_STYLES = [
+  ["brain",         "🧠", "blue"],
+  ["health",        "🧠", "blue"],
+  ["relationship",  "❤️", "pink"],
+  ["business",      "💰", "gold"],
+  ["finance",       "💰", "gold"],
+  ["startup",       "🚀", "gold"],
+  ["ai",            "🤖", "purple"],
+  ["tech",          "🤖", "purple"],
+  ["science",       "🔭", "blue"],
+  ["media",         "🎬", "purple"]
 ];
 
-/* Featured Voices: use real creators from the blends on each board,
-   so every voice can link to its contributor card in feed.html.
-   Falls back to the placeholder names (not linked) until blends load. */
-function voiceHTML(t){
+function boardStyle(board){
+  const k = String(board || "").toLowerCase();
+  const hit = BOARD_STYLES.find(([word]) => k.includes(word));
+  return hit ? { icon:hit[1], color:hit[2] } : { icon:"🎧", color:"purple" };
+}
 
-  const boardBlends = getBlends().filter(b =>
-    String(b.board || "").toLowerCase() === t.board.toLowerCase()
-  );
+function discussionFor(b){
+  return feedItems.find(it => String(it.blend_id) === String(b.id));
+}
 
-  const counts = {};
-  boardBlends.forEach(b => (b.sources || []).forEach(s => {
-    counts[s] = (counts[s] || 0) + 1;
-  }));
+function commentCountOf(b){
+  const it = discussionFor(b);
+  if (!it) return null;
+  const n = Number(it.comment_count ?? it.comments_count ?? it.total_comments);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
 
-  const ranked = Object.entries(counts)
-    .sort((a, b) => b[1] - a[1])
-    .map(([id]) => id);
+/* Most-discussed first, then newest, then biggest */
+function rankedBlends(){
+  const score = b => {
+    let sc = 0;
+    if (discussionFor(b)) sc += 1000 + (commentCountOf(b) || 1);
+    const t = Date.parse(b.created_at);
+    if (Number.isFinite(t)) sc += t / 1e12;
+    sc += (b.clips || 0) / 1e6;
+    return sc;
+  };
+  return getBlends().slice().sort((a, b) => score(b) - score(a));
+}
 
-  const boardLink = `/feed.html?board=${encodeURIComponent(t.board)}`;
-
-  if (!ranked.length){
-    return `
-      ${t.voices.map(v => `
-        <div class="voice">
-          <div class="voice-avatar">${esc(initials(v))}</div>${esc(v)}
-        </div>`).join("")}
-      <span class="more-chip">+${t.more} more</span>`;
+/* Top 3, preferring a different board for each card */
+function pickTrending(n = 3){
+  const ranked = rankedBlends();
+  const out = [], seen = new Set();
+  for (const b of ranked){
+    const k = String(b.board || "").toLowerCase();
+    if (!seen.has(k)){ seen.add(k); out.push(b); }
+    if (out.length === n) break;
   }
+  for (const b of ranked){
+    if (out.length >= n) break;
+    if (!out.includes(b)) out.push(b);
+  }
+  return out;
+}
 
-  const top = ranked.slice(0, 3);
-  const more = Math.max(ranked.length - top.length, 0);
+function badgeFor(b){
+  if (discussionFor(b)) return { cls:"trending", text:"🔥 Trending" };
+  const t = Date.parse(b.created_at);
+  if (Number.isFinite(t) && Date.now() - t < 14 * 864e5) return { cls:"new", text:"● New" };
+  return { cls:"popular", text:"★ Featured" };
+}
 
-  return `
-    ${top.map(id => {
-      const name = formatCreator(id);
-      return `
-        <a class="voice" href="/feed.html?creator=${encodeURIComponent(id)}">
-          <div class="voice-avatar">${esc(initials(name))}</div>${esc(name)}
-        </a>`;
-    }).join("")}
-    ${more ? `<a class="more-chip" href="${boardLink}">+${more} more</a>` : ""}`;
+const GENERIC_SUBTITLE = "discover what the world's leading experts";
+
+function insightText(b){
+  let text = String(b.subtitle || "").trim();
+  if (!text || text.toLowerCase().startsWith(GENERIC_SUBTITLE)){
+    const n = (b.sources || []).length;
+    const e = (b.episode_objects || []).length;
+    const topic = b.board && b.board !== "Uncategorized" ? b.board.toLowerCase() : "this topic";
+    text = `A synthesis of ${n} creator${n === 1 ? "" : "s"}` +
+           (e ? ` across ${e} episode${e === 1 ? "" : "s"}` : "") + ` on ${topic}.`;
+  }
+  return text.length > 240 ? text.slice(0, 237).trimEnd() + "…" : text;
+}
+
+function minutesOf(b){
+  return b.duration_ms ? Math.max(1, Math.round(b.duration_ms / 60000)) : null;
+}
+
+function voicesHTML(b){
+  const sources = b.sources || [];
+  const top = sources.slice(0, 3);
+  const more = sources.length - top.length;
+  const boardLink = `/feed.html?board=${encodeURIComponent(b.board || "")}`;
+  return top.map(id => {
+    const name = formatCreator(id);
+    return `
+      <a class="voice" href="/feed.html?creator=${encodeURIComponent(id)}">
+        <div class="voice-avatar">${esc(initials(name))}</div>${esc(name)}
+      </a>`;
+  }).join("") + (more > 0 ? `<a class="more-chip" href="${boardLink}">+${more} more</a>` : "");
 }
 
 function renderTrending(){
-  const saved = getJSON("savedTrending", []);
-  const liked = getJSON("likedTrending", []);
 
-  $("trendingContainer").innerHTML = TRENDING.map((t, i) => `
+  const box = $("trendingContainer");
+  if (!getBlends().length) return;
+
+  trendingBlends = pickTrending(3);
+
+  const saved = getJSON("savedBlends", []);
+  const liked = getJSON("likedBlends", []);
+
+  box.innerHTML = trendingBlends.map((b, i) => {
+
+    const st = boardStyle(b.board);
+    const badge = badgeFor(b);
+    const sources = b.sources || [];
+    const episodes = (b.episode_objects || []).length;
+    const mins = minutesOf(b);
+    const comments = commentCountOf(b);
+    const label = (!b.board || b.board === "Uncategorized") ? "General" : b.board;
+
+    const third = mins !== null
+      ? `<div class="tstat"><span class="tstat-icon">⏱️</span><div><b>${mins}</b><small>Minutes</small></div></div>`
+      : `<div class="tstat"><span class="tstat-icon">📻</span><div><b>${episodes || "—"}</b><small>Episodes</small></div></div>`;
+
+    const foot = [
+      episodes ? `Based on <b>${episodes}</b> episode${episodes === 1 ? "" : "s"}` : `Based on <b>${b.clips || 0}</b> clips`,
+      `<b>${sources.length}</b> creator${sources.length === 1 ? "" : "s"}`,
+      b.confidence_label ? `Confidence: <b>${esc(b.confidence_label)}</b>` : ""
+    ].filter(Boolean).join(" · ");
+
+    const isLiked = likesApi ? likedSet.has(String(b.id)) : liked.includes(String(b.id));
+    const likeN = likesApi ? (likeCounts[String(b.id)] || 0) : 0;
+    const isSaved = saved.includes(String(b.id));
+
+    return `
     <article class="trend-card">
 
       <div class="trend-top">
-        <span class="pill ${t.color}">${t.icon} ${esc(t.board)}</span>
-        <span class="badge ${t.badge}">${esc(t.badgeText)}</span>
+        <span class="pill ${st.color}">${st.icon} ${esc(label)}</span>
+        <span class="badge ${badge.cls}">${badge.text}</span>
       </div>
 
-      <div class="trend-title">${esc(t.title)}</div>
+      <div class="trend-title">${esc(b.title)}</div>
 
       <div class="trend-stats">
         <div class="tstat"><span class="tstat-icon">🎙️</span>
-          <div><b>${t.perspectives}</b><small>Podcast Perspectives</small></div></div>
-        <div class="tstat"><span class="tstat-icon">💬</span>
-          <div><b>${t.contributions}</b><small>Listener Contributions</small></div></div>
+          <div><b>${sources.length}</b><small>Creators</small></div></div>
         <div class="tstat"><span class="tstat-icon">🎧</span>
-          <div><b>${esc(t.sessions)}</b><small>Listening Sessions</small></div></div>
+          <div><b>${b.clips || 0}</b><small>Clips</small></div></div>
+        ${third}
       </div>
 
-      <div class="insight ${t.insightColor}">
-        <div class="insight-label">${esc(t.insightLabel)}</div>
-        <div class="insight-text">“${esc(t.insight)}”</div>
+      <div class="insight ${st.color}">
+        <div class="insight-label">✨ Collective Insight</div>
+        <div class="insight-text">“${esc(insightText(b))}”</div>
+        <div class="insight-foot">${foot}</div>
       </div>
 
+      ${sources.length ? `
       <div class="voices-label">Featured Voices</div>
-      <div class="voices">
-        ${voiceHTML(t)}
-      </div>
+      <div class="voices">${voicesHTML(b)}</div>` : ""}
 
       <div class="card-actions">
-        <button class="act-btn ${liked.includes(i) ? "liked" : ""}"
-                onclick="toggleTrendLike(${i})">
-          ❤️ ${t.likes + (liked.includes(i) ? 1 : 0)}
-        </button>
-        <button class="act-btn" onclick="openBoard('${esc(t.board)}')">💬 ${t.comments}</button>
-        <button class="act-btn listen" onclick="listenToTrending(${i})">
+        <button class="act-btn ${isLiked ? "liked" : ""}" aria-label="Like"
+                onclick="toggleTrendLike(${i})">❤️${likeN ? " " + likeN : ""}</button>
+        <button class="act-btn" aria-label="Open discussion"
+                onclick="listenToTrending(${i}, false)">💬${comments ? " " + comments : ""}</button>
+        <button class="act-btn listen" onclick="listenToTrending(${i}, true)">
           <span>🎧 Listen to Blend</span><span>▶</span>
         </button>
-        <button class="act-btn ${saved.includes(i) ? "saved" : ""}"
-                aria-label="Save" onclick="toggleTrendSave(${i})">🔖</button>
+        <button class="act-btn ${isSaved ? "saved" : ""}" aria-label="Save"
+                onclick="toggleTrendSave(${i})">🔖</button>
       </div>
 
-    </article>
-  `).join("");
+    </article>`;
+  }).join("");
+}
+
+function toggleStored(key, id){
+  id = String(id);
+  let arr = getJSON(key, []);
+  arr = arr.includes(id) ? arr.filter(x => x !== id) : [...arr, id];
+  localStorage.setItem(key, JSON.stringify(arr));
+}
+
+/* =====================================================
+   LIKES (shared across visitors via the backend)
+   Falls back to this-browser-only if the routes aren't deployed yet.
+===================================================== */
+const API_BASE = "https://podblendz-backend.onrender.com";
+let likesApi = false;
+let likeCounts = {};
+let likedSet = new Set();
+
+function authHeaders(){
+  const token = (() => { try { return localStorage.getItem("googleToken"); } catch { return null; } })();
+  return token ? { "Authorization": "Bearer " + token } : {};
+}
+
+function loadLikes(){
+  fetch(`${API_BASE}/community/likes`, { headers: authHeaders() })
+    .then(r => { if (!r.ok) throw new Error("no likes api"); return r.json(); })
+    .then(data => {
+      likesApi = true;
+      likeCounts = data.counts || {};
+      likedSet = new Set((data.liked || []).map(String));
+      renderTrending();
+    })
+    .catch(() => { likesApi = false; });
 }
 
 function toggleTrendLike(i){
-  let liked = getJSON("likedTrending", []);
-  liked = liked.includes(i) ? liked.filter(x => x !== i) : [...liked, i];
-  localStorage.setItem("likedTrending", JSON.stringify(liked));
+
+  const b = trendingBlends[i];
+  if (!b) return;
+
+  // Routes not available: keep the old this-browser-only behavior
+  if (!likesApi){
+    toggleStored("likedBlends", b.id);
+    renderTrending();
+    return;
+  }
+
+  if (!authHeaders().Authorization){
+    toast("Sign in to like blends.");
+    return;
+  }
+
+  const id = String(b.id);
+  const wasLiked = likedSet.has(id);
+  const oldCount = likeCounts[id] || 0;
+
+  // update instantly, confirm with the server below
+  if (wasLiked){ likedSet.delete(id); likeCounts[id] = Math.max(oldCount - 1, 0); }
+  else { likedSet.add(id); likeCounts[id] = oldCount + 1; }
   renderTrending();
+
+  const undo = msg => {
+    if (wasLiked) likedSet.add(id); else likedSet.delete(id);
+    likeCounts[id] = oldCount;
+    renderTrending();
+    toast(msg);
+  };
+
+  fetch(`${API_BASE}/community/likes/${encodeURIComponent(id)}`, {
+    method: "POST",
+    headers: authHeaders()
+  })
+    .then(r => {
+      if (r.status === 401){ undo("Your sign-in expired. Please sign in again to like."); return null; }
+      if (!r.ok) throw new Error("failed");
+      return r.json();
+    })
+    .then(data => {
+      if (!data) return;
+      if (data.liked) likedSet.add(id); else likedSet.delete(id);
+      likeCounts[id] = data.count;
+      renderTrending();
+    })
+    .catch(() => undo("Couldn't save your like. Please try again."));
 }
 
 function toggleTrendSave(i){
-  let saved = getJSON("savedTrending", []);
-  saved = saved.includes(i) ? saved.filter(x => x !== i) : [...saved, i];
-  localStorage.setItem("savedTrending", JSON.stringify(saved));
+  if (!trendingBlends[i]) return;
+  toggleStored("savedBlends", trendingBlends[i].id);
   renderTrending();
+}
+
+/* Real numbers for the stat tiles */
+function updateStats(){
+  const list = getBlends();
+  if (list.length){
+    const creators = new Set();
+    list.forEach(b => (b.sources || []).forEach(c => creators.add(c)));
+    $("statBlends").textContent = list.length.toLocaleString();
+    $("statCreators").textContent = creators.size.toLocaleString();
+  }
+  if (feedItems.length || window._feedLoaded){
+    $("statDiscussions").textContent = feedItems.length.toLocaleString();
+  }
+}
+
+/* "Your Blendz DNA" = boards the person actually listens to */
+function renderDNA(){
+  const counts = getJSON("listenedBoards", {});
+  const top = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 4);
+  $("dnaChips").innerHTML = top.length
+    ? top.map(([board]) => {
+        const st = boardStyle(board);
+        return `<span class="dna-chip">${st.icon} ${esc(board)}</span>`;
+      }).join("")
+    : `<div class="dna-empty">Listen to a few blends and your interests show up here.</div>`;
+}
+
+function recordListen(blend){
+  if (!blend.board || blend.board === "Uncategorized") return;
+  const counts = getJSON("listenedBoards", {});
+  counts[blend.board] = (counts[blend.board] || 0) + 1;
+  try { localStorage.setItem("listenedBoards", JSON.stringify(counts)); } catch {}
+  renderDNA();
 }
 
 /* Small message bar so problems are visible instead of silent */
@@ -892,24 +1062,16 @@ function toast(msg){
   el._t = setTimeout(() => el.style.display = "none", 5000);
 }
 
-function listenToTrending(i){
+function listenToTrending(i, play = true){
 
-  const list = getBlends();
+  const b = trendingBlends[i];
 
-  if (!list.length){
-    console.warn("BLENDS is empty or not loaded yet.");
+  if (!b){
     toast("Blends are still loading. Try again in a moment.");
     return;
   }
 
-  // Prefer a blend from the same board as the card; fall back to position
-  const t = TRENDING[i];
-  const match = list.find(b =>
-    String(b.board || "").toLowerCase() === t.board.toLowerCase()
-  );
-  const blend = match || list[i] || list[0];
-
-  loadBlend(blend, true);
+  loadBlend(b, play);
   $("currentDiscussion").scrollIntoView({ behavior:"smooth", block:"start" });
 }
 
@@ -936,6 +1098,13 @@ function loadBlend(blend, autoplay = false){
           onclick="event.stopPropagation(); window.location.href='/feed.html';">
       🎙 ${esc(formatCreator(source))}
     </span>`).join("");
+
+  const la = $("listenerArea");
+  if (la){
+    la.innerHTML = `<strong style="color:#fff;display:block;margin-bottom:4px;">${esc(blend.title)}</strong>` +
+      `${blend.clips || 0} clips • ${sources.length} creators`;
+  }
+  if (autoplay) recordListen(blend);
 
   const player = $("communityAudio");
   player.src =
@@ -974,7 +1143,8 @@ function loadBlend(blend, autoplay = false){
         id: blend.id,
         title: blend.title,
         clips: blend.clip_count,
-        sources: blend.creators || []
+        sources: blend.creators || [],
+        board: blend.board
       });
     })
     .catch(() => {
@@ -1122,6 +1292,11 @@ function loadCommunityFeed(){
     })
     .then(items => {
 
+      feedItems = Array.isArray(items) ? items : [];
+      window._feedLoaded = true;
+      updateStats();
+      if (getBlends().length) renderTrending();
+
       $("recentActivityContainer").innerHTML = items.length
         ? items.slice(0, 5).map(item => `
             <div class="activity-item">
@@ -1177,10 +1352,11 @@ function closePlayerOverlay(){
 ===================================================== */
 let searchMatches = [];
 let searchActive = -1;
+let searchShowAll = false;
 
 function highlight(text, q){
-  const i = text.toLowerCase().indexOf(q);
-  if (!q || i < 0) return esc(text);
+  const i = q ? text.toLowerCase().indexOf(q) : -1;
+  if (i < 0) return esc(text);
   return esc(text.slice(0, i)) +
     "<mark>" + esc(text.slice(i, i + q.length)) + "</mark>" +
     esc(text.slice(i + q.length));
@@ -1201,18 +1377,37 @@ function setActive(i){
   }
 }
 
-function runSearch(raw){
+function resultItem(b, i, q){
+  return `
+    <div class="sr-item" role="option" data-i="${i}">
+      <div class="sr-title">${highlight(String(b.title || ""), q)}</div>
+      <div class="sr-meta">
+        ${esc(b.board || "General")} • ${b.clips || 0} clips
+        ${(b.sources || []).length ? " • " + esc(formatCreator(b.sources[0])) : ""}
+      </div>
+    </div>`;
+}
+
+function renderSearch(raw){
 
   const q = raw.trim().toLowerCase();
   const box = $("searchResults");
-
-  if (!q){ closeSearch(); return; }
-
   const list = getBlends();
+
   box.style.display = "block";
+  searchActive = -1;
 
   if (!list.length){
+    searchMatches = [];
     box.innerHTML = `<div class="sr-empty">Blends are still loading...</div>`;
+    return;
+  }
+
+  // Empty box: suggest what's popular right now
+  if (!q){
+    searchMatches = rankedBlends().slice(0, 6);
+    box.innerHTML = `<div class="sr-head">Popular right now</div>` +
+      searchMatches.map((b, i) => resultItem(b, i, "")).join("");
     return;
   }
 
@@ -1234,23 +1429,26 @@ function runSearch(raw){
   });
 
   scored.sort((a, b) => b.score - a.score);
-  searchMatches = scored.slice(0, 8).map(s => s.b);
 
-  if (!searchMatches.length){
+  if (!scored.length){
+    searchMatches = [];
     box.innerHTML = `<div class="sr-empty">No blends found for "${esc(raw.trim())}".</div>`;
     return;
   }
 
-  box.innerHTML = searchMatches.map((b, i) => `
-    <div class="sr-item" role="option" data-i="${i}">
-      <div class="sr-title">${highlight(String(b.title || ""), q)}</div>
-      <div class="sr-meta">
-        ${esc(b.board || "General")} • ${b.clips || 0} clips
-        ${(b.sources || []).length ? " • " + esc(formatCreator(b.sources[0])) : ""}
-      </div>
-    </div>`).join("");
+  const limit = searchShowAll ? 40 : 8;
+  searchMatches = scored.slice(0, limit).map(s => s.b);
 
-  searchActive = -1;
+  box.innerHTML =
+    `<div class="sr-head">${scored.length} match${scored.length === 1 ? "" : "es"}</div>` +
+    searchMatches.map((b, i) => resultItem(b, i, q)).join("") +
+    (!searchShowAll && scored.length > limit
+      ? `<div class="sr-more">Show all ${scored.length} matches</div>` : "");
+}
+
+function runSearch(raw){
+  searchShowAll = false;
+  renderSearch(raw);
 }
 
 function pickSearchResult(i){
@@ -1269,20 +1467,33 @@ function pickSearchResult(i){
   const box = $("searchResults");
 
   input.addEventListener("input", () => runSearch(input.value));
-  input.addEventListener("focus", () => { if (input.value.trim()) runSearch(input.value); });
+  input.addEventListener("focus", () => { searchShowAll = false; renderSearch(input.value); });
+  input.addEventListener("click", () => {
+    if (box.style.display !== "block") renderSearch(input.value);
+  });
 
   input.addEventListener("keydown", e => {
     const n = searchMatches.length;
+    if (e.key === "Escape"){ closeSearch(); return; }
     if (box.style.display !== "block" || !n) return;
 
     if (e.key === "ArrowDown"){ e.preventDefault(); setActive((searchActive + 1) % n); }
     else if (e.key === "ArrowUp"){ e.preventDefault(); setActive((searchActive - 1 + n) % n); }
-    else if (e.key === "Enter"){ e.preventDefault(); pickSearchResult(searchActive >= 0 ? searchActive : 0); }
-    else if (e.key === "Escape"){ closeSearch(); }
+    else if (e.key === "Enter"){
+      e.preventDefault();
+      if (!input.value.trim() && searchActive < 0) return;
+      pickSearchResult(searchActive >= 0 ? searchActive : 0);
+    }
   });
 
   // mousedown (not click) so the input doesn't blur first
   box.addEventListener("mousedown", e => {
+    if (e.target.closest(".sr-more")){
+      e.preventDefault();
+      searchShowAll = true;
+      renderSearch(input.value);
+      return;
+    }
     const item = e.target.closest(".sr-item");
     if (!item) return;
     e.preventDefault();
@@ -1298,8 +1509,17 @@ function pickSearchResult(i){
 /* =====================================================
    INIT
 ===================================================== */
-renderTrending();
-whenBlendsReady(list => { if (list.length) renderTrending(); });
+renderDNA();
+loadLikes();
+whenBlendsReady(list => {
+  if (list.length){
+    renderTrending();
+    updateStats();
+  } else {
+    $("trendingContainer").innerHTML =
+      `<div class="state-msg">Trending blends couldn't load right now. <button onclick="location.reload()">Retry</button></div>`;
+  }
+});
 loadCommunityFeed();
 </script>
 
