@@ -139,6 +139,7 @@ const API = "https://podblendz-backend.onrender.com";
 function token(){ try { return localStorage.getItem("googleToken"); } catch { return null; } }
 
 function finish(boards){
+  const firstTime = !localStorage.getItem("blendzOnboarded");
   // save to the account too (best effort; the browser copy always works)
   const t = token();
   if (t) {
@@ -155,7 +156,8 @@ function finish(boards){
     // keep the old key in case anything still reads it
     localStorage.setItem("podblendz_onboard_topics", JSON.stringify({ topics: boards }));
   } catch {}
-  window.location.href = "/community-feed.html";
+  // first time through: show the Blendz DNA moment; editing later: straight back to the feed
+  window.location.href = firstTime ? "./generate.html" : "/community-feed.html";
 }
 
 $("continueBtn").addEventListener("click", () => {

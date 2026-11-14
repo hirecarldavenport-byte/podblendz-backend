@@ -2,326 +2,277 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Creating Your Blendz DNA | PodBlendz</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Your Blendz DNA | PodBlendz</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" rel="stylesheet">
 
 <style>
-
-body {
-  margin: 0;
-  font-family:
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    sans-serif;
-
-  background: #0f0f0f;
-  color: #ffffff;
+:root{
+  --bg:#050505; --surface:#0d0d0d; --raised:#161616;
+  --line:rgba(255,255,255,.09); --text:#f4f4f4; --muted:rgba(255,255,255,.66);
+  --orange:#ff6a00; --orange-soft:rgba(255,106,0,.14);
+  --display:"Bricolage Grotesque",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
 }
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
 
-.container {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 6rem 1.5rem 4rem;
-  text-align: center;
+.wrap{max-width:720px;margin:0 auto;padding:28px 20px 60px;min-height:100vh;display:flex;flex-direction:column}
+.logo{font-family:var(--display);font-weight:800;font-size:1.2rem;text-decoration:none;color:var(--text)}
+
+.stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding-top:10px}
+
+/* the helix is the one memorable thing on the page */
+.helix-wrap{width:100%;max-width:560px;position:relative;transition:transform .9s cubic-bezier(.2,.7,.2,1),opacity .9s}
+#helix{display:block;width:100%;height:auto}
+.glow{position:absolute;inset:18% 6%;background:radial-gradient(closest-side,rgba(255,106,0,.20),transparent 70%);filter:blur(14px);pointer-events:none;transition:opacity .9s}
+
+h1{font-family:var(--display);font-weight:800;font-size:clamp(2rem,6vw,3rem);letter-spacing:-.02em;line-height:1.05;margin-top:18px;min-height:1.1em}
+.status{color:var(--muted);margin-top:10px;font-size:1.05rem;min-height:1.6em}
+
+/* result */
+.result{width:100%;max-width:620px;margin-top:6px;display:none}
+.done .helix-wrap{transform:scale(.62);margin-top:-52px;margin-bottom:-52px;opacity:.9}
+.done .glow{opacity:.5}
+.done .result{display:block}
+.chips{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:20px}
+.chip{background:var(--orange-soft);border:1px solid rgba(255,106,0,.45);border-radius:999px;padding:.5rem .95rem;font-size:.95rem}
+.chip small{color:var(--muted);margin-left:6px}
+
+.picks{margin-top:26px;text-align:left;display:grid;gap:10px}
+.picks-title{font-family:var(--display);font-weight:700;font-size:1.05rem;text-align:center;margin-bottom:2px}
+.pick{display:block;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;color:inherit;font:inherit;cursor:pointer;text-decoration:none;transition:border-color .15s,background .15s}
+.pick:hover{border-color:rgba(255,106,0,.55);background:#121212}
+.pick b{display:block;font-weight:600}
+.pick span{display:block;color:var(--muted);font-size:.88rem;margin-top:3px}
+
+.actions{margin-top:28px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.cta{padding:.9rem 2.2rem;border-radius:999px;background:var(--orange);color:#fff;border:none;font:inherit;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block}
+.cta:hover{background:#ff7d1f}
+.link{color:var(--muted);font-size:.92rem;text-decoration:underline;background:none;border:none;font-family:inherit;cursor:pointer}
+.link:hover{color:var(--text)}
+
+.skip-top{position:absolute;top:30px;right:20px}
+
+/* reveal: one orchestrated moment, the rest is quiet */
+.result > *{opacity:0;transform:translateY(10px)}
+.done .result > *{animation:rise .55s cubic-bezier(.2,.7,.2,1) forwards}
+.done .result > :nth-child(2){animation-delay:.12s}
+.done .result > :nth-child(3){animation-delay:.24s}
+@keyframes rise{to{opacity:1;transform:none}}
+
+@media (prefers-reduced-motion:reduce){
+  .helix-wrap,.glow{transition:none}
+  .done .result > *{animation:none;opacity:1;transform:none}
 }
-
-h1 {
-  font-size: clamp(2.5rem, 5vw, 4rem);
-  margin-bottom: 1rem;
-  line-height: 1.05;
-}
-
-.subtitle {
-  max-width: 700px;
-  margin: 0 auto 3rem;
-  line-height: 1.7;
-  color: rgba(255,255,255,.75);
-  font-size: 1.05rem;
-}
-
-.summary {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 4rem;
-}
-
-.pill {
-  background: #1b1b1b;
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 999px;
-  padding: .7rem 1.2rem;
-  font-size: .9rem;
-  color: #fff;
-}
-
-.loader {
-  width: 60px;
-  height: 60px;
-
-  margin:
-    0 auto
-    2rem;
-
-  border-radius: 50%;
-
-  border: 4px solid #282828;
-  border-top-color: #ff6a00;
-
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.status {
-  font-size: 1rem;
-  color: rgba(255,255,255,.78);
-  min-height: 24px;
-}
-
-.dna-card {
-
-  display: none;
-
-  margin-top: 4rem;
-
-  max-width: 760px;
-  margin-left: auto;
-  margin-right: auto;
-
-  background: #171717;
-
-  border: 1px solid rgba(255,255,255,.08);
-
-  border-radius: 20px;
-
-  padding: 2rem;
-}
-
-.dna-title {
-  font-size: 1.8rem;
-  font-weight: 700;
-  margin-bottom: .75rem;
-}
-
-.dna-description {
-
-  color: rgba(255,255,255,.72);
-
-  line-height: 1.7;
-
-  margin-bottom: 2rem;
-}
-
-.dna-section-title {
-
-  font-size: .85rem;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-
-  color: #ff6a00;
-
-  margin-bottom: 1rem;
-}
-
-.dna-tags {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.dna-tag {
-  background: #252525;
-  padding: .6rem 1rem;
-  border-radius: 999px;
-}
-
-.ready {
-
-  margin-top: 2rem;
-
-  color: #ff6a00;
-
-  font-weight: 600;
-}
-
 </style>
 </head>
 
 <body>
+<div class="wrap" id="wrap">
 
-<div class="container">
+  <a class="logo" href="/">PodBlendz 🎧</a>
+  <button class="link skip-top" id="skipTop">Skip</button>
 
-  <h1>
-    Creating Your Blendz DNA
-  </h1>
+  <div class="stage">
 
-  <p class="subtitle">
-    We're identifying the ideas, creators, and conversations
-    that best match your interests.
-  </p>
-
-  <div
-    class="summary"
-    id="summaryPills">
-  </div>
-
-  <div
-    class="loader"
-    id="loader">
-  </div>
-
-  <div
-    class="status"
-    id="status">
-    Analyzing podcast conversations...
-  </div>
-
-  <div
-    class="dna-card"
-    id="dnaCard">
-
-    <div class="dna-title">
-      Your Blendz DNA
+    <div class="helix-wrap" aria-hidden="true">
+      <div class="glow"></div>
+      <svg id="helix" viewBox="0 0 560 200" role="img" aria-label="Animated strand of audio"></svg>
     </div>
 
-    <div class="dna-description">
-      Your listening profile is beginning to take shape.
-      We've identified the topics that consistently drive
-      your curiosity and will use them to personalize
-      your future Blendz experiences.
-    </div>
+    <h1 id="heading">Reading the conversations</h1>
+    <p class="status" id="status" aria-live="polite">&nbsp;</p>
 
-    <div class="dna-section-title">
-      Primary Interests
-    </div>
-
-    <div
-      class="dna-tags"
-      id="dnaTags">
-    </div>
-
-    <div class="ready">
-      Your personalized Blendz feed is ready.
+    <div class="result" id="result">
+      <div class="chips" id="chips"></div>
+      <div class="picks" id="picks"></div>
+      <div class="actions">
+        <a class="cta" id="startBtn" href="/community-feed.html">Start listening</a>
+        <a class="link" href="topics.html">Change my topics</a>
+      </div>
     </div>
 
   </div>
-
 </div>
 
 <script>
+const $ = id => document.getElementById(id);
+const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-const data = JSON.parse(
-  localStorage.getItem(
-    "podblendz_onboard_topics"
-  ) || "{}"
-);
-
-const summary =
-  document.getElementById(
-    "summaryPills"
-  );
-
-const dnaTags =
-  document.getElementById(
-    "dnaTags"
-  );
-
-if (data.topics) {
-
-  data.topics.forEach(topic => {
-
-    const pill =
-      document.createElement("div");
-
-    pill.className =
-      "pill";
-
-    pill.textContent =
-      topic.replaceAll("_", " ");
-
-    summary.appendChild(pill);
-
-    const dna =
-      document.createElement("div");
-
-    dna.className =
-      "dna-tag";
-
-    dna.textContent =
-      topic.replaceAll("_", " ");
-
-    dnaTags.appendChild(dna);
-  });
+function read(key, fallback){
+  try { const v = JSON.parse(localStorage.getItem(key)); return v ?? fallback; }
+  catch { return fallback; }
 }
 
-const messages = [
+/* Topics = board names. Fall back to the older key if that's all there is. */
+let topics = read("blendzTopics", []);
+if (!topics.length) {
+  const legacy = read("podblendz_onboard_topics", {});
+  topics = (legacy.topics || []).map(t => String(t).replace(/_/g, " "));
+}
 
-  "Analyzing podcast conversations...",
+const go = () => { window.location.href = "/community-feed.html"; };
+$("skipTop").addEventListener("click", go);
 
-  "Finding where experts agree...",
+/* Nothing chosen yet: send them to pick instead of showing an empty profile */
+if (!topics.length) { window.location.replace("topics.html"); }
 
-  "Discovering overlapping ideas...",
+/* ------------------------------------------------------------------
+   Helix: two strands of audio-bar rungs that twist; lit left to right
+------------------------------------------------------------------ */
+const NS = "http://www.w3.org/2000/svg";
+const svg = $("helix");
+const N = 34, W = 560, H = 200, CY = H / 2, AMP = 62;
+const rungs = [], dotsA = [], dotsB = [];
 
-  "Mapping your learning profile...",
+function el(name, attrs){
+  const e = document.createElementNS(NS, name);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  svg.appendChild(e);
+  return e;
+}
+for (let i = 0; i < N; i++) {
+  const x = 20 + i * ((W - 40) / (N - 1));
+  rungs.push(el("line", { x1:x, x2:x, y1:CY, y2:CY, stroke:"#ff6a00", "stroke-width":3, "stroke-linecap":"round", opacity:.15 }));
+  dotsA.push(el("circle", { cx:x, cy:CY, r:4, fill:"#ff6a00", opacity:.15 }));
+  dotsB.push(el("circle", { cx:x, cy:CY, r:4, fill:"#f4f4f4", opacity:.15 }));
+}
 
-  "Building your Blendz DNA...",
-
-  "Preparing your personalized feed..."
-];
-
-let index = 0;
-
-const status =
-  document.getElementById(
-    "status"
-  );
-
-const interval = setInterval(() => {
-
-  index++;
-
-  if (index < messages.length) {
-
-    status.textContent =
-      messages[index];
+let lit = 0;          // how many rungs are lit (0..N)
+let phase = 0;
+function draw(){
+  for (let i = 0; i < N; i++) {
+    const p = phase + i * 0.42;
+    const s = Math.sin(p), c = Math.cos(p);
+    const ya = CY + s * AMP, yb = CY - s * AMP;
+    const on = i < lit ? 1 : 0;
+    const depth = .55 + .45 * c;                  // fake depth: nearer strand is brighter
+    rungs[i].setAttribute("y1", ya);  rungs[i].setAttribute("y2", yb);
+    rungs[i].setAttribute("opacity", on ? .25 + .5 * Math.abs(s) : .08);
+    dotsA[i].setAttribute("cy", ya);  dotsA[i].setAttribute("r", 3 + 2.4 * depth);
+    dotsB[i].setAttribute("cy", yb);  dotsB[i].setAttribute("r", 3 + 2.4 * (1.1 - depth));
+    dotsA[i].setAttribute("opacity", on ? .95 : .15);
+    dotsB[i].setAttribute("opacity", on ? .75 : .15);
   }
+}
+let raf;
+function loop(){ phase += 0.035; draw(); raf = requestAnimationFrame(loop); }
+if (reduce) { lit = N; draw(); } else { loop(); }
 
-}, 1800);
+/* ------------------------------------------------------------------
+   Real data: counts per topic and a few blends to start with
+------------------------------------------------------------------ */
+const clean = t => String(t || "").replace(/:\s*Shared Perspectives\s*$/i, "").trim();
+const API = "https://api.podblendz.com/blends";
 
-setTimeout(() => {
+let blends = null;
+const dataReady = fetch(API).then(r => r.json()).then(list => { blends = Array.isArray(list) ? list : []; })
+                            .catch(() => { blends = null; });
 
-  clearInterval(interval);
+function matches(){
+  return (blends || []).filter(b => topics.includes(b.board));
+}
+function picks(){
+  const pool = matches().slice().sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)));
+  const out = [], seen = new Set();
+  topics.forEach(t => {                      // one per topic first, so it's varied
+    const hit = pool.find(b => b.board === t && !seen.has(b.id));
+    if (hit && out.length < 3) { out.push(hit); seen.add(hit.id); }
+  });
+  pool.forEach(b => { if (out.length < 3 && !seen.has(b.id)) { out.push(b); seen.add(b.id); } });
+  return out.slice(0, 3);
+}
 
-  document.getElementById(
-    "loader"
-  ).style.display = "none";
+function showResult(){
+  cancelAnimationFrame(raf);
+  lit = N; phase = 0.2; draw();
+  if (!reduce) { raf = requestAnimationFrame(function again(){ phase += 0.012; draw(); raf = requestAnimationFrame(again); }); }
 
-  status.textContent =
-    "Blendz DNA created.";
+  $("wrap").classList.add("done");
+  $("skipTop").style.display = "none";
+  $("heading").textContent = "Your Blendz DNA";
 
-  document.getElementById(
-    "dnaCard"
-  ).style.display = "block";
+  const m = matches();
+  $("status").textContent = blends
+    ? `${m.length} blend${m.length === 1 ? "" : "s"} across ${topics.length} topic${topics.length === 1 ? "" : "s"}, ready to play`
+    : `${topics.length} topic${topics.length === 1 ? "" : "s"} saved`;
 
-  setTimeout(() => {
+  $("chips").innerHTML = "";
+  topics.forEach(t => {
+    const n = (blends || []).filter(b => b.board === t).length;
+    const chip = document.createElement("span");
+    chip.className = "chip";
+    chip.textContent = t;
+    if (blends) { const s = document.createElement("small"); s.textContent = n; chip.appendChild(s); }
+    $("chips").appendChild(chip);
+  });
 
-    window.location.href =
-      "community-feed.html";
+  const list = blends ? picks() : [];
+  const box = $("picks");
+  box.innerHTML = "";
+  if (list.length) {
+    const title = document.createElement("div");
+    title.className = "picks-title";
+    title.textContent = "Start with one of these";
+    box.appendChild(title);
+    list.forEach(b => {
+      const a = document.createElement("a");
+      a.className = "pick";
+      a.href = "/community-feed.html?blend=" + encodeURIComponent(b.id);
+      const t = document.createElement("b"); t.textContent = clean(b.title);
+      const s = document.createElement("span");
+      const creators = (b.creators || []).length;
+      s.textContent = `${b.board} • ${b.clip_count} clips • ${creators} creator${creators === 1 ? "" : "s"}`;
+      a.appendChild(t); a.appendChild(s);
+      box.appendChild(a);
+    });
+    $("startBtn").href = "/community-feed.html?blend=" + encodeURIComponent(list[0].id);
+  } else {
+    box.style.display = "none";
+  }
+}
 
-  }, 2500);
+/* ------------------------------------------------------------------
+   Sequence: about 4 seconds, driven by real work
+------------------------------------------------------------------ */
+if (topics.length) {
+  const steps = [
+    { head: "Reading the conversations", text: () => blends ? `Scanning ${blends.length} blends` : "Scanning blends" },
+    { head: "Finding what you care about", text: () => `Matching ${topics.length} topic${topics.length === 1 ? "" : "s"}` },
+    { head: "Building your Blendz DNA", text: () => "Almost there" }
+  ];
 
-}, 11000);
+  if (reduce) {
+    dataReady.then(showResult);
+  } else {
+    const t0 = performance.now(), TOTAL = 3900;
+    let stepIdx = -1, finished = false;
 
+    function tick(){
+      const e = performance.now() - t0;
+      lit = Math.min(N, Math.floor((e / TOTAL) * N * 1.05));
+      const idx = Math.min(steps.length - 1, Math.floor(e / (TOTAL / steps.length)));
+      if (idx !== stepIdx) {
+        stepIdx = idx;
+        $("heading").textContent = steps[idx].head;
+        $("status").textContent = steps[idx].text();
+      }
+      if (e >= TOTAL && !finished) {
+        finished = true;
+        // wait for the data, but never longer than 3 more seconds
+        Promise.race([dataReady, new Promise(r => setTimeout(r, 3000))]).then(showResult);
+        return;
+      }
+      if (!finished) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+}
 </script>
-
 </body>
 </html>
