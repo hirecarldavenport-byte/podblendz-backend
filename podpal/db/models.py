@@ -391,3 +391,31 @@ class BlendLike(Base):
         DateTime,
         default=datetime.utcnow
     )
+
+
+# =====================================
+# USER TOPICS  (what each person picked on the topics page)
+# =====================================
+
+class UserTopics(Base):
+
+    __tablename__ = "user_topics"
+
+    # verified Google account id (same value as users.google_sub)
+    user_sub = Column(
+        String,
+        primary_key=True
+    )
+
+    # JSON list of board names, e.g. ["AI", "Brain Health"]
+    topics = Column(
+        Text,
+        nullable=False,
+        default="[]"
+    )
+
+    updated_at = Column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow
+    )

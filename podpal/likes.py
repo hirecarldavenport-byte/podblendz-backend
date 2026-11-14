@@ -20,7 +20,7 @@ browser.
 Setup (see the notes in the chat):
   1. pip install google-auth requests      (add to requirements.txt)
   2. set the environment variable GOOGLE_CLIENT_ID on Render
-  3. adjust the two imports marked  <-- ADJUST
+  3. check the models import marked  <-- ADJUST
 """
 
 import os
@@ -32,8 +32,16 @@ from sqlalchemy.orm import Session
 from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token
 
-from models import BlendLike                 # <-- ADJUST if models.py lives elsewhere
-from database import get_db                  # <-- ADJUST to your session dependency
+from podpal.db.models import BlendLike       # <-- ADJUST if models.py lives elsewhere
+from podpal.db.session import SessionLocal
+
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 router = APIRouter()
