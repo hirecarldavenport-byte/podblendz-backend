@@ -161,6 +161,53 @@ button{font-family:inherit}
   background:#0f0f0f;border:1px solid rgba(255,255,255,.14);
   color:#fff;font-size:1.2rem;cursor:pointer;
 }
+
+/* ---- settings menu ---- */
+.settings-wrap{position:relative;display:flex}
+.filter-btn{
+  position:relative;
+  transition:border-color .2s, box-shadow .2s, background .25s;
+}
+.filter-btn .gear{display:inline-block;transition:transform .4s cubic-bezier(.3,1.4,.5,1)}
+.filter-btn:hover{border-color:var(--orange);box-shadow:0 0 0 3px rgba(255,106,0,.15)}
+.filter-btn:hover .gear{transform:rotate(45deg)}
+.filter-btn[aria-expanded="true"]{
+  background:linear-gradient(135deg,#ff6a00,#ff9a3c);
+  border-color:transparent;
+  box-shadow:0 6px 20px rgba(255,106,0,.35);
+}
+.filter-btn[aria-expanded="true"] .gear{transform:rotate(90deg)}
+
+.settings-menu{
+  display:none;position:absolute;right:0;top:calc(100% + 10px);z-index:700;
+  width:290px;background:#111;border:1px solid var(--line);border-radius:18px;
+  padding:8px;box-shadow:0 18px 50px rgba(0,0,0,.7);
+}
+.settings-menu.open{display:block}
+.settings-head{padding:10px 12px 12px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.settings-head b{display:block;font-size:.95rem}
+.settings-head span{color:var(--muted);font-size:.82rem}
+.settings-item{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  width:100%;background:none;border:none;color:#fff;text-align:left;
+  padding:12px;border-radius:12px;cursor:pointer;font-size:.95rem;text-decoration:none;
+}
+.settings-item:hover{background:#1b1b1b}
+.settings-item small{display:block;color:var(--muted);font-size:.78rem;margin-top:2px}
+.settings-item.danger{color:#ff8a80}
+.switch{
+  flex:none;width:42px;height:24px;border-radius:999px;background:#333;
+  position:relative;transition:background .2s;
+}
+.switch::after{
+  content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;
+  border-radius:50%;background:#fff;transition:transform .2s;
+}
+.switch.on{background:var(--orange)}
+.switch.on::after{transform:translateX(18px)}
+@media(prefers-reduced-motion:reduce){
+  .filter-btn,.filter-btn .gear,.switch,.switch::after{transition:none}
+}
 .new-post-btn{
   background:var(--orange);color:#fff;border:none;
   padding:0 24px;border-radius:999px;cursor:pointer;font-weight:600;
@@ -575,7 +622,11 @@ audio{width:100%;margin-top:14px}
                aria-label="Search blends">
         <div id="searchResults" class="search-results" role="listbox"></div>
       </div>
-      <button class="filter-btn" aria-label="Filters">⚙️</button>
+      <div class="settings-wrap" id="settingsWrap">
+        <button class="filter-btn" id="settingsBtn" aria-label="Settings"
+                aria-haspopup="true" aria-expanded="false"><span class="gear">⚙️</span></button>
+        <div class="settings-menu" id="settingsMenu" role="menu"></div>
+      </div>
       <button class="new-post-btn">+ New Post</button>
     </div>
 
@@ -1181,7 +1232,8 @@ function loadBlend(blend, autoplay = false){
     la.innerHTML = `<strong style="color:#fff;display:block;margin-bottom:4px;">${esc(blend.title)}</strong>` +
       `${blend.clips || 0} clips • ${sources.length} creators`;
   }
-  if (autoplay){ recordListen(blend); recordRecent(blend); }
+  const willPlay = autoplay && autoplayOn();
+  if (willPlay){ recordListen(blend); recordRecent(blend); }
 
   const player = $("communityAudio");
   player.src =
@@ -1191,7 +1243,7 @@ function loadBlend(blend, autoplay = false){
     toast("This blend's audio couldn't be loaded.");
   };
   player.load();
-  if (autoplay){
+  if (willPlay){
     player.play().catch(err => {
       console.warn("Playback blocked or failed:", err);
       toast("Tap the play button on the player to start the blend.");
@@ -1477,6 +1529,93 @@ function openDiscussion(blendId){
     if (box) { box.scrollIntoView({ behavior: "smooth", block: "center" }); box.focus(); }
   }, 900);
 })();
+
+/* =====================================================
+   SETTINGS MENU (gear next to search)
+===================================================== */
+function autoplayOn(){
+  try { return localStorage.getItem("blendzAutoplay") !== "off"; } catch { return true; }
+}
+
+function isSignedInNow(){
+  try { return !!localStorage.getItem("googleToken"); } catch { return false; }
+}
+
+function renderSettings(){
+  const u = getJSON("podblendzUser", null);
+  const name = (u && u.display_name) || "Guest";
+  const signedIn = isSignedInNow();
+
+  $("settingsMenu").innerHTML = `
+    <div class="settings-head">
+      <b>${esc(name)}</b>
+      <span>${signedIn ? "Signed in" : "Not signed in"}</span>
+    </div>
+
+    <a class="settings-item" href="/onboard/topics.html" role="menuitem">
+      <span>Edit my topics<small>Change what your feed starts with</small></span>
+      <span aria-hidden="true">›</span>
+    </a>
+
+    <button class="settings-item" role="menuitemcheckbox"
+            aria-checked="${autoplayOn()}" onclick="toggleAutoplay()">
+      <span>Autoplay<small>Start playing when you pick a blend</small></span>
+      <span class="switch ${autoplayOn() ? "on" : ""}"></span>
+    </button>
+
+    <button class="settings-item" role="menuitem" onclick="clearListening()">
+      <span>Clear listening history<small>Resets your recent blends and DNA</small></span>
+    </button>
+
+    ${signedIn
+      ? `<button class="settings-item danger" role="menuitem" onclick="signOut()"><span>Sign out</span></button>`
+      : `<a class="settings-item" href="/auth/login.html" role="menuitem"><span>Sign in</span><span aria-hidden="true">›</span></a>`}
+  `;
+}
+
+function openSettings(){
+  renderSettings();
+  $("settingsMenu").classList.add("open");
+  $("settingsBtn").setAttribute("aria-expanded", "true");
+}
+
+function closeSettings(){
+  $("settingsMenu").classList.remove("open");
+  $("settingsBtn").setAttribute("aria-expanded", "false");
+}
+
+$("settingsBtn").addEventListener("click", e => {
+  e.stopPropagation();
+  $("settingsMenu").classList.contains("open") ? closeSettings() : openSettings();
+});
+/* clicks inside the menu stay inside it (the menu re-draws itself on each click) */
+$("settingsMenu").addEventListener("click", e => e.stopPropagation());
+document.addEventListener("click", () => closeSettings());
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeSettings(); });
+
+function toggleAutoplay(){
+  try { localStorage.setItem("blendzAutoplay", autoplayOn() ? "off" : "on"); } catch {}
+  renderSettings();
+  toast(autoplayOn() ? "Autoplay on" : "Autoplay off");
+}
+
+function clearListening(){
+  try {
+    localStorage.removeItem("listenedBoards");
+    localStorage.removeItem("recentBlends");
+  } catch {}
+  renderDNA();
+  whenBlendsReady(list => { if (list.length) renderRecommended(list); });
+  closeSettings();
+  toast("Listening history cleared");
+}
+
+function signOut(){
+  try {
+    ["googleToken","pbUser","podblendzUser"].forEach(k => localStorage.removeItem(k));
+  } catch {}
+  window.location.href = "/";
+}
 
 /* =====================================================
    PLAYER OVERLAY

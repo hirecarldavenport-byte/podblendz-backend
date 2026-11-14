@@ -83,6 +83,7 @@ const TOPICS = [
   { id:"brain",         icon:"🧠", name:"Brain & Health",    desc:"Memory, sleep, focus, longevity",          boards:["Brain Health"] },
   { id:"science",       icon:"🔭", name:"Science",           desc:"Discoveries and the people behind them",   boards:["Science"] },
   { id:"money",         icon:"💰", name:"Money & Business",  desc:"Investing, retirement, building a company", boards:["Finance","Business"] },
+  { id:"media",         icon:"🎬", name:"Media & Culture",   desc:"Books, stories, and ideas worth sharing",  boards:["Media"] },
   { id:"relationships", icon:"❤️", name:"Relationships",     desc:"Love, friendship, family",                 boards:["Relationships"] },
   { id:"parenting",     icon:"👨‍👩‍👧", name:"Parenting",       desc:"Raising kids in a changing world",         boards:["Parenting"] },
   { id:"politics",      icon:"🏛️", name:"Politics",          desc:"How different voices see the same issue",  boards:["Politics"] },
@@ -134,7 +135,20 @@ function update(){
   $("continueBtn").disabled = n === 0;
 }
 
+const API = "https://podblendz-backend.onrender.com";
+function token(){ try { return localStorage.getItem("googleToken"); } catch { return null; } }
+
 function finish(boards){
+  // save to the account too (best effort; the browser copy always works)
+  const t = token();
+  if (t) {
+    fetch(API + "/users/topics", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + t },
+      body: JSON.stringify({ topics: boards }),
+      keepalive: true
+    }).catch(() => {});
+  }
   try {
     localStorage.setItem("blendzTopics", JSON.stringify(boards));
     localStorage.setItem("blendzOnboarded", "1");
@@ -156,12 +170,25 @@ $("skipBtn").addEventListener("click", () => finish(saved));
 
 render(null);
 
+/* Prefill from the account if they chose topics on another device */
+if (token() && !saved.length) {
+  fetch(API + "/users/topics", { headers: { "Authorization": "Bearer " + token() } })
+    .then(r => r.ok ? r.json() : null)
+    .then(d => {
+      if (!d || !d.saved || !d.topics.length) return;
+      TOPICS.forEach(t => { if (t.boards.some(b => d.topics.includes(b))) picked.add(t.id); });
+      render(window._counts || null);
+    })
+    .catch(() => {});
+}
+
 /* Show how many blends each topic has, from the live API */
 fetch("https://api.podblendz.com/blends")
   .then(r => r.json())
   .then(list => {
     const counts = {};
     list.forEach(b => { counts[b.board] = (counts[b.board] || 0) + 1; });
+    window._counts = counts;
     render(counts);
   })
   .catch(() => {});

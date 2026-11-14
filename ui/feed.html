@@ -183,8 +183,9 @@ button{font-family:inherit}
   <!-- HEADER -->
   <header class="app-header">
     <a class="logo" href="/">PodBlendz<span>🎧</span></a>
-    <a href="/library.html" aria-label="My library">
-      <img class="profile-avatar" src="https://i.pravatar.cc/100?img=12" alt="" />
+    <a id="avatarLink" href="/auth/login.html" aria-label="Sign in">
+      <img class="profile-avatar" id="avatarImg" alt="" referrerpolicy="no-referrer"
+           src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23222'/%3E%3Ccircle cx='20' cy='15' r='7' fill='%23666'/%3E%3Cpath d='M6 36c2-8 8-11 14-11s12 3 14 11' fill='%23666'/%3E%3C/svg%3E" />
     </a>
   </header>
 
@@ -206,6 +207,7 @@ button{font-family:inherit}
     <button class="topic-pill" data-board="Science" onclick="openBoard('Science')">🔭 Science</button>
     <button class="topic-pill" data-board="Finance" onclick="openBoard('Finance')">💰 Finance</button>
     <button class="topic-pill" data-board="Business" onclick="openBoard('Business')">💼 Business</button>
+    <button class="topic-pill" data-board="Media" onclick="openBoard('Media')">🎬 Media</button>
     <button class="topic-pill" data-board="Relationships" onclick="openBoard('Relationships')">❤️ Relationships</button>
     <button class="topic-pill" data-board="Parenting" onclick="openBoard('Parenting')">👨‍👩‍👧 Parenting</button>
     <button class="topic-pill" data-board="Politics" onclick="openBoard('Politics')">🏛️ Politics</button>
@@ -241,19 +243,41 @@ button{font-family:inherit}
 <script src="scripts/feed.js?v=20261114"></script>
 
 <script>
-/* signed-in avatar */
+/* signed-in avatar: Google photo, else the person's initial, else a plain silhouette */
+function initialAvatar(name) {
+  const letter = (String(name || "?").trim()[0] || "?").toUpperCase();
+  const svg =
+    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'>" +
+    "<circle cx='20' cy='20' r='20' fill='#ff6a00'/>" +
+    "<text x='20' y='26' font-size='18' font-family='Arial' font-weight='700' " +
+    "text-anchor='middle' fill='#fff'>" + letter.replace(/[<>&]/g, "") + "</text></svg>";
+  return "data:image/svg+xml," + encodeURIComponent(svg);
+}
+
+function readJSON(key) {
+  try { return JSON.parse(localStorage.getItem(key)); } catch { return null; }
+}
+
 function parseJwt(token) {
   const base64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
-  return JSON.parse(atob(base64));
+  const json = decodeURIComponent(
+    atob(base64).split("").map(c => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)).join("")
+  );
+  return JSON.parse(json);
 }
 
 (function () {
+  let name = null, photo = null, signedIn = false;
+
   let token = null;
   try { token = localStorage.getItem("googleToken"); } catch {}
 
   if (token) {
+    signedIn = true;
     try {
       const profile = parseJwt(token);
+      name  = profile.name;
+      photo = profile.picture;
       localStorage.setItem("pbUser", JSON.stringify({
         googleSub:   profile.sub,
         email:       profile.email,
@@ -264,11 +288,27 @@ function parseJwt(token) {
     } catch {}
   }
 
-  let saved = null;
-  try { saved = JSON.parse(localStorage.getItem("pbUser")); } catch {}
+  // fall back to what was saved at sign-in
+  const pb  = readJSON("pbUser");
+  const pod = readJSON("podblendzUser");
+  if (pb || pod) signedIn = true;
+  name  = name  || (pb && pb.displayName) || (pod && pod.display_name);
+  photo = photo || (pb && pb.photoUrl)    || (pod && pod.photo_url);
 
-  if (saved && saved.photoUrl) {
-    document.querySelector(".profile-avatar")?.setAttribute("src", saved.photoUrl);
+  const img  = document.getElementById("avatarImg");
+  const link = document.getElementById("avatarLink");
+
+  if (signedIn) {
+    link.href = "/library.html";
+    link.setAttribute("aria-label", "My library");
+    if (name) img.title = name;
+
+    if (photo) {
+      img.onerror = () => { img.onerror = null; img.src = initialAvatar(name); };
+      img.src = photo;
+    } else if (name) {
+      img.src = initialAvatar(name);
+    }
   }
 })();
 
