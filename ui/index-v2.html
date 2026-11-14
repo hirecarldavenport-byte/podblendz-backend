@@ -529,7 +529,10 @@ function handleCredentialResponse(response){
   .then(r => r.json())
   .then(data => {
     localStorage.setItem("podblendzUser", JSON.stringify(data));
-    window.location.href = "/onboard/topics.html";
+    // first time: choose topics. After that: straight to the community.
+    window.location.href = localStorage.getItem("blendzOnboarded")
+      ? "/community-feed.html"
+      : "/onboard/topics.html";
   })
   .catch(err => console.error("Login failed:", err));
 }

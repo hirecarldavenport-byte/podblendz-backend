@@ -1,219 +1,170 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Select Topics | PodBlendz</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Choose your topics | PodBlendz</title>
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" rel="stylesheet">
 
-  <style>
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #0f0f0f;
-      color: #ffffff;
-    }
+<style>
+:root{
+  --bg:#050505; --surface:#0d0d0d; --raised:#161616;
+  --line:rgba(255,255,255,.09); --text:#f4f4f4; --muted:rgba(255,255,255,.66);
+  --orange:#ff6a00; --orange-soft:rgba(255,106,0,.14);
+  --display:"Bricolage Grotesque",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased}
+:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
 
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 3rem 1.5rem;
-    }
+.wrap{max-width:900px;margin:0 auto;padding:28px 20px 130px}
+.logo{font-family:var(--display);font-weight:800;font-size:1.2rem;text-decoration:none;color:var(--text)}
 
-    h1 {
-      font-size: 2.2rem;
-      margin-bottom: 0.5rem;
-    }
+h1{font-family:var(--display);font-weight:800;font-size:clamp(2rem,6vw,3rem);letter-spacing:-.02em;line-height:1.05;margin-top:44px}
+.sub{color:var(--muted);margin-top:12px;max-width:34em;font-size:1.05rem}
 
-    .subtitle {
-      opacity: 0.8;
-      margin-bottom: 2.5rem;
-    }
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-top:32px}
 
-    .topic-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1.25rem;
-    }
+.card{position:relative;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px 18px 18px 18px;cursor:pointer;color:inherit;font:inherit;transition:border-color .15s,background .15s}
+.card:hover{border-color:rgba(255,106,0,.55)}
+.card[aria-pressed="true"]{border-color:var(--orange);background:var(--orange-soft)}
+.card .icon{font-size:1.5rem;display:block;margin-bottom:10px}
+.card .name,.card .desc{display:block}
+.card .name{font-family:var(--display);font-weight:700;font-size:1.1rem}
+.card .desc{color:var(--muted);font-size:.9rem;margin-top:3px}
+.card .count{display:block;margin-top:10px;font-size:.82rem;color:var(--muted)}
+.card .tick{position:absolute;top:14px;right:14px;width:24px;height:24px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-size:.8rem;color:transparent}
+.card[aria-pressed="true"] .tick{background:var(--orange);border-color:var(--orange);color:#fff}
 
-    .topic-card {
-      background: #1c1c1c;
-      border-radius: 12px;
-      padding: 1.5rem;
-      cursor: pointer;
-      border: 2px solid transparent;
-      transition: all 0.2s ease;
-      position: relative;
-    }
-
-    .topic-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 24px rgba(0,0,0,0.45);
-    }
-
-    .topic-card.selected {
-      border-color: #ff6a00;
-      background: #222;
-    }
-
-    .topic-card.selected::after {
-      content: "✓";
-      position: absolute;
-      top: 12px;
-      right: 14px;
-      font-size: 1.2rem;
-      color: #ff6a00;
-      font-weight: bold;
-    }
-
-    .topic-title {
-      font-size: 1.1rem;
-      margin-bottom: 0.3rem;
-    }
-
-    .topic-desc {
-      font-size: 0.85rem;
-      opacity: 0.7;
-    }
-
-    .footer {
-      margin-top: 3rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-
-    .selected-count {
-      font-size: 0.9rem;
-      opacity: 0.75;
-    }
-
-    .cta {
-      padding: 0.9rem 2.2rem;
-      border-radius: 999px;
-      background: #ff6a00;
-      color: #fff;
-      border: none;
-      font-size: 0.95rem;
-      cursor: pointer;
-      font-weight: 600;
-    }
-
-    .cta:disabled {
-      background: #444;
-      cursor: not-allowed;
-    }
-
-    @media (max-width: 768px) {
-      h1 {
-        font-size: 1.9rem;
-      }
-    }
-  </style>
+.bar{position:fixed;left:0;right:0;bottom:0;background:rgba(5,5,5,.94);backdrop-filter:blur(10px);border-top:1px solid var(--line)}
+.bar-in{max-width:900px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.picked{color:var(--muted);font-size:.92rem}
+.actions{display:flex;align-items:center;gap:18px}
+.skip{background:none;border:none;color:var(--muted);font:inherit;font-size:.92rem;cursor:pointer;text-decoration:underline}
+.skip:hover{color:var(--text)}
+.cta{padding:.85rem 2rem;border-radius:999px;background:var(--orange);color:#fff;border:none;font:inherit;font-weight:600;cursor:pointer}
+.cta:hover{background:#ff7d1f}
+.cta:disabled{background:#333;color:#888;cursor:not-allowed}
+</style>
 </head>
 
 <body>
-  <div class="container">
-    <h1>What do you want to explore?</h1>
-    <p class="subtitle">
-      Choose topics you care about and we'll build your Blendz DNA from the conversations behind them.
-    </p>
+<div class="wrap">
 
-    <div class="topic-grid" id="topicGrid">
-      <div class="topic-card" data-topic="ai_tech">
-        <div class="topic-title">AI & Technology</div>
-        <div class="topic-desc">Understand where experts align</div>
-      </div>
+  <a class="logo" href="/">PodBlendz 🎧</a>
 
-      <div class="topic-card" data-topic="health_fitness">
-        <div class="topic-title">Politics</div>
-        <div class="topic-desc">Mind, body, longevity</div>
-      </div>
+  <h1 id="heading">What do you want to hear about?</h1>
+  <p class="sub" id="sub">
+    Pick one or more. Your home feed and recommendations start with these,
+    then adjust to what you actually listen to.
+  </p>
 
-      <div class="topic-card" data-topic="world_affairs">
-        <div class="topic-title">World Affairs</div>
-        <div class="topic-desc">Mind, body, longevity</div>
-      </div>
+  <div class="grid" id="grid" role="group" aria-label="Topics"></div>
 
-      <div class="topic-card" data-topic="health_fitness">
-        <div class="topic-title">Health & Fitness</div>
-        <div class="topic-desc">Mind, body, longevity</div>
-      </div>
+</div>
 
-      <div class="topic-card" data-topic="Finance">
-        <div class="topic-title">Finance</div>
-        <div class="topic-desc">Markets, money, strategy</div>
-      </div>
-
-      <div class="topic-card" data-topic="Parenting">
-        <div class="topic-title">Parenting</div>
-        <div class="topic-desc">Culture and storytelling</div>
-      </div>
-
-      <div class="topic-card" data-topic="Entrepreneurship">
-        <div class="topic-title">Entrepreneurship</div>
-        <div class="topic-desc">Startups and leadership</div>
-      </div>
-
-      <div class="topic-card" data-topic="science">
-        <div class="topic-title">Science</div>
-        <div class="topic-desc">Discovery and research</div>
-      </div>
-
-      <div class="topic-card" data-topic="relationships">
-        <div class="topic-title">Relationships</div>
-        <div class="topic-desc">Cases and investigations</div>
-      </div>
-    </div>
-
-    <div class="footer">
-      <div class="selected-count" id="selectedCount">
-        Selected: 0 (recommended 3–5)
-      </div>
-
-      <button class="cta" id="continueBtn" disabled>
-        Continue
-      </button>
+<div class="bar">
+  <div class="bar-in">
+    <div class="picked" id="picked">Nothing selected yet</div>
+    <div class="actions">
+      <button class="skip" id="skipBtn">Skip for now</button>
+      <button class="cta" id="continueBtn" disabled>Continue</button>
     </div>
   </div>
+</div>
 
-  <script>
-    const cards = document.querySelectorAll(".topic-card");
-    const countEl = document.getElementById("selectedCount");
-    const continueBtn = document.getElementById("continueBtn");
+<script>
+/* Each topic maps to the board names your blends are filed under. */
+const TOPICS = [
+  { id:"ai",            icon:"🤖", name:"AI & Tech",         desc:"Where experts agree and disagree on AI",   boards:["AI"] },
+  { id:"brain",         icon:"🧠", name:"Brain & Health",    desc:"Memory, sleep, focus, longevity",          boards:["Brain Health"] },
+  { id:"science",       icon:"🔭", name:"Science",           desc:"Discoveries and the people behind them",   boards:["Science"] },
+  { id:"money",         icon:"💰", name:"Money & Business",  desc:"Investing, retirement, building a company", boards:["Finance","Business"] },
+  { id:"relationships", icon:"❤️", name:"Relationships",     desc:"Love, friendship, family",                 boards:["Relationships"] },
+  { id:"parenting",     icon:"👨‍👩‍👧", name:"Parenting",       desc:"Raising kids in a changing world",         boards:["Parenting"] },
+  { id:"politics",      icon:"🏛️", name:"Politics",          desc:"How different voices see the same issue",  boards:["Politics"] },
+  { id:"world",         icon:"🌍", name:"World Affairs",     desc:"Global events and what's driving them",    boards:["World Affairs"] }
+];
 
-    const selectedTopics = new Set();
+const $ = id => document.getElementById(id);
+const picked = new Set();
 
-    cards.forEach(card => {
-      card.addEventListener("click", () => {
-        const topic = card.dataset.topic;
+function read(key, fallback){
+  try { const v = JSON.parse(localStorage.getItem(key)); return v ?? fallback; }
+  catch { return fallback; }
+}
 
-        if (selectedTopics.has(topic)) {
-          selectedTopics.delete(topic);
-          card.classList.remove("selected");
-        } else {
-          selectedTopics.add(topic);
-          card.classList.add("selected");
-        }
+/* Re-opening this page to edit: start from what they chose before */
+const saved = read("blendzTopics", []);
+TOPICS.forEach(t => { if (t.boards.some(b => saved.includes(b))) picked.add(t.id); });
+if (localStorage.getItem("blendzOnboarded")) {
+  $("heading").textContent = "Your topics";
+  $("sub").textContent = "Change what your feed and recommendations start with.";
+}
 
-        countEl.textContent = `Selected: ${selectedTopics.size} (recommended 3–5)`;
-        continueBtn.disabled = selectedTopics.size === 0;
-      });
-    });
+function render(counts){
+  $("grid").innerHTML = TOPICS.map(t => {
+    const n = counts ? t.boards.reduce((sum, b) => sum + (counts[b] || 0), 0) : null;
+    return `
+      <button class="card" data-id="${t.id}" aria-pressed="${picked.has(t.id)}">
+        <span class="tick">✓</span>
+        <span class="icon">${t.icon}</span>
+        <span class="name">${t.name}</span>
+        <span class="desc">${t.desc}</span>
+        ${n !== null ? `<span class="count">${n} blend${n === 1 ? "" : "s"}</span>` : ""}
+      </button>`;
+  }).join("");
 
-    continueBtn.addEventListener("click", () => {
-      const payload = {
-        topics: Array.from(selectedTopics)
-      };
+  document.querySelectorAll(".card").forEach(card =>
+    card.addEventListener("click", () => {
+      const id = card.dataset.id;
+      picked.has(id) ? picked.delete(id) : picked.add(id);
+      card.setAttribute("aria-pressed", picked.has(id));
+      update();
+    }));
+  update();
+}
 
-      // TEMP: store locally, later POST to backend
-      localStorage.setItem("podblendz_onboard_topics", JSON.stringify(payload));
+function update(){
+  const n = picked.size;
+  $("picked").textContent = n ? `${n} topic${n === 1 ? "" : "s"} selected` : "Nothing selected yet";
+  $("continueBtn").disabled = n === 0;
+}
 
-      // Move to Screen 2 (Time Selection)
-      window.location.href = "/generate.html";
-    });
-  </script>
+function finish(boards){
+  try {
+    localStorage.setItem("blendzTopics", JSON.stringify(boards));
+    localStorage.setItem("blendzOnboarded", "1");
+    // keep the old key in case anything still reads it
+    localStorage.setItem("podblendz_onboard_topics", JSON.stringify({ topics: boards }));
+  } catch {}
+  window.location.href = "/community-feed.html";
+}
+
+$("continueBtn").addEventListener("click", () => {
+  const boards = [];
+  TOPICS.filter(t => picked.has(t.id))
+        .forEach(t => t.boards.forEach(b => { if (!boards.includes(b)) boards.push(b); }));
+  finish(boards);
+});
+
+/* Skipping still counts as done, so they aren't asked again */
+$("skipBtn").addEventListener("click", () => finish(saved));
+
+render(null);
+
+/* Show how many blends each topic has, from the live API */
+fetch("https://api.podblendz.com/blends")
+  .then(r => r.json())
+  .then(list => {
+    const counts = {};
+    list.forEach(b => { counts[b.board] = (counts[b.board] || 0) + 1; });
+    render(counts);
+  })
+  .catch(() => {});
+</script>
 </body>
 </html>

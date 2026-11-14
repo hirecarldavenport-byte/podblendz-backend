@@ -1076,16 +1076,30 @@ function updateStats(){
   }
 }
 
-/* "Your Blendz DNA" = boards the person actually listens to */
+/* Topics picked on the onboarding page (board names) */
+function myTopics(){
+  const t = getJSON("blendzTopics", []);
+  return Array.isArray(t) ? t : [];
+}
+
+/* "Your Blendz DNA" = topics they picked + boards they actually listen to.
+   Listening counts for more, so DNA drifts toward real habits over time. */
 function renderDNA(){
-  const counts = getJSON("listenedBoards", {});
-  const top = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 4);
-  $("dnaChips").innerHTML = top.length
+  const weights = {};
+  myTopics().forEach(b => { weights[b] = (weights[b] || 0) + 1; });
+  const heard = getJSON("listenedBoards", {});
+  Object.entries(heard).forEach(([b, n]) => { weights[b] = (weights[b] || 0) + n * 2; });
+
+  const top = Object.entries(weights).sort((a, b) => b[1] - a[1]).slice(0, 4);
+  $("dnaChips").innerHTML = (top.length
     ? top.map(([board]) => {
         const st = boardStyle(board);
         return `<span class="dna-chip">${st.icon} ${esc(board)}</span>`;
       }).join("")
-    : `<div class="dna-empty">Listen to a few blends and your interests show up here.</div>`;
+    : `<div class="dna-empty">Pick your topics and your interests show up here.</div>`)
+    + `<a href="/onboard/topics.html"
+          style="display:inline-block;margin-top:12px;font-size:.85rem;color:var(--orange);text-decoration:none;font-weight:600">
+         ${top.length ? "Edit topics" : "Choose topics"}</a>`;
 }
 
 function recordRecent(blend){
@@ -1195,7 +1209,7 @@ function loadBlend(blend, autoplay = false){
   const selectedBlendId = localStorage.getItem("dnaSeedBlendId");
 
   if (!selectedBlendId){
-    whenBlendsReady(list => { if (list[0]) loadBlend(list[0]); });
+    whenBlendsReady(list => { const f = forYou(list)[0]; if (f) loadBlend(f); });
     return;
   }
 
@@ -1211,17 +1225,29 @@ function loadBlend(blend, autoplay = false){
       });
     })
     .catch(() => {
-      whenBlendsReady(list => { if (list[0]) loadBlend(list[0]); });
+      whenBlendsReady(list => { const f = forYou(list)[0]; if (f) loadBlend(f); });
     });
 })();
 
 /* =====================================================
    RECOMMENDED BLENDS
 ===================================================== */
+/* Blends from boards they picked first, then boards they listen to */
+function forYou(list){
+  const picked = new Set(myTopics());
+  const heard  = getJSON("listenedBoards", {});
+  const score = b => (picked.has(b.board) ? 2 : 0) + (heard[b.board] ? 1 : 0);
+  return list
+    .map((b, i) => ({ b, i, s: score(b) }))
+    .sort((x, y) => (y.s - x.s) || (x.i - y.i))
+    .map(x => x.b);
+}
+
 function renderRecommended(list){
-  $("dnaBlendsContainer").innerHTML = list.slice(0, 3).map((blend, index) => `
-    <div class="dna-card" onclick="loadBlend(getBlends()[${index}], true)">
-      <div class="dna-category">Recommended</div>
+  const picked = new Set(myTopics());
+  $("dnaBlendsContainer").innerHTML = forYou(list).slice(0, 3).map(blend => `
+    <div class="dna-card" onclick="loadBlend(getBlends().find(b => String(b.id) === '${esc(String(blend.id))}'), true)">
+      <div class="dna-category">${picked.has(blend.board) ? "Because you picked " + esc(blend.board) : "Recommended"}</div>
       <strong>${esc(blend.title)}</strong>
       <div class="dna-sub">${blend.clips} clips • ${(blend.sources || []).length} creators</div>
     </div>`).join("");
