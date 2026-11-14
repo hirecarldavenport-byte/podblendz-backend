@@ -8,11 +8,55 @@ if (typeof BLENDS === "undefined") {
 // ✅ STATE
 let currentView = "blends";
 
+// ✅ SEARCH TEXT (blends view)
+let feedQuery = "";
+
 // ✅ ON LOAD
 document.addEventListener("DOMContentLoaded", () => {
   console.log("feed.js ready");
-  renderCurrentView();
+
+  const search = document.getElementById("feedSearch");
+  if (search) {
+    search.addEventListener("input", e => {
+      feedQuery = e.target.value.trim().toLowerCase();
+      if (currentView !== "blends") {
+        setView("blends");
+      } else {
+        renderFeed();
+      }
+    });
+  }
+
+  waitForBlends();
 });
+
+// blends.js fills BLENDS in the background, so wait for it
+function waitForBlends(attempt = 0) {
+
+  const container = document.getElementById("feed");
+  const ready = typeof BLENDS !== "undefined" &&
+                Array.isArray(BLENDS) && BLENDS.length > 0;
+
+  if (ready) {
+    renderCurrentView();
+    return;
+  }
+
+  if (attempt === 0 && container) {
+    container.innerHTML = '<div class="state-msg">Loading blends…</div>';
+  }
+
+  if (attempt < 40) {
+    setTimeout(() => waitForBlends(attempt + 1), 300);
+    return;
+  }
+
+  if (container) {
+    container.innerHTML =
+      '<div class="state-msg">Couldn\'t load blends.<br>' +
+      '<button onclick="location.reload()">Try again</button></div>';
+  }
+}
 
 // ✅ HUMANIZE CREATOR NAMES
 function formatCreator(name) {
@@ -34,6 +78,18 @@ function formatCreator(name) {
       .replace(/\b\w/g, c => c.toUpperCase());
 }
 
+
+// ✅ SAFE TEXT / SAFE onclick VALUES
+function esc(v) {
+  return String(v ?? "").replace(/[&<>"']/g, c => (
+    { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]
+  ));
+}
+
+// a JS string that is safe inside onclick="..."
+function jsArg(v) {
+  return JSON.stringify(String(v ?? "")).replace(/"/g, "&quot;");
+}
 
 // ✅ CONFIDENCE BADGE (accepts old "Verified" rows too)
 function confBadge(blend) {
@@ -80,15 +136,9 @@ function setView(view) {
 
   }
 
-  document
-    .querySelectorAll(".tab")
-    .forEach(btn =>
-      btn.classList.remove("active")
-    );
-
-  if (window.event?.target) {
-    window.event.target.classList.add("active");
-  }
+  document.querySelectorAll(".tab").forEach(btn =>
+    btn.classList.toggle("active", btn.dataset.view === view)
+  );
 
   renderCurrentView();
 }
@@ -135,7 +185,7 @@ const topTopics =
     const container = document.getElementById("feed");
 
     container.innerHTML = `
-      <div class="card"
+      <div class="card">
 
       <button
         class="blend-btn"
@@ -146,7 +196,7 @@ const topTopics =
         </button>
 
         <div class="card-title">
-          ${formatCreator(creatorName)}
+          ${esc(formatCreator(creatorName))}
         </div>
 
         <div class="card-description">
@@ -169,7 +219,7 @@ const topTopics =
 
   ${topTopics.map(([topic]) => `
     <span class="tag">
-      ${topic}
+      ${esc(topic)}
     </span>
   `).join("")}
 
@@ -184,14 +234,14 @@ const topTopics =
 
       <div
         class="card"
-        onclick="openBlend('${blend.id}')"
+        onclick="openBlend(${jsArg(blend.id)})"
         >
           <div class="card-title">
-            ${blend.title}
+            ${esc(blend.title)}
           </div>
 
           <div class="card-description">
-            ${blend.subtitle || ""}
+            ${esc(blend.subtitle)}
 
           </div>
 
@@ -230,12 +280,12 @@ function renderTopCreators() {
 
     <div 
       class="card"
-      onclick="openCreator('${name}')"
+      onclick="openCreator(${jsArg(name)})"
       style="cursor:pointer;"
     >
 
       <div class="card-title">
-        ${formatCreator(name)}
+        ${esc(formatCreator(name))}
       </div>
 
       <div class="card-meta">
@@ -277,12 +327,12 @@ function renderBoards() {
 
       <div
         class="card"
-        onclick="openBoard('${name}')"
+        onclick="openBoard(${jsArg(name)})"
         style="cursor:pointer;"
       >
 
         <div class="card-title">
-          ${name}
+          ${esc(name)}
         </div>
 
         <div class="card-description">
@@ -350,6 +400,16 @@ if (selectedBoard) {
 
 }
 
+if (feedQuery) {
+  combined = combined.filter(blend => {
+    const hay = [
+      blend.title, blend.subtitle, blend.board,
+      ...(blend.sources || []).map(formatCreator)
+    ].join(" ").toLowerCase();
+    return hay.includes(feedQuery);
+  });
+}
+
 let html = "";
 
 if (selectedBoard) {
@@ -357,7 +417,7 @@ if (selectedBoard) {
   html += `
     <div class="card">
       <div class="card-title">
-        📚 ${selectedBoard}
+        📚 ${esc(selectedBoard)}
       </div>
 
       <div class="card-description">
@@ -372,11 +432,15 @@ if (selectedBoard) {
 
   
 
+  if (feedQuery && combined.length === 0) {
+    html += `<div class="state-msg">No blends match “${esc(feedQuery)}”.</div>`;
+  }
+
   html += combined.map((b) => `
 
     <div
       class="card"
-      onclick="openBlend('${b.id}')"
+      onclick="openBlend(${jsArg(b.id)})"
     >
 
       <div class="card-content">
@@ -384,16 +448,16 @@ if (selectedBoard) {
         <div>
 
           <div class="category-label">
-            ${(b.board || "General").toUpperCase()}
+            ${esc((b.board || "General").toUpperCase())}
           </div>
 
           <div class="card-title">
-          ${b.title}
+          ${esc(b.title)}
           </div>
 
 
           <div class="card-description">
-            ${b.subtitle}
+            ${esc(b.subtitle)}
           </div>
 
           <div
@@ -438,12 +502,12 @@ if (selectedBoard) {
   <span
     class="tag"
     onclick="
-      openCreator('${source}');
+      openCreator(${jsArg(source)});
       event.stopPropagation();
     "
     style="cursor:pointer;"
   >
-    🎙 ${formatCreator(source)}
+    🎙 ${esc(formatCreator(source))}
   </span>
 
 `).join("")}
@@ -469,7 +533,7 @@ if (selectedBoard) {
 
   container.innerHTML = html;
 
-
+}
 
 
 // ✅ OPEN BLEND
@@ -485,7 +549,7 @@ function openBlend(id) {
   );
 
   window.location.href =
-     "./community-feed.html";
+     "./community-feed.html?blend=" + encodeURIComponent(id);
 
 }
 
@@ -506,4 +570,4 @@ function goToSource(name, event) {
   // window.location.href =
   // `/source.html?name=${encodeURIComponent(name)}`;
 
-}}
+}

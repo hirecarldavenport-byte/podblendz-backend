@@ -619,6 +619,7 @@ audio{width:100%;margin-top:14px}
           <div class="player-actions">
             <button class="act-btn" id="playerLike" onclick="event.stopPropagation(); likeBlend({id: currentBlendId})">❤️ Like</button>
             <button class="act-btn" id="playerSave" onclick="event.stopPropagation(); saveBlend({id: currentBlendId})">🔖 Save</button>
+            <button class="act-btn" id="playerShare" onclick="event.stopPropagation(); shareBlend()">🔗 Share</button>
             <a class="act-btn" href="/library.html" onclick="event.stopPropagation()" style="text-decoration:none">📚 My Library</a>
           </div>
         </div>
@@ -1199,6 +1200,30 @@ function loadBlend(blend, autoplay = false){
 
   loadComments();
   refreshPlayerButtons();
+
+  try {
+    window.history.replaceState(null, "", "?blend=" + encodeURIComponent(blend.id));
+  } catch {}
+}
+
+/* Copy a link to the blend that's playing */
+function shareBlend(){
+  if (!currentBlendId) return;
+  const url = window.location.origin + window.location.pathname +
+              "?blend=" + encodeURIComponent(currentBlendId);
+
+  if (navigator.share) {
+    navigator.share({ title: $("communityBlendTitle").innerText, url }).catch(() => {});
+    return;
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(
+      () => toast("Link copied"),
+      () => toast(url)
+    );
+  } else {
+    toast(url);
+  }
 }
 
 /* =====================================================
@@ -1206,7 +1231,10 @@ function loadBlend(blend, autoplay = false){
 ===================================================== */
 (function seedBlend(){
 
-  const selectedBlendId = localStorage.getItem("dnaSeedBlendId");
+  // a link like community-feed.html?blend=ID wins over the saved blend
+  let fromUrl = null;
+  try { fromUrl = new URLSearchParams(window.location.search).get("blend"); } catch {}
+  const selectedBlendId = fromUrl || localStorage.getItem("dnaSeedBlendId");
 
   if (!selectedBlendId){
     whenBlendsReady(list => { const f = forYou(list)[0]; if (f) loadBlend(f); });
@@ -1259,6 +1287,26 @@ whenBlendsReady(list => {
     `<div class="state-msg">Recommendations couldn't load right now.</div>`;
 });
 
+/* Topics follow the person across devices: if they chose topics on another
+   phone or computer, fetch them here and refresh DNA + recommendations. */
+(function syncTopics(){
+  if (!authHeaders().Authorization) return;
+  fetch(`${API_BASE}/users/topics`, { headers: authHeaders() })
+    .then(r => r.ok ? r.json() : null)
+    .then(data => {
+      if (!data || !data.saved) return;
+      const local = JSON.stringify(myTopics());
+      if (local === JSON.stringify(data.topics)) return;
+      try {
+        localStorage.setItem("blendzTopics", JSON.stringify(data.topics));
+        localStorage.setItem("blendzOnboarded", "1");
+      } catch {}
+      renderDNA();
+      whenBlendsReady(list => { if (list.length) renderRecommended(list); });
+    })
+    .catch(() => {});
+})();
+
 /* =====================================================
    NAVIGATION
 ===================================================== */
@@ -1267,8 +1315,8 @@ function openBoard(board){
 }
 
 function openCurrentBlend(){
-  const id = localStorage.getItem("dnaSeedBlendId");
-  if (id) window.location.href = `/blend.html?id=${id}`;
+  const id = currentBlendId || localStorage.getItem("dnaSeedBlendId");
+  if (id) window.location.href = `/community-feed.html?blend=${encodeURIComponent(id)}`;
 }
 
 /* =====================================================
@@ -1418,8 +1466,17 @@ function loadCommunityFeed(){
 
 function openDiscussion(blendId){
   localStorage.setItem("dnaSeedBlendId", blendId);
-  window.location.reload();
+  window.location.href = `/community-feed.html?blend=${encodeURIComponent(blendId)}`;
 }
+
+/* arriving from the feed's "+" button: jump to the comment box */
+(function(){
+  if (window.location.hash !== "#compose") return;
+  setTimeout(() => {
+    const box = $("commentInput");
+    if (box) { box.scrollIntoView({ behavior: "smooth", block: "center" }); box.focus(); }
+  }, 900);
+})();
 
 /* =====================================================
    PLAYER OVERLAY

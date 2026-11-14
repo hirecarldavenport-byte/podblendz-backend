@@ -1,316 +1,179 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PodBlendz Feed</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PodBlendz Feed</title>
+<meta name="description" content="Browse blended podcast conversations by topic, creator, and board." />
+<meta name="theme-color" content="#050505" />
 
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="PodBlendz" />
+<meta property="og:title" content="PodBlendz Feed" />
+<meta property="og:description" content="Browse blended podcast conversations by topic and creator." />
+<meta property="og:url" content="https://www.podblendz.com/feed.html" />
 
-    html, body {
-      width: 100%;
-      margin: 0;
-      padding: 0;
-    }
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎧%3C/text%3E%3C/svg%3E">
 
-    body {
-      font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        Roboto,
-        sans-serif;
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
 
-      background:#050505;
-
-      display: flex;
-      justify-content: center;
-    }
-
-    .app {
-      width: 100%;
-      max-width:700px;
-      min-height: 100vh;
-
-      background:#050505;
-
-      border-radius: 24px;
-      overflow: hidden;
-    }
-
-    /* HEADER */
-    .app-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1.2rem 1rem 0.8rem;
-    }
-
-    .logo {
-      font-size: 1.15rem;
-      font-weight: 700;
-      letter-spacing: 0.18em;
-      color: white;
-    }
-
-    .header-right {
-      display: flex;
-      gap: 1rem;
-      align-items: center;
-    }
-
-    .profile-avatar {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-
-    /* COMPOSER */
-    .composer {
-      background: #0d0d0d;
-      border: 1px solid rgba(255,255,255,.08);
-      margin: 0 1rem;
-      padding: 0.8rem;
-      border-radius: 20px;
-
-      display: flex;
-      align-items: center;
-      gap: 0.8rem;
-
-      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
-    }
-
-    .composer-avatar {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-    }
-
-    .composer input {
-      flex: 1;
-      background: transparent;
-      color: white;
-      border: none;
-      outline: none;
-      font-size: 0.95rem;
-    }
-
-    .blend-btn {
-      background: #ff6a00;
-      color:white;
-      border: none;
-      padding: 0.7rem 1rem;
-      border-radius: 999px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    .blend-btn {
-  background: #ff6a00;
-  border: none;
-  padding: 0.7rem 1rem;
-  border-radius: 999px;
-  font-weight: 600;
-  cursor: pointer;
+:root{
+  --bg:#050505;
+  --card:#0d0d0d;
+  --card2:#141414;
+  --line:rgba(255,255,255,.09);
+  --orange:#ff6a00;
+  --muted:rgba(255,255,255,.6);
 }
 
-/* ADD HERE */
-
-.topic-strip{
+body{
+  background:var(--bg);
+  color:#fff;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   display:flex;
-  gap:8px;
-  overflow-x:auto;
-  padding:12px 16px;
+  justify-content:center;
+}
+button{font-family:inherit}
+:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+
+.app{
+  width:100%;
+  max-width:720px;
+  min-height:100vh;
+  padding:0 16px 120px;
 }
 
-.topic-strip::-webkit-scrollbar{
-  display:none;
+/* ---------- header ---------- */
+.app-header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:18px 0 14px;
 }
+.logo{font-size:1.5rem;font-weight:700;text-decoration:none;color:#fff}
+.logo span{color:var(--orange)}
+.profile-avatar{width:38px;height:38px;border-radius:50%;object-fit:cover;border:1px solid var(--line)}
 
+.page-title{font-size:2rem;line-height:1.1;margin-top:6px}
+.subtitle{color:var(--muted);margin:6px 0 18px}
+
+/* ---------- search ---------- */
+.search{
+  width:100%;
+  background:#0f0f0f;
+  border:1px solid rgba(255,106,0,.25);
+  color:#fff;
+  padding:14px 16px;
+  border-radius:14px;
+  font-size:1rem;
+}
+.search::placeholder{color:rgba(255,255,255,.45)}
+.search:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(255,106,0,.15)}
+
+/* ---------- topic chips ---------- */
+.topic-strip{
+  display:flex;gap:8px;overflow-x:auto;
+  padding:14px 0 4px;scrollbar-width:none;
+}
+.topic-strip::-webkit-scrollbar{display:none}
 .topic-pill{
-  background:#181818;
-  color:white;
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:999px;
-  padding:8px 12px;
-  white-space:nowrap;
+  flex:none;background:#181818;color:#fff;
+  border:1px solid var(--line);border-radius:999px;
+  padding:8px 14px;white-space:nowrap;cursor:pointer;font-size:.9rem;
+}
+.topic-pill:hover{border-color:var(--orange)}
+.topic-pill.active{background:var(--orange);border-color:var(--orange)}
+
+/* ---------- view tabs ---------- */
+.tabs{
+  display:flex;gap:26px;
+  border-bottom:1px solid var(--line);
+  margin:14px 0 18px;
+}
+.tab{
+  background:none;border:none;color:var(--muted);
+  padding:10px 0;font-size:1rem;cursor:pointer;
+  border-bottom:2px solid transparent;margin-bottom:-1px;
+}
+.tab:hover{color:#fff}
+.tab.active{color:var(--orange);border-bottom-color:var(--orange)}
+
+/* ---------- cards (rendered by scripts/feed.js) ---------- */
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:18px;
+  margin-bottom:14px;
   cursor:pointer;
+  transition:border-color .15s, transform .1s;
 }
-
-.topic-pill:hover{
-  border-color:#ff6a00;
-}
-
-/* TABS */
-
-.tabs {
-  display: flex;
-  gap: 0.7rem;
-  overflow-x: auto;
-  padding: 1rem 1rem 0.5rem;
-}
-
-    /* TABS */
-    .tabs {
-      display: flex;
-      gap: 0.7rem;
-      overflow-x: auto;
-      padding: 1rem 1rem 0.5rem;
-    }
-
-    .tabs::-webkit-scrollbar {
-      display: none;
-    }
-
-    .tab {
-      border: none;
-      background: #181818;
-      color: #999;
-      padding: 0.6rem 1rem;
-      border-radius: 999px;
-      white-space: nowrap;
-    }
-
-    .topic-pill.active{
-      background:#ff6a00;
-      color:white;
-    }
-
-    .tab.active {
-      background: #ff6a00;
-      color: white;
-    }
-
-    /* FEED */
-    .feed {
-      padding: 0.6rem 1rem 7rem;
-    }
-
-    /* CARD */
-    .card {
-      background: #0d0d0d;
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: 26px;
-      padding: 1rem;
-      margin-bottom: 1.1rem;
-      color: white;
-    }
-
-    .card-title {
-      font-size:1.3rem;
-      line-height:1.3;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-    }
-
-    .card-description {
-      color: #555;
-      font-size: 0.95rem;
-      margin-bottom: 0.8rem;
-    }
-
-    .card-description {
-  color: rgba(255,255,255,.65);
-  font-size: 0.95rem;
-  margin-bottom: 0.8rem;
-}
-
-/* ADD HERE */
+.card:hover{border-color:rgba(255,106,0,.55)}
+.card:active{transform:scale(.985)}
 
 .category-label{
-  color:#ff6a00;
-  font-size:.75rem;
-  font-weight:700;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-  margin-bottom:8px;
+  color:var(--orange);font-size:.72rem;font-weight:700;
+  letter-spacing:.08em;margin-bottom:8px;
+}
+.card-title{font-size:1.2rem;line-height:1.3;font-weight:700;margin-bottom:6px;overflow-wrap:anywhere}
+.card-description{color:rgba(255,255,255,.65);font-size:.95rem;margin-bottom:10px;overflow-wrap:anywhere}
+.card-meta{color:var(--muted);font-size:.9rem}
+
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.tag{
+  background:#181818;color:rgba(255,255,255,.8);
+  border:1px solid var(--line);
+  padding:5px 11px;border-radius:999px;font-size:.8rem;
+}
+.tag:hover{border-color:var(--orange);color:#fff}
+
+.actions{font-size:.9rem;color:var(--muted);display:flex;align-items:center;flex-wrap:wrap}
+
+.blend-btn{
+  background:#181818;color:#fff;border:1px solid var(--line);
+  border-radius:999px;padding:8px 16px;cursor:pointer;font-size:.9rem;
+}
+.blend-btn:hover{border-color:var(--orange)}
+
+.state-msg{color:var(--muted);text-align:center;padding:40px 10px}
+.state-msg button{
+  margin-top:12px;background:var(--orange);color:#fff;border:none;
+  border-radius:999px;padding:10px 20px;cursor:pointer;font-weight:600;
 }
 
-.tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 0.6rem;
+/* ---------- bottom nav (same as the community page) ---------- */
+.bottom-nav{
+  display:flex;
+  position:fixed;left:50%;transform:translateX(-50%);bottom:0;z-index:500;
+  width:100%;max-width:720px;
+  background:rgba(10,10,10,.96);
+  backdrop-filter:blur(14px);
+  border-top:1px solid var(--line);
+  padding:8px 8px calc(10px + env(safe-area-inset-bottom));
+  justify-content:space-around;align-items:flex-end;
+}
+.nav-item{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  color:rgba(255,255,255,.6);font-size:.78rem;text-decoration:none;
+  min-width:64px;padding-top:6px;
+}
+.nav-item .ico{font-size:1.4rem}
+.nav-item.active{color:var(--orange)}
+.fab{
+  width:64px;height:64px;border-radius:50%;border:none;
+  background:var(--orange);color:#fff;font-size:2rem;
+  margin-top:-26px;cursor:pointer;
+  box-shadow:0 6px 20px rgba(255,106,0,.45);
 }
 
-
-    .tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-bottom: 0.6rem;
-    }
-
-    .tag {
-  background: transparent;
-  color: #999;
-  border: 1px solid rgba(255,255,255,.08);
-  padding: 0.35rem 0.7rem;
-  border-radius: 999px;
-  font-size: 0.8rem;
+@media(max-width:600px){
+  .app{padding:0 14px 120px}
+  .page-title{font-size:2.4rem}
+  .tabs{gap:20px}
 }
-
-
-
-.tag:hover {
-  border-color: #ff6a00;
-  color: white;
+@media(prefers-reduced-motion:reduce){
+  .card{transition:none}
 }
-
-   
-
-   
-
-    .actions {
-      font-size: 0.9rem;
-      color: #666;
-    }
-
-    /* NAV */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      max-width: 430px;
-      left: 50%;
-      transform: translateX(-50%);
-
-      background:#0d0d0d;
-      border-top:1px solid rgba(255,255,255,.08);
-
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      padding: 0.9rem 0;
-    }
-
-    .nav-item {
-      font-size: 0.82rem;
-      color: #aaa;
-    }
-
-    .nav-plus {
-      width: 54px;
-      height: 54px;
-      border-radius: 50%;
-      background: #cfa85c;
-      color: white;
-
-      display: flex;
-      justify-content: center;
-      align-items: center;
-
-      font-size: 2rem;
-      margin-top: -32px;
-    }
-  </style>
+</style>
 </head>
 
 <body>
@@ -318,209 +181,121 @@
 <div class="app">
 
   <!-- HEADER -->
-  <div class="app-header">
-    <div class="logo">PODBLENDZ</div>
-    <div class="header-right">
-      <div class="notification-icon">
-        🔔
+  <header class="app-header">
+    <a class="logo" href="/">PodBlendz<span>🎧</span></a>
+    <a href="/library.html" aria-label="My library">
+      <img class="profile-avatar" src="https://i.pravatar.cc/100?img=12" alt="" />
+    </a>
+  </header>
 
-      </div>
-      
-      <img class="profile-avatar" src="https://i.pravatar.cc/100?img=12" />
-    </div>
+  <h1 class="page-title" id="pageTitle">Explore</h1>
+  <p class="subtitle">Conversations blended from the best podcasts.</p>
+
+  <input
+    id="feedSearch"
+    class="search"
+    type="search"
+    placeholder="Search blends, creators, or topics..."
+    autocomplete="off" />
+
+  <!-- TOPIC CHIPS -->
+  <div class="topic-strip" id="topicStrip">
+    <button class="topic-pill" data-board="">All</button>
+    <button class="topic-pill" data-board="Brain Health" onclick="openBoard('Brain Health')">🧠 Brain Health</button>
+    <button class="topic-pill" data-board="AI" onclick="openBoard('AI')">🤖 AI</button>
+    <button class="topic-pill" data-board="Science" onclick="openBoard('Science')">🔭 Science</button>
+    <button class="topic-pill" data-board="Finance" onclick="openBoard('Finance')">💰 Finance</button>
+    <button class="topic-pill" data-board="Business" onclick="openBoard('Business')">💼 Business</button>
+    <button class="topic-pill" data-board="Relationships" onclick="openBoard('Relationships')">❤️ Relationships</button>
+    <button class="topic-pill" data-board="Parenting" onclick="openBoard('Parenting')">👨‍👩‍👧 Parenting</button>
+    <button class="topic-pill" data-board="Politics" onclick="openBoard('Politics')">🏛️ Politics</button>
+    <button class="topic-pill" data-board="World Affairs" onclick="openBoard('World Affairs')">🌍 World Affairs</button>
   </div>
 
-  <!-- COMPOSER -->
-  <div class="composer">
-    <img class="composer-avatar" src="https://i.pravatar.cc/100?img=15" />
-    <input placeholder="Share a blend, a lesson, a shift..." />
-    <button class="blend-btn">Blend</button>
+  <!-- VIEW TABS -->
+  <div class="tabs" role="tablist">
+    <button class="tab active" data-view="blends"   role="tab" onclick="setView('blends')">Blends</button>
+    <button class="tab"        data-view="creators" role="tab" onclick="setView('creators')">Creators</button>
+    <button class="tab"        data-view="following" role="tab" onclick="setView('following')">Boards</button>
   </div>
 
-  <div class="topic-strip">
-
-    <button
-  class="topic-pill"
-  onclick="openBoard('Brain Health')">
-  🧠 Brain Health
-</button>
-
-<button
-  class="topic-pill"
-  onclick="openBoard('AI')">
-  🤖 AI
-</button>
-
-<button
-  class="topic-pill"
-  onclick="openBoard('Business')">
-  💰 Business
-</button>
-
-<button
-  class="topic-pill"
-  onclick="openBoard('Relationships')">
-  ❤️ Relationships
-</button>
-
-    
-  </div>
-
-
-
-
-
-  <!-- TABS -->
-  <div class="tabs">
-    <button class="tab active" onclick="setView('blends')">Top Blends</button>
-    <button class="tab" onclick="setView('creators')">Top Creators</button>
-    <button class="tab" onclick="setView('following')">Boards</button>
-    <button class="tab" onclick="setView('recent')">Trending</button>
-    <button class="tab" onclick="window.location.href='./community-feed.html'">Community</button>
-    </div>
-
-  <!-- FEED -->
-
-  
+  <!-- FEED (filled by scripts/feed.js) -->
   <div class="feed" id="feed"></div>
-
-  <!-- NAV -->
-  <div class="bottom-nav">
-    <div class="nav-item">Home</div>
-    <div class="nav-item">Boards</div>
-    <div class="nav-plus">+</div>
-    <div class="nav-item">Creators</div>
-    <div class="nav-item">Profile</div>
-  </div>
 
 </div>
 
-<!-- ✅ DATA FIRST -->
+<!-- BOTTOM NAV (same as the community page) -->
+<nav class="bottom-nav">
+  <a class="nav-item" id="navHome" href="/feed.html"><span class="ico">🏠</span>Home</a>
+  <a class="nav-item" href="/community-feed.html"><span class="ico">👥</span>Community</a>
+  <button class="fab" aria-label="New post"
+          onclick="window.location.href='/community-feed.html#compose'">+</button>
+  <a class="nav-item" id="navExplore" href="/feed.html?view=boards"><span class="ico">🧭</span>Explore</a>
+  <a class="nav-item" href="/library.html"><span class="ico">📚</span>Library</a>
+</nav>
+
+<!-- DATA FIRST -->
 <script src="scripts/blends.js"></script>
 
-<!-- ✅ LOGIC SECOND -->
-<script src="scripts/feed.js?v=20261109"></script>
+<!-- LOGIC SECOND -->
+<script src="scripts/feed.js?v=20261114"></script>
 
 <script>
-
+/* signed-in avatar */
 function parseJwt(token) {
-
-  const base64Url =
-    token.split('.')[1];
-
-  const base64 =
-    base64Url
-      .replace(/-/g, '+')
-      .replace(/_/g, '/');
-
-  return JSON.parse(
-    atob(base64)
-  );
-
+  const base64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+  return JSON.parse(atob(base64));
 }
 
-const token =
-  localStorage.getItem(
-    "googleToken"
-  );
+(function () {
+  let token = null;
+  try { token = localStorage.getItem("googleToken"); } catch {}
 
-if (token) {
+  if (token) {
+    try {
+      const profile = parseJwt(token);
+      localStorage.setItem("pbUser", JSON.stringify({
+        googleSub:   profile.sub,
+        email:       profile.email,
+        displayName: profile.name,
+        photoUrl:    profile.picture,
+        blendzId:    `BLZ-${profile.sub.slice(-8)}`
+      }));
+    } catch {}
+  }
 
-  const profile =
-    parseJwt(token);
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem("pbUser")); } catch {}
 
-  const user = {
-
-    googleSub:
-      profile.sub,
-
-    email:
-      profile.email,
-
-    displayName:
-      profile.name,
-
-    photoUrl:
-      profile.picture,
-
-    blendzId:
-      `BLZ-${profile.sub.slice(-8)}`
-  };
-
-  localStorage.setItem(
-    "pbUser",
-    JSON.stringify(user)
-  );
-
-  document
-    .querySelector(".profile-avatar")
-    ?.setAttribute(
-      "src",
-      user.photoUrl
-    );
-
-  document
-    .querySelector(".composer-avatar")
-    ?.setAttribute(
-      "src",
-      user.photoUrl
-    );
-
-}
-
-const savedUser = (() => {
-  try { return JSON.parse(localStorage.getItem("pbUser")); }
-  catch { return null; }
+  if (saved && saved.photoUrl) {
+    document.querySelector(".profile-avatar")?.setAttribute("src", saved.photoUrl);
+  }
 })();
 
-if (savedUser?.photoUrl) {
+/* highlight the current topic chip, and the matching bottom-nav item */
+(function () {
+  const params = new URLSearchParams(window.location.search);
+  const board  = params.get("board") || "";
+  const view   = params.get("view");
 
-  document
-    .querySelector(".profile-avatar")
-    ?.setAttribute(
-      "src",
-      savedUser.photoUrl
-    );
+  document.querySelectorAll(".topic-pill").forEach(p => {
+    p.classList.toggle("active", (p.dataset.board || "") === board);
+  });
 
-  document
-    .querySelector(".composer-avatar")
-    ?.setAttribute(
-      "src",
-      savedUser.photoUrl
-    );
+  if (board) document.getElementById("pageTitle").textContent = board;
 
-}
+  const onExplore = view === "boards" || view === "creators";
+  document.getElementById("navExplore").classList.toggle("active", onExplore);
+  document.getElementById("navHome").classList.toggle("active", !onExplore);
 
-</script>
+  /* "All" clears the board */
+  document.querySelector('.topic-pill[data-board=""]').addEventListener("click", () => {
+    window.location.href = "/feed.html";
+  });
+})();
 
-<script>
-/* ✅ STEP 2: SOURCE NAVIGATION */
-function goToSource(name, event) {
-  event.stopPropagation();
-  window.location.href =
-    '/ui/source.html?name=' + encodeURIComponent(name);
-}
-
-function openBlend(id){
-
-  localStorage.setItem(
-    "dnaSeedBlendId",
-    id
-  );
-
-  window.location.href =
-    `./blend.html?id=${id}`;
-}
-
-</script>
-
-<script>
-/* ✅ Deep links:
-     feed.html?creator=huberman_lab  -> opens that contributor card
-     feed.html?view=creators         -> opens the Top Creators list
-     feed.html?view=boards           -> opens the Boards list            */
-(function(){
-
+/* deep links:  ?creator=huberman_lab   ?view=creators   ?view=boards */
+(function () {
   const params  = new URLSearchParams(window.location.search);
   const creator = params.get("creator");
   const view    = params.get("view");
@@ -528,42 +303,32 @@ function openBlend(id){
   if (!creator && view !== "creators" && view !== "boards") return;
 
   let tries = 0;
-
   const timer = setInterval(() => {
-
     const ready =
       typeof BLENDS !== "undefined" &&
-      Array.isArray(BLENDS) &&
-      BLENDS.length > 0 &&
+      Array.isArray(BLENDS) && BLENDS.length > 0 &&
       typeof openCreator === "function";
 
     if (ready) {
-
       clearInterval(timer);
-
-      const tabs = document.querySelectorAll(".tab");
-      let activeTab = 1;                        // Top Creators
-
       if (creator) {
         openCreator(creator);
-      } else if (view === "creators") {
-        setView("creators");
+        document.querySelectorAll(".tab").forEach(t =>
+          t.classList.toggle("active", t.dataset.view === "creators"));
       } else {
-        setView("following");
-        activeTab = 2;                          // Boards
+        setView(view === "creators" ? "creators" : "following");
       }
-
-      // set the highlight last (setView clears it)
-      tabs.forEach(t => t.classList.remove("active"));
-      tabs[activeTab]?.classList.add("active");
-
     } else if (++tries > 50) {
       clearInterval(timer);
     }
-
   }, 200);
-
 })();
+
+/* used by creator tags */
+function goToSource(name, event) {
+  if (event) event.stopPropagation();
+  window.location.href = "/ui/source.html?name=" + encodeURIComponent(name);
+}
 </script>
 
 </body>
