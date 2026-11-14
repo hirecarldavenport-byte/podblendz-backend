@@ -8,6 +8,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.routing import APIRoute
 from podpal.routes.blend_feed_routes import router as blend_feed_router
 from fastapi.middleware.cors import CORSMiddleware
+from podpal.admin_categorize import router as admin_categorize_router
+
 
 from fastapi import Depends
 from sqlalchemy.orm import Session
@@ -158,6 +160,7 @@ from podpal.routes.narration_routes import router as narration_router
 from podpal.routes.blend_routes import router as blend_router
 
 
+
 app.include_router(health_router)
 app.include_router(s3_router)
 app.include_router(narration_router)
@@ -167,6 +170,7 @@ app.include_router(community_router)
 app.include_router(community_voice_router)
 app.include_router(likes_router)
 app.include_router(user_topics_router)
+app.include_router(admin_categorize_router)
 
 # -------------------------------------------------
 # USER LOGIN
