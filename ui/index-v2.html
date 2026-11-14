@@ -1,857 +1,555 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>PodBlendz</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PodBlendz – One question, answered by every podcast</title>
+<meta name="description" content="PodBlendz finds the same idea across the best podcasts and blends the clips into one short episode. Play one free." />
 
-  <style>
-    
-    
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+<meta property="og:title" content="PodBlendz – One question, answered by every podcast" />
+<meta property="og:description" content="Hear what Lex Fridman, Hidden Brain, Huberman Lab and more say about the same idea, blended into one short episode." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://www.podblendz.com/" />
+<!-- <meta property="og:image" content="https://www.podblendz.com/assets/og-card.png" /> -->
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #0f0f0f;
-      color: #ffffff;
-    }
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&display=swap" rel="stylesheet">
 
-    /* NAV */
-    .nav {
-      padding: 1rem 1.2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .logo {
-      font-size: 1.1rem;
-      font-weight: 600;
-    }
-
-    .login-btn {
-  background: transparent;
-  color:  white;
-  border: 1px solid rgba(255,255,255,0.25);
-  border-radius: 999px;
-  padding: 0.6rem 1.2rem;
-  cursor: pointer;
-  font-size: 0.9rem;
+<style>
+:root{
+  --bg:#050505;
+  --surface:#0d0d0d;
+  --raised:#161616;
+  --line:rgba(255,255,255,.09);
+  --text:#f4f4f4;
+  --muted:rgba(255,255,255,.66);
+  --orange:#ff6a00;
+  --orange-soft:rgba(255,106,0,.14);
+  --display:"Bricolage Grotesque",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
 }
 
-.login-btn:hover {
-  background: rgba(255,255,255,0.08);
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--body);line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+
+/* ---------- nav ---------- */
+.nav{display:flex;justify-content:space-between;align-items:center;padding:18px 0}
+.logo{font-family:var(--display);font-weight:800;font-size:1.25rem;letter-spacing:-.01em;text-decoration:none}
+.nav-right{display:flex;align-items:center;gap:22px}
+.nav-link{color:var(--muted);text-decoration:none;font-size:.95rem}
+.nav-link:hover{color:var(--text)}
+.login-btn{background:transparent;border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:.55rem 1.15rem;cursor:pointer;font-size:.9rem}
+.login-btn:hover{background:rgba(255,255,255,.08)}
+
+/* ---------- hero ---------- */
+.hero > *{min-width:0}
+.hero{display:grid;grid-template-columns:minmax(0,1fr);gap:34px;padding:34px 0 56px}
+.hero h1{font-family:var(--display);font-weight:800;font-size:clamp(2.5rem,8.5vw,4.6rem);line-height:1.02;letter-spacing:-.025em;max-width:14ch}
+.hero-copy p{margin-top:20px;font-size:1.1rem;color:var(--muted);max-width:30em}
+.cta-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+.btn{border-radius:999px;border:1px solid rgba(255,255,255,.25);background:transparent;padding:.85rem 1.5rem;cursor:pointer;font-size:.98rem;font-weight:600}
+.btn:hover{border-color:var(--text)}
+.btn-primary{background:var(--orange);border-color:var(--orange);color:#fff}
+.btn-primary:hover{background:#ff7d1f;border-color:#ff7d1f}
+.cta-note{margin-top:12px;font-size:.85rem;color:var(--muted)}
+
+@media(min-width:900px){
+  .hero{grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:64px;align-items:center;padding:56px 0 84px}
 }
 
-    /* HERO */
-    .hero {
-      padding: 2rem 1.2rem 2rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1.4rem;
-    }
 
-    .hero h1 {
-      font-size: clamp(2rem, 6vw, 2.4rem);
-      line-height: 1.1;
-      font-weight: 700;
-    }
-
-    .hero p {
-      font-size: 1rem;
-      opacity: 0.85;
-    }
-
-   
-
-/* CSS HERE */
-
-      .featured-blend {
-        max-width: 700px;
-        margin: -40px auto 40px;
-        padding: 2rem;
-        background: #171717;
-        border-radius: 18px;
-        border: 1px solid rgba(255,255,255,.08);
-      }
-
-      .topic-preview {
-
-        width:100%;
-
-        background:#1a1a1a;
-
-        color:white;
-
-        border:1px solid rgba(255,255,255,.1);
-
-        padding:14px;
-
-        border-radius:14px;
-
-        cursor:pointer;
-
-      }
-
-      .topic-preview:hover {
-
-        border-color:#ff6a00;
-
-      }
-
-      .topic-preview.selected {
-        border-color: #ff6a00;
-        background: rgba(255,106,0,.12);
-      }
-
-      .featured-label {
-        color: #ff6a00;
-        font-size: 0.75rem;
-        font-weight: 600;
-        letter-spacing: .12em;
-        margin-bottom: 1rem;
-        
-      }
-
-      .featured-meta {
-        opacity: .7;
-        font-size: .9rem;
-        margin-top: 1rem;
-    }
-
-      .featured-creators {
-        opacity: .85;
-        margin-top: .5rem;
-        margin-bottom: 1.5rem;
-        font-size: .95rem;
+/* ---------- hero photo ---------- */
+.hero-visual{position:relative;min-width:0}
+.hero-photo{position:relative;height:300px;border-radius:24px;overflow:hidden;background:var(--raised)}
+.hero-photo img{width:100%;height:100%;object-fit:cover;object-position:var(--photo-focus,50% 30%);display:block}
+.hero-photo::after{content:"";position:absolute;inset:0;background:linear-gradient(to bottom,rgba(5,5,5,0) 45%,rgba(5,5,5,.85));pointer-events:none}
+.hero-visual .player{position:relative;margin:-36px 12px 0;z-index:2;box-shadow:0 24px 60px rgba(0,0,0,.6)}
+@media(min-width:900px){
+  .hero-photo{height:480px}
+  .hero-visual .player{margin:-84px 28px 0}
 }
 
-      .featured-blend h2 {
-        margin-bottom: 1rem;
-      }
+/* ---------- player card ---------- */
+.player{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:22px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:20px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;background:var(--raised);border:1px solid var(--line);border-radius:999px;padding:.5rem .95rem;cursor:pointer;font-size:.9rem;color:var(--muted)}
+.chip:hover{border-color:var(--orange);color:var(--text)}
+.chip[aria-pressed="true"]{background:var(--orange);border-color:var(--orange);color:#fff}
 
-      #previewMessage {
-        margin-top: 20px;
-}
+.q-label{font-size:.85rem;color:var(--muted);margin-bottom:6px}
+.player h2{font-family:var(--display);font-weight:700;font-size:clamp(1.35rem,3.4vw,1.75rem);line-height:1.2;letter-spacing:-.01em}
+.player .desc{margin-top:10px;color:var(--muted);font-size:.95rem}
+.voices{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px}
+.voice{background:var(--raised);border:1px solid var(--line);border-radius:999px;padding:.28rem .7rem;font-size:.8rem;color:rgba(255,255,255,.82)}
 
-      .featured-blend p {
-        opacity: .8;
-        line-height: 1.6;
-      }
+.play-row{display:flex;align-items:center;gap:16px;margin-top:22px}
+.play-btn{flex:none;width:64px;height:64px;border-radius:50%;border:none;background:var(--orange);color:#fff;font-size:1.5rem;cursor:pointer;display:grid;place-items:center;padding-left:4px}
+.play-btn[data-playing="true"]{padding-left:0}
+.play-btn:hover{background:#ff7d1f}
+.play-meta{font-size:.9rem;color:var(--muted)}
+.play-meta b{color:var(--text);font-weight:600}
 
-      .featured-blend .btn {
-        width: auto;
-        min-width: 250px;
-        padding-left: 2rem;
-        padding-right: 2rem;
+.eq{display:flex;align-items:flex-end;gap:3px;height:22px;margin-top:8px}
+.eq i{display:block;width:4px;height:6px;border-radius:2px;background:var(--orange);opacity:.5}
+.playing .eq i{opacity:1;animation:eq 900ms ease-in-out infinite}
+.playing .eq i:nth-child(2){animation-delay:-.2s}
+.playing .eq i:nth-child(3){animation-delay:-.5s}
+.playing .eq i:nth-child(4){animation-delay:-.7s}
+.playing .eq i:nth-child(5){animation-delay:-.35s}
+@keyframes eq{0%,100%{height:5px}50%{height:22px}}
+@media(prefers-reduced-motion:reduce){.playing .eq i{animation:none;height:14px}html{scroll-behavior:auto}}
 
-        }
+audio{width:100%;margin-top:16px;height:40px}
+.preview-note{margin-top:10px;font-size:.82rem;color:var(--muted)}
+.join{display:inline-block;margin-top:14px;font-size:.92rem;color:var(--orange);text-decoration:none;font-weight:600}
+.join:hover{text-decoration:underline}
 
-        .demo-modal {
-          display: none;
-          position: fixed;
-          inset: 0;
-          background: rgba(0,0,0,.9);
-          z-index: 1000;
-        }
+.gate{display:none;margin-top:18px;padding:20px;border-radius:16px;background:var(--orange-soft);border:1px solid rgba(255,106,0,.35)}
+.gate h3{font-family:var(--display);font-size:1.15rem;margin-bottom:6px}
+.gate p{color:var(--muted);font-size:.95rem;margin-bottom:14px}
 
-        .demo-content {
-          width: 90%;
-          max-width: 900px;
-          margin: 5vh auto;
-        }
+/* ---------- stats ---------- */
+.stats{display:none;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.stats.on{display:block}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding-top:26px;padding-bottom:26px}
+.stat b{display:block;font-family:var(--display);font-size:clamp(1.8rem,5vw,2.6rem);font-weight:800;letter-spacing:-.02em;line-height:1}
+.stat span{display:block;margin-top:6px;font-size:.88rem;color:var(--muted)}
 
-        .demo-content video {
-          width: 100%;
-          border-radius: 16px;
-        }
+/* ---------- how it works ---------- */
+.section{padding:76px 0}
+.section h2{font-family:var(--display);font-weight:800;font-size:clamp(1.8rem,5vw,2.6rem);letter-spacing:-.02em;line-height:1.1;max-width:18ch}
+.steps{list-style:none;display:grid;grid-template-columns:1fr;gap:14px;margin-top:34px;counter-reset:s}
+.steps li{counter-increment:s;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:22px 22px 24px}
+.steps li::before{content:counter(s);display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--orange-soft);color:var(--orange);font-weight:700;margin-bottom:16px}
+.steps h3{font-family:var(--display);font-size:1.2rem;margin-bottom:6px}
+.steps p{color:var(--muted);font-size:.97rem}
+@media(min-width:800px){.steps{grid-template-columns:repeat(3,1fr)}}
 
-        #closeDemo {
-          color: white;
-          font-size: 34px;
-          cursor: pointer;
-          float: right;
-          margin-bottom: 12px;
-        }
+/* ---------- sign up ---------- */
+.signup{background:var(--surface);border:1px solid var(--line);border-radius:28px;padding:36px 24px;margin-bottom:64px}
+.signup h2{max-width:20ch}
+.signup p{color:var(--muted);margin:14px 0 24px;max-width:34em}
+.perks{list-style:none;display:flex;flex-wrap:wrap;gap:10px 22px;margin-bottom:26px;color:rgba(255,255,255,.85);font-size:.95rem}
+.perks li::before{content:"✓";color:var(--orange);margin-right:8px;font-weight:700}
+@media(min-width:800px){.signup{padding:52px}}
 
+/* ---------- footer ---------- */
+.footer{border-top:1px solid var(--line);padding:26px 0 40px;display:flex;flex-wrap:wrap;gap:12px 26px;justify-content:space-between;color:var(--muted);font-size:.9rem}
+.footer nav{display:flex;gap:22px}
+.footer a{text-decoration:none}
+.footer a:hover{color:var(--text)}
 
-    /* IMAGE BELOW TEXT (KEY CHANGE) */
-    .hero-image-container {
-      margin-top: 0.5rem;
-      width: 100%;
-      height: 220px;
-      border-radius: 16px;
-      overflow: hidden;
-    }
+/* ---------- demo modal ---------- */
+.demo-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:1000;overflow:auto}
+.demo-content{width:92%;max-width:900px;margin:6vh auto}
+.demo-content video{width:100%;border-radius:16px}
+#closeDemo{display:block;margin:0 0 12px auto;background:none;border:none;color:#fff;font-size:2.2rem;line-height:1;cursor:pointer}
+</style>
 
-    .hero-image {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    /* BUTTONS */
-    .buttons {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-top: 12px;
-    }
-
-    .btn {
-      width: 100%;
-      padding: 0.9rem;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.25);
-      background: transparent;
-      color: #fff;
-      font-size: 0.95rem;
-    }
-
-    .btn-primary {
-      background: #ff6a00;
-      border: none;
-      font-weight: 600;
-    }
-
-    .cta-note {
-      font-size: 0.8rem;
-      opacity: 0.7;
-      margin-top: 0.3rem;
-    }
-
-    /* TOPICS */
-   
-
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.8rem;
-    }
-
-    /* ===== DESKTOP ===== */
-    @media (min-width: 900px) {
-
-      .hero {
-        min-height: 70vh;
-        display: grid;
-        grid-template-columns: 50% 50%;
-        align-items: center;
-        gap: 4rem;
-        padding: 4rem 6rem;
-      }
-
-      .hero h1 {
-        font-size: 4.5rem;
-        line-height: 1;
-
-      }
-
-      .hero p {
-        font-size: 1.25rem;
-      }
-
-      .hero-image-container {
-        height: 500px;
-      }
-
-      .buttons {
-        max-width: 400px;
-      }
-
-      .topics {
-        margin-top: 4rem;
-
-      }
-
-      .grid {
-        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-      }
-    }
-
-  </style>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 
 <body>
 
-  <!-- NAV -->
-  <div class="nav">
-    <div class="logo">PodBlendz 🎧</div>
+<div class="wrap">
 
-    <button class="login-btn" id="loginBtn">
-      Sign In
-    </button>
-  </div>
+  <!-- NAV -->
+  <header class="nav">
+    <a class="logo" href="/">PodBlendz 🎧</a>
+    <div class="nav-right">
+      <a class="nav-link" href="/community-feed.html">Community</a>
+      <button class="login-btn" id="loginBtn">Sign in</button>
+    </div>
+  </header>
 
   <!-- HERO -->
   <section class="hero">
 
-    <div>
-      <h1>Discover what the world's best podcasts <br>are saying about the same idea.</h1>
-      <p>PodBlendz connects conversations across podcasts, 
-        revealing insights no single episode can provide.
+    <div class="hero-copy">
+      <h1>One question. Every podcast’s answer.</h1>
+      <p>
+        PodBlendz finds the same idea across the best podcasts and blends
+        the clips into one short episode. Pick a topic and hear it now.
       </p>
 
-      <div class="buttons">
-        <button class="btn btn-primary" id="generateBlendzBtn">
-          Generate Your Blendz
-        </button>
-        <button class="btn" id="watchDemoBtn">
-          Watch Demo
-          </button>
+      <div class="cta-row">
+        <button class="btn btn-primary" id="generateBlendzBtn">Make your own blend</button>
+        <button class="btn" id="watchDemoBtn">Watch the demo</button>
+      </div>
+      <div class="cta-note">Free to start. Takes about a minute.</div>
+    </div>
+
+    <div class="hero-visual">
+
+    <div class="hero-photo">
+      <img src="/assets/black-lady-on-the-train.jpg"
+           alt="A woman listening to a podcast on a train"
+           width="1200" height="800"
+           onerror="this.parentNode.style.display='none';this.closest('.hero-visual').querySelector('.player').style.margin='0'">
+    </div>
+
+    <!-- LIVE PLAYER -->
+    <div class="player" id="player">
+
+      <div class="chips" role="group" aria-label="Choose a topic">
+        <button class="chip" data-topic="ai"       aria-pressed="true">AI &amp; Tech</button>
+        <button class="chip" data-topic="health"   aria-pressed="false">Health</button>
+        <button class="chip" data-topic="finance"  aria-pressed="false">Finance</button>
+        <button class="chip" data-topic="media"    aria-pressed="false">Media</button>
+        <button class="chip" data-topic="startups" aria-pressed="false">Startups</button>
+        <button class="chip" data-topic="science"  aria-pressed="false">Science</button>
       </div>
 
-      <div class="cta-note">
-        Start mixing your favorite podcast moments
+      <div class="q-label">The question</div>
+      <h2 id="featuredTitle"></h2>
+      <p class="desc" id="featuredDescription"></p>
+
+      <div class="voices" id="featuredCreators" aria-label="Creators in this blend"></div>
+
+      <div class="play-row">
+        <button class="play-btn" id="playFeaturedBlend" aria-label="Play blend" data-playing="false">▶</button>
+        <div>
+          <div class="play-meta" id="featuredMeta"></div>
+          <div class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+        </div>
+      </div>
+
+      <audio id="featuredAudio" controls preload="none"></audio>
+      <div class="preview-note" id="previewNotice">Free preview: the first 2 minutes.</div>
+
+      <a class="join" id="joinDiscussion" href="/community-feed.html">Join the discussion on this blend</a>
+
+      <div class="gate" id="previewMessage" role="status">
+        <h3>Want to hear the rest?</h3>
+        <p>Create a free account to finish this blend, save it, and join the discussion.</p>
+        <button class="btn btn-primary" id="gateSignup">Create free account</button>
       </div>
     </div>
 
-    <!-- ✅ CLEAN MOBILE IMAGE -->
-    <div class="hero-image-container">
-      <img
-        class="hero-image"
-        src="/assets/black-lady-on-the-train.jpg"
-        alt="Podcast listening"
-      />
-    </div>
+    </div><!-- /hero-visual -->
 
-  </section>   <!-- HERO ENDS -->
-
-<!-- DEMO VIDEO MODAL -->
-<div id="demoModal" class="demo-modal">
-
-  <div class="demo-content">
-
-    <span id="closeDemo">&times;</span>
-
-    <video id="demoVideo" controls width="100%">
-      <source
-        src="/podblendz-demo.mp4"
-        type="video/mp4">
-    </video>
-
-  </div>
-
+  </section>
 </div>
 
-<section class="featured-blend">
-
-  <div class="featured-label">
-    EXPERIENCE BLENDZ BY TOPIC
+<!-- LIVE NUMBERS (hidden until the API answers) -->
+<section class="stats" id="stats" aria-label="PodBlendz right now">
+  <div class="wrap stats-grid">
+    <div class="stat"><b id="statBlends">–</b><span>blends ready to play</span></div>
+    <div class="stat"><b id="statCreators">–</b><span>podcasts and creators</span></div>
+    <div class="stat"><b id="statClips">–</b><span>clips woven together</span></div>
   </div>
-
-  <div class="grid">
-
-    <button class="topic-preview" data-topic="ai">
-      AI & Tech Preview
-    </button>
-
-    <button class="topic-preview" data-topic="health">
-      Health Preview
-    </button>
-
-    <button class="topic-preview" data-topic="finance">
-      Finance Preview
-    </button>
-
-    <button class="topic-preview" data-topic="media">
-      Media Preview
-    </button>
-
-    <button class="topic-preview" data-topic="startups">
-      Startup Preview
-    </button>
-
-    <button class="topic-preview" data-topic="science">
-      Science Preview
-    </button>
-
-  </div>
-
 </section>
 
-  <!-- TOPICS -->
-  <section class="featured-blend">
+<div class="wrap">
 
-    <div class="featured-label">
-      Play Featured Blend
-    </div>
+  <!-- HOW IT WORKS -->
+  <section class="section">
+    <h2>How a blend gets made</h2>
+    <ol class="steps">
+      <li>
+        <h3>Pick what you care about</h3>
+        <p>Choose topics like brain health, AI, or starting a business.</p>
+      </li>
+      <li>
+        <h3>We find the shared idea</h3>
+        <p>PodBlendz searches many podcasts for moments where different people are answering the same question.</p>
+      </li>
+      <li>
+        <h3>You hear it as one episode</h3>
+        <p>The clips play back to back, and every blend lists the creators it draws from.</p>
+      </li>
+    </ol>
+  </section>
 
-    <div
-      id="currentTopic"
-      style="
-        display:none;
-        color:#ff6a00;
-        font-size:.9rem;
-        margin-bottom:12px;
-        font-weight:600;">
-    </div>
+  <!-- SIGN UP -->
+  <section class="signup" id="signup">
+    <h2>Start listening across podcasts</h2>
+    <p>Create a free account to save blends, follow the conversation, and add your own voice to the discussion.</p>
+    <ul class="perks">
+      <li>Save blends to your library</li>
+      <li>Join discussions</li>
+      <li>Get blends built around your topics</li>
+    </ul>
+    <div id="googleSignIn"></div>
+  </section>
 
-    <h2 id="featuredTitle">
-      What habits create extraordinary careers over decades?
-    </h2>
-
-    <p id="featuredDescription">
-      A conversation built from 27 clips spanning
-      Lex Fridman, Hidden Brain, Freakonomics Radio,
-      and other leading creators.
-
-    </p>
-    <div
-     id="featuredMeta"
-     class="featured-meta">
-      27 clips • 5 creators • 8 min listen
-    </div>
-
-    <div
-    id="featuredCreators"
-    class="featured-creators">
-      Lex Fridman • Hidden Brain • Freakonomics Radio • Kev on Stage
-    </div>
-
-
-
-    <button 
-      class="btn btn-primary"
-      id="playFeaturedBlend">
-      ▶ Play Featured Blend
-    </button>
-
-    <div
-      id="featuredBlendPlayer"
-      style="display:none; margin-top:20px;">
-      
-      <p
-        id="previewNotice"
-        style="
-          display:none;
-          margin-top:15px;
-          color:#ff6a00;">
-        Preview plays for 2 minutes.
-      </p>
-      
-
-      <audio
-        id="featuredAudio"
-        controls
-        style="width:100%;">
-
-      <source
-      id="featuredAudioSource"
-      src="https://podblendz-episode-audio.s3.us-east-1.amazonaws.com/blends/2c37437f-e13d-421f-a952-b14786830cb2/final.mp3"
-      type="audio/mpeg">
-    
-    </audio>
-    
-    </div>
-
-    <div
-  id="previewMessage"
-  style="
-    display:none;
-    margin-top:20px;
-    padding:24px;
-    background:#121212;
-    border-radius:16px;
-    border:1px solid rgba(255,255,255,.08);
-  ">
-
-  <h3 style="margin-bottom:12px;">
-    Ready For Your Own Blendz?
-  </h3>
-
-  <p style="margin-bottom:20px; opacity:.8;">
-    You've just experienced how PodBlendz combines insights
-    from multiple creators into a single listening experience.
-    
-    Now let's personalize it around your interests.
-  </p>
-
-<div id="googleSignIn"></div>
+  <footer class="footer">
+    <div>© PodBlendz</div>
+    <nav>
+      <a href="/feed.html">Browse blends</a>
+      <a href="/community-feed.html">Community</a>
+    </nav>
+  </footer>
 
 </div>
 
+<!-- DEMO VIDEO -->
+<div id="demoModal" class="demo-modal" role="dialog" aria-modal="true" aria-label="PodBlendz demo">
+  <div class="demo-content">
+    <button id="closeDemo" aria-label="Close demo">&times;</button>
+    <video id="demoVideo" controls playsinline>
+      <source src="/podblendz-demo.mp4" type="video/mp4">
+    </video>
+  </div>
+</div>
 
-    </section>
+<script>
+/* ================= DATA ================= */
 
-  <!-- CTA LOGIC -->
-  <script>
+const AUDIO_BASE = "https://podblendz-episode-audio.s3.us-east-1.amazonaws.com/blends/";
 
-    const previewBlends = {
-
-    ai: {
+const previewBlends = {
+  ai: {
     title: "When will people finally fight back against AI?",
-    description:
-    "A conversation exploring artificial intelligence, automation, human creativity, and the societal impact of increasingly capable AI systems.",
+    description: "Artificial intelligence, automation, human creativity, and the impact of increasingly capable systems.",
     blendId: "8eefdea6-c382-42f4-82a3-03b01b2a6335",
-    url: "/blend.html?id=8eefdea6-c382-42f4-82a3-03b01b2a6335",
-    audio: "https://podblendz-episode-audio.s3.us-east-1.amazonaws.com/blends/8eefdea6-c382-42f4-82a3-03b01b2a6335/final.mp3",
-    clips: "20 clips",
-    creatorsCount: "5 creators",
-    length: "11 min listen",
-    creators: "Lex Fridman • Hard Fork • Dwarkesh Podcast • This Week in AI • TED AI"
-    },
-
-
-    health: {
-      title: "What are the most effective ways to maintain brain health throughout life?",
-      description:
-      "A conversation synthesizing research and expert perspectives on memory, cognition, nutrition, exercise, sleep, and long-term brain health.",
-      blendId: "5566afcc-208a-428a-9384-920cecf523c2",
-      url: "/blend.html?id=5566afcc-208a-428a-9384-920cecf523c2",
-      audio: "https://podblendz-episode-audio.s3.us-east-1.amazonaws.com/blends/5566afcc-208a-428a-9384-920cecf523c2/final.mp3",
-      clips: "22 clips",
-      creatorsCount: "6 creators",
-      length: "13 min listen",
-      creators: "Huberman Lab • Hidden Brain • The Drive • Zoe Science & Nutrition • Feel Better Live More"
-      },
-
-
-      finance: {
-        title: "Saving money for retirement",
-        description:
-        "A conversation synthesizing perspectives on retirement planning, long-term investing, and financial independence.",
-        blendId: "55a9c4fa-64f4-456c-8eea-d092748fa5e0",
-        url: "/blend.html?id=55a9c4fa-64f4-456c-8eea-d092748fa5e0",
-        audio: "https://podblendz-episode-audio.s3.us-east-1.amazonaws.com/blends/55a9c4fa-64f4-456c-8eea-d092748fa5e0/final.mp3",
-        clips: "18 clips",
-        creatorsCount: "4 creators",
-        length: "12 min listen",
-        creators: "The Ramsey Show • Afford Anything • BiggerPockets • Planet Money"
-        },
-
-
-      media: {
-        title: "What are the benefits of reading books?",
-        description:
-        "A conversation examining how reading improves learning, critical thinking, empathy, creativity, and long-term personal development.",
-        blendId: "0465b31c-b799-4f25-9fd3-8b44c36b7a02",
-        url: "/blend.html?id=0465b31c-b799-4f25-9fd3-8b44c36b7a02",
-        audio: "https://podblendz-episode-audio.s3.us-east-1.amazonaws.com/blends/0465b31c-b799-4f25-9fd3-8b44c36b7a02/final.mp3",
-        clips: "27 clips",
-        creatorsCount: "5 creators",
-        length: "17 min listen",
-        creators: "Hidden Brain • Freakonomics Radio • Lex Fridman • The Knowledge Project • Modern Wisdom"
-        },
-
-        startups: {
-          title: "How to start your own business",
-          description:
-          "A conversation combining entrepreneurial lessons about launching, validating, growing, and sustaining a successful business.",
-          blendId: "6fc8636c-d989-4a1c-8996-4af13ead484e",
-          url: "/blend.html?id=6fc8636c-d989-4a1c-8996-4af13ead484e",
-          audio: "https://podblendz-episode-audio.s3.us-east-1.amazonaws.com/blends/6fc8636c-d989-4a1c-8996-4af13ead484e/final.mp3",
-          clips: "24 clips",
-          creatorsCount: "5 creators",
-          length: "14 min listen",
-          creators: "My First Million • How I Built This • Masters of Scale • The Tim Ferriss Show • Acquired"
-          },
-
-          science: {
-            title: "Genome Decode: The moment DNA stops being abstract and starts making sense.",
-            description:
-            "A conversation connecting genetics, DNA, biology, health, and the future implications of genomic science.",
-            blendId: "84064415-0c38-46b9-aea3-2ac257c11aaf",
-            url: "/blend.html?id=84064415-0c38-46b9-aea3-2ac257c11aaf",
-            audio: "https://podblendz-episode-audio.s3.us-east-1.amazonaws.com/blends/84064415-0c38-46b9-aea3-2ac257c11aaf/final.mp3",
-            clips: "21 clips",
-            creatorsCount: "5 creators",
-            length: "10 min listen",
-            creators: "Radiolab • Science Friday • Nature Podcast • Huberman Lab • Making Sense of Science"
-            }
-
+    clips: "20 clips", length: "11 min",
+    creators: ["Lex Fridman","Hard Fork","Dwarkesh Podcast","This Week in AI","TED AI"]
+  },
+  health: {
+    title: "What are the most effective ways to maintain brain health throughout life?",
+    description: "Memory, cognition, nutrition, exercise, sleep, and long-term brain health.",
+    blendId: "5566afcc-208a-428a-9384-920cecf523c2",
+    clips: "22 clips", length: "13 min",
+    creators: ["Huberman Lab","Hidden Brain","The Drive","Zoe Science & Nutrition","Feel Better Live More"]
+  },
+  finance: {
+    title: "Saving money for retirement",
+    description: "Retirement planning, long-term investing, and financial independence.",
+    blendId: "55a9c4fa-64f4-456c-8eea-d092748fa5e0",
+    clips: "18 clips", length: "12 min",
+    creators: ["The Ramsey Show","Afford Anything","BiggerPockets","Planet Money"]
+  },
+  media: {
+    title: "What are the benefits of reading books?",
+    description: "How reading improves learning, critical thinking, empathy, and creativity.",
+    blendId: "0465b31c-b799-4f25-9fd3-8b44c36b7a02",
+    clips: "27 clips", length: "17 min",
+    creators: ["Hidden Brain","Freakonomics Radio","Lex Fridman","The Knowledge Project","Modern Wisdom"]
+  },
+  startups: {
+    title: "How to start your own business",
+    description: "Launching, validating, growing, and sustaining a business.",
+    blendId: "6fc8636c-d989-4a1c-8996-4af13ead484e",
+    clips: "24 clips", length: "14 min",
+    creators: ["My First Million","How I Built This","Masters of Scale","The Tim Ferriss Show","Acquired"]
+  },
+  science: {
+    title: "Genome Decode: The moment DNA stops being abstract and starts making sense.",
+    description: "Genetics, DNA, biology, health, and the future of genomic science.",
+    blendId: "84064415-0c38-46b9-aea3-2ac257c11aaf",
+    clips: "21 clips", length: "10 min",
+    creators: ["Radiolab","Science Friday","Nature Podcast","Huberman Lab","Making Sense of Science"]
+  }
 };
 
+const PREVIEW_SECONDS = 120;
 
-    document.getElementById("generateBlendzBtn")
-  .addEventListener("click", () => {
+const $ = id => document.getElementById(id);
+const audio = $("featuredAudio");
+const playBtn = $("playFeaturedBlend");
+const player = $("player");
 
-    const token =
-      localStorage.getItem(
-        "googleToken"
-      );
+function isSignedIn(){
+  try { return !!localStorage.getItem("googleToken"); } catch { return false; }
+}
 
-    if (!token) {
+/* ================= PLAYER ================= */
 
-      document
-        .getElementById("previewMessage")
-        .style.display = "block";
+let currentTopic = "ai";
 
-      document
-        .getElementById("googleSignIn")
-        .scrollIntoView({
-          behavior: "smooth"
-        });
+function setPlayingUI(on){
+  player.classList.toggle("playing", on);
+  playBtn.dataset.playing = on ? "true" : "false";
+  playBtn.textContent = on ? "❚❚" : "▶";
+  playBtn.setAttribute("aria-label", on ? "Pause blend" : "Play blend");
+}
 
-      return;
-    }
+function showTopic(topic, autoplay){
 
-    window.location.href =
-      "/onboard/topics.html";
+  const b = previewBlends[topic];
+  if (!b) return;
+  currentTopic = topic;
 
+  document.querySelectorAll(".chip").forEach(c =>
+    c.setAttribute("aria-pressed", c.dataset.topic === topic ? "true" : "false"));
+
+  $("featuredTitle").textContent = b.title;
+  $("featuredDescription").textContent = b.description;
+  $("featuredMeta").innerHTML =
+    `<b>${b.length}</b> · ${b.clips} · ${b.creators.length} creators`;
+
+  $("featuredCreators").innerHTML =
+    b.creators.map(n => `<span class="voice"></span>`).join("");
+  $("featuredCreators").querySelectorAll(".voice").forEach((el, i) => {
+    el.textContent = b.creators[i];
   });
 
-      document.getElementById("loginBtn")
-  .addEventListener("click", () => {
-    window.location.href = "/auth/login.html";
-  });
-  
+  $("previewMessage").style.display = "none";
+  $("previewNotice").style.display = isSignedIn() ? "none" : "block";
 
-    const modal = document.getElementById("demoModal");
-    const video = document.getElementById("demoVideo");
-    const featuredAudio =document.getElementById("featuredAudio");
+  try {
+    localStorage.setItem("blendzEntryTopic", topic);
+    localStorage.setItem("dnaSeedBlendId", b.blendId);
+  } catch {}
 
-    document
-      .getElementById("watchDemoBtn")
-      .addEventListener("click", () => {
-        modal.style.display = "block";
-        video.play();
-      });
+  audio.src = AUDIO_BASE + b.blendId + "/final.mp3";
+  audio.load();
+  setPlayingUI(false);
 
-    document
-      .getElementById("closeDemo")
-      .addEventListener("click", () => {
-        modal.style.display = "none";
-        video.pause();
-        video.currentTime = 0;
-      });
+  if (autoplay) audio.play().catch(() => {});
+}
 
-      document
-  .getElementById("playFeaturedBlend")
-  .addEventListener("click", () => {
+document.querySelectorAll(".chip").forEach(chip =>
+  chip.addEventListener("click", () => showTopic(chip.dataset.topic, true)));
 
-    const player =
-      document.getElementById("featuredBlendPlayer");
+playBtn.addEventListener("click", () => {
+  if (audio.paused) audio.play().catch(() => {});
+  else audio.pause();
+});
 
-    player.style.display = "block";
+audio.addEventListener("play",  () => setPlayingUI(true));
+audio.addEventListener("pause", () => setPlayingUI(false));
+audio.addEventListener("ended", () => setPlayingUI(false));
 
-    document
-      .getElementById("previewNotice")
-      .style.display = "block";
-
-    featuredAudio.play();
-
-  });
-
-
-  featuredAudio.addEventListener(
-  "timeupdate",
-  () => {
-
-    const currentTime = Math.floor(
-      featuredAudio.currentTime
-    );
-
-    if (currentTime >= 120) {
-
-      featuredAudio.pause();
-
-      featuredAudio.currentTime = 120;
-
-      document
-        .getElementById("previewMessage")
-        .style.display = "block";
-
-    }
-
+/* 2-minute preview for visitors who aren't signed in */
+audio.addEventListener("timeupdate", () => {
+  if (isSignedIn()) return;
+  if (audio.currentTime >= PREVIEW_SECONDS) {
+    audio.pause();
+    audio.currentTime = PREVIEW_SECONDS;
+    $("previewMessage").style.display = "block";
+    $("previewNotice").style.display = "none";
   }
-);
+});
 
-document
-  .querySelectorAll(".topic-preview")
-  .forEach(button => {
+$("joinDiscussion").addEventListener("click", () => {
+  try { localStorage.setItem("dnaSeedBlendId", previewBlends[currentTopic].blendId); } catch {}
+});
 
-    button.addEventListener(
-      "click",
-      () => {
+$("gateSignup").addEventListener("click", () =>
+  $("signup").scrollIntoView({ behavior: "smooth" }));
 
-        const topic =
-          button.dataset.topic;
+showTopic("ai", false);
 
-        localStorage.setItem(
-          "blendzEntryTopic",
-          topic
-        );
+/* ================= BUTTONS ================= */
 
-        localStorage.setItem(
-          "dnaSeedBlendId",
-          previewBlends[topic].blendId
-        );
+$("generateBlendzBtn").addEventListener("click", () => {
+  if (!isSignedIn()) {
+    $("signup").scrollIntoView({ behavior: "smooth" });
+    return;
+  }
+  window.location.href = "/onboard/topics.html";
+});
 
-        console.log(
-          "DNA Blend:",
-          previewBlends[topic].blendId
-        );
+$("loginBtn").addEventListener("click", () => {
+  window.location.href = "/auth/login.html";
+});
 
-        console.log(
-          "Entry Topic:",
-          topic
-        );
+/* demo video */
+const modal = $("demoModal");
+const video = $("demoVideo");
 
+function closeDemo(){
+  modal.style.display = "none";
+  video.pause();
+  video.currentTime = 0;
+}
+$("watchDemoBtn").addEventListener("click", () => {
+  modal.style.display = "block";
+  video.play().catch(() => {});
+});
+$("closeDemo").addEventListener("click", closeDemo);
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeDemo(); });
 
-        document
-          .querySelectorAll(".topic-preview")
-          .forEach(btn => {
-            btn.classList.remove("selected");
-          });
+/* ================= LIVE NUMBERS ================= */
 
-        button.classList.add("selected");
+fetch("https://api.podblendz.com/blends")
+  .then(r => r.json())
+  .then(list => {
+    if (!Array.isArray(list) || !list.length) return;
 
-        document
-          .getElementById("currentTopic")
-          .style.display = "block";
+    const creators = new Set();
+    let clips = 0;
+    list.forEach(b => {
+      (b.creators || b.sources || []).forEach(c => creators.add(c));
+      clips += Number(b.clip_count || b.clips || 0);
+    });
 
-        document
-          .getElementById("currentTopic")
-          .innerText =
-          "Selected Topic";
+    $("statBlends").textContent = list.length;
+    $("statCreators").textContent = creators.size;
+    $("statClips").textContent = clips.toLocaleString();
+    $("stats").classList.add("on");
+  })
+  .catch(() => { /* stats stay hidden */ });
 
-        document
-          .getElementById("featuredTitle")
-          .innerText =
-          previewBlends[topic].title;
+/* ================= GOOGLE SIGN-IN ================= */
 
-          document
-          .getElementById("featuredDescription")
-          .innerText =
-          previewBlends[topic].description;
+function parseJwt(token){
+  const base64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+  return JSON.parse(decodeURIComponent(
+    atob(base64).split("").map(c =>
+      "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)).join("")
+  ));
+}
 
-          document
-          .getElementById("featuredMeta")
-          .innerText =
-          `${previewBlends[topic].clips} • `
-          + `${previewBlends[topic].creatorsCount} • `
-          + `${previewBlends[topic].length}`;
+function handleCredentialResponse(response){
 
-        document
-          .getElementById("featuredCreators")
-          .innerText =
-          previewBlends[topic].creators;
-
-          const source =
-          document.getElementById("featuredAudioSource");
-
-        source.src =
-          previewBlends[topic].audio;
-
-        featuredAudio.load();
-
-        console.log(
-          "Entry Topic:",
-          topic
-        );
-
-      }
-    );
-
-  });
-
-function handleCredentialResponse(response) {
-
-  const profile =
-    parseJwt(
-      response.credential
-    );
+  const profile = parseJwt(response.credential);
 
   const user = {
-
-    googleSub:
-      profile.sub,
-
-    email:
-      profile.email,
-
-    displayName:
-      profile.name,
-
-    photoUrl:
-      profile.picture,
-
-    blendzId:
-      `BLZ-${profile.sub.slice(-8)}`
-
+    googleSub:   profile.sub,
+    email:       profile.email,
+    displayName: profile.name,
+    photoUrl:    profile.picture,
+    blendzId:    `BLZ-${profile.sub.slice(-8)}`
   };
 
-  localStorage.setItem(
-    "googleToken",
-    response.credential
-  );
+  localStorage.setItem("googleToken", response.credential);
 
-  fetch(
-    "https://podblendz-backend.onrender.com/users/login",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type":
-          "application/json"
-      },
-      body: JSON.stringify({
-        blendz_id:
-          user.blendzId,
-        google_sub:
-          user.googleSub,
-        email:
-          user.email,
-        display_name:
-          user.displayName,
-        photo_url:
-          user.photoUrl
-      })
-    }
-  )
+  fetch("https://podblendz-backend.onrender.com/users/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      blendz_id:    user.blendzId,
+      google_sub:   user.googleSub,
+      email:        user.email,
+      display_name: user.displayName,
+      photo_url:    user.photoUrl
+    })
+  })
   .then(r => r.json())
   .then(data => {
-
-    localStorage.setItem(
-      "podblendzUser",
-      JSON.stringify(data)
-    );
-
-    window.location.href =
-      "/onboard/topics.html";
-
+    localStorage.setItem("podblendzUser", JSON.stringify(data));
+    window.location.href = "/onboard/topics.html";
   })
-  .catch(err => {
-
-    console.error(
-      "Login failed:",
-      err
-    );
-
-  });
-
+  .catch(err => console.error("Login failed:", err));
 }
 
 window.addEventListener("load", () => {
 
+  if (!window.google || !google.accounts) return;
 
-google.accounts.id.initialize({
-  client_id:
-    "964383747009-f1lesnjpg9gr6bncgh3kbh47ugilj4qd.apps.googleusercontent.com",
-  callback:
-    handleCredentialResponse
-});
+  google.accounts.id.initialize({
+    client_id: "964383747009-f1lesnjpg9gr6bncgh3kbh47ugilj4qd.apps.googleusercontent.com",
+    callback: handleCredentialResponse
+  });
 
-google.accounts.id.renderButton(
-  document.getElementById(
-    "googleSignIn"
-  ),
-  {
+  google.accounts.id.renderButton($("googleSignIn"), {
     theme: "filled_black",
     size: "large",
     width: 300
-  }
-);
-});   //
-
-    
-
-
+  });
+});
 </script>
 
 </body>
+</html>
