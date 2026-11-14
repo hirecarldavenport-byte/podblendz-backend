@@ -26,6 +26,9 @@ from podpal.community_voice_routes import (
     router as community_voice_router
 )
 
+from podpal.likes import router as likes_router
+from podpal.user_topics import router as user_topics_router
+
 
 
 # -------------------------------------------------
@@ -162,6 +165,8 @@ app.include_router(blend_router)
 app.include_router(blend_feed_router)
 app.include_router(community_router)
 app.include_router(community_voice_router)
+app.include_router(likes_router)
+app.include_router(user_topics_router)
 
 # -------------------------------------------------
 # USER LOGIN
