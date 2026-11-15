@@ -15,17 +15,7 @@ let feedQuery = "";
 document.addEventListener("DOMContentLoaded", () => {
   console.log("feed.js ready");
 
-  const search = document.getElementById("feedSearch");
-  if (search) {
-    search.addEventListener("input", e => {
-      feedQuery = e.target.value.trim().toLowerCase();
-      if (currentView !== "blends") {
-        setView("blends");
-      } else {
-        renderFeed();
-      }
-    });
-  }
+  initSearch();
 
   waitForBlends();
 });
@@ -539,17 +529,11 @@ if (selectedBoard) {
 // ✅ OPEN BLEND
 function openBlend(id) {
 
-  localStorage.setItem(
-    "dnaSeedBlendId",
-    id);
-
-  console.log(
-    "Opening blend:",
-    id
-  );
+  // saving is a nicety; if the browser blocks storage the click must still work
+  try { localStorage.setItem("dnaSeedBlendId", id); } catch (e) {}
 
   window.location.href =
-     "./community-feed.html?blend=" + encodeURIComponent(id);
+     "/community-feed.html?blend=" + encodeURIComponent(id);
 
 }
 
@@ -570,4 +554,224 @@ function goToSource(name, event) {
   // window.location.href =
   // `/source.html?name=${encodeURIComponent(name)}`;
 
+}
+
+
+/* =====================================================
+   SEARCH (type-ahead, same behaviour as the community page)
+   Looks across ALL blends, creators and boards, not just
+   what is on screen.
+===================================================== */
+let searchItems = [];     // flat list of what is shown, in order
+let searchActive = -1;
+let searchShowAll = false;
+
+function highlight(text, q) {
+  const i = q ? text.toLowerCase().indexOf(q) : -1;
+  if (i < 0) return esc(text);
+  return esc(text.slice(0, i)) +
+    "<mark>" + esc(text.slice(i, i + q.length)) + "</mark>" +
+    esc(text.slice(i + q.length));
+}
+
+function closeSearch() {
+  const box = document.getElementById("searchResults");
+  if (box) box.style.display = "none";
+  searchActive = -1;
+}
+
+function setSearchActive(i) {
+  const els = document.querySelectorAll("#searchResults .sr-item");
+  els.forEach(el => el.classList.remove("active"));
+  searchActive = i;
+  if (els[i]) {
+    els[i].classList.add("active");
+    els[i].scrollIntoView({ block: "nearest" });
+  }
+}
+
+function searchBlendsList() {
+  return (typeof BLENDS !== "undefined" && Array.isArray(BLENDS)) ? BLENDS : [];
+}
+
+function renderSearch(raw) {
+
+  const q = raw.trim().toLowerCase();
+  const box = document.getElementById("searchResults");
+  const list = searchBlendsList();
+
+  box.style.display = "block";
+  searchActive = -1;
+  searchItems = [];
+
+  if (!list.length) {
+    box.innerHTML = '<div class="sr-empty">Blends are still loading...</div>';
+    return;
+  }
+
+  // empty box: suggest the newest blends (the API lists newest first)
+  if (!q) {
+    searchItems = list.slice(0, 6).map(b => ({ kind: "blend", b }));
+    box.innerHTML = '<div class="sr-head">Newest blends</div>' +
+      searchItems.map((it, i) => blendRow(it.b, i, "")).join("");
+    return;
+  }
+
+  const words = q.split(/\s+/);
+  const matchesAll = hay => words.every(w => hay.includes(w));
+
+  // blends
+  const blends = [];
+  list.forEach(b => {
+    const title = String(b.title || "").toLowerCase();
+    const hay = (title + " " + String(b.board || "") + " " +
+      (b.sources || []).map(formatCreator).join(" ")).toLowerCase();
+    if (!matchesAll(hay)) return;
+    let score = 0;
+    if (title.startsWith(q)) score += 3;
+    if (title.includes(q)) score += 2;
+    words.forEach(w => { if (title.includes(w)) score += 1; });
+    blends.push({ b, score });
+  });
+  blends.sort((a, b) => b.score - a.score);
+
+  // creators
+  const creatorCount = {};
+  list.forEach(b => (b.sources || []).forEach(s => {
+    creatorCount[s] = (creatorCount[s] || 0) + 1;
+  }));
+  const creators = Object.keys(creatorCount)
+    .filter(s => matchesAll((formatCreator(s) + " " + s).toLowerCase()))
+    .sort((a, b) => creatorCount[b] - creatorCount[a])
+    .slice(0, 3);
+
+  // boards
+  const boardCount = {};
+  list.forEach(b => {
+    const name = b.board;
+    if (name && name !== "Uncategorized") boardCount[name] = (boardCount[name] || 0) + 1;
+  });
+  const boards = Object.keys(boardCount)
+    .filter(n => matchesAll(n.toLowerCase()))
+    .slice(0, 2);
+
+  if (!blends.length && !creators.length && !boards.length) {
+    box.innerHTML = '<div class="sr-empty">Nothing found for \u201c' + esc(raw.trim()) + '\u201d.</div>';
+    return;
+  }
+
+  const limit = searchShowAll ? 40 : 6;
+  const shown = blends.slice(0, limit);
+
+  let html = "";
+  let i = 0;
+
+  if (shown.length) {
+    html += '<div class="sr-head">' + blends.length + ' blend' +
+            (blends.length === 1 ? "" : "s") + '</div>';
+    shown.forEach(x => {
+      searchItems.push({ kind: "blend", b: x.b });
+      html += blendRow(x.b, i++, q);
+    });
+    if (!searchShowAll && blends.length > limit) {
+      html += '<div class="sr-more">Show all ' + blends.length + ' matches</div>';
+    }
+  }
+
+  if (creators.length) {
+    html += '<div class="sr-head">Creators</div>';
+    creators.forEach(name => {
+      searchItems.push({ kind: "creator", name });
+      html += '<div class="sr-item" role="option" data-i="' + (i++) + '">' +
+        '<div class="sr-title">\uD83C\uDF99 ' + highlight(formatCreator(name), q) + '</div>' +
+        '<div class="sr-meta">' + creatorCount[name] + ' blend' +
+        (creatorCount[name] === 1 ? "" : "s") + '</div></div>';
+    });
+  }
+
+  if (boards.length) {
+    html += '<div class="sr-head">Boards</div>';
+    boards.forEach(name => {
+      searchItems.push({ kind: "board", name });
+      html += '<div class="sr-item" role="option" data-i="' + (i++) + '">' +
+        '<div class="sr-title">\uD83D\uDCDA ' + highlight(name, q) + '</div>' +
+        '<div class="sr-meta">' + boardCount[name] + ' blend' +
+        (boardCount[name] === 1 ? "" : "s") + '</div></div>';
+    });
+  }
+
+  box.innerHTML = html;
+}
+
+function blendRow(b, i, q) {
+  const first = (b.sources || [])[0];
+  return '<div class="sr-item" role="option" data-i="' + i + '">' +
+    '<div class="sr-title">' + highlight(String(b.title || ""), q) + '</div>' +
+    '<div class="sr-meta">' + esc(b.board || "General") + ' \u2022 ' + (b.clips || 0) + ' clips' +
+    (first ? ' \u2022 ' + esc(formatCreator(first)) : "") + '</div></div>';
+}
+
+function pickSearchResult(i) {
+  const it = searchItems[i];
+  if (!it) return;
+  closeSearch();
+  const input = document.getElementById("feedSearch");
+  input.blur();
+
+  if (it.kind === "blend") {
+    openBlend(it.b.id);
+  } else if (it.kind === "creator") {
+    input.value = "";
+    setView("creators");          // highlight the tab, then show that creator
+    openCreator(it.name);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  } else if (it.kind === "board") {
+    openBoard(it.name);
+  }
+}
+
+function initSearch() {
+
+  const input = document.getElementById("feedSearch");
+  const box = document.getElementById("searchResults");
+  const wrap = document.getElementById("searchWrap");
+  if (!input || !box) return;
+
+  input.addEventListener("input", () => { searchShowAll = false; renderSearch(input.value); });
+  input.addEventListener("focus", () => { searchShowAll = false; renderSearch(input.value); });
+  input.addEventListener("click", () => {
+    if (box.style.display !== "block") renderSearch(input.value);
+  });
+
+  input.addEventListener("keydown", e => {
+    const n = searchItems.length;
+    if (e.key === "Escape") { closeSearch(); return; }
+    if (box.style.display !== "block" || !n) return;
+
+    if (e.key === "ArrowDown") { e.preventDefault(); setSearchActive((searchActive + 1) % n); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); setSearchActive((searchActive - 1 + n) % n); }
+    else if (e.key === "Enter") {
+      e.preventDefault();
+      if (!input.value.trim() && searchActive < 0) return;
+      pickSearchResult(searchActive >= 0 ? searchActive : 0);
+    }
+  });
+
+  // mousedown (not click) so the input doesn't lose focus first
+  box.addEventListener("mousedown", e => {
+    if (e.target.closest(".sr-more")) {
+      e.preventDefault();
+      searchShowAll = true;
+      renderSearch(input.value);
+      return;
+    }
+    const item = e.target.closest(".sr-item");
+    if (!item) return;
+    e.preventDefault();
+    pickSearchResult(Number(item.dataset.i));
+  });
+
+  document.addEventListener("click", e => {
+    if (wrap && !wrap.contains(e.target)) closeSearch();
+  });
 }

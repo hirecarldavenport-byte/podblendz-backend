@@ -56,18 +56,44 @@ button{font-family:inherit}
 .page-title{font-size:2rem;line-height:1.1;margin-top:6px}
 .subtitle{color:var(--muted);margin:6px 0 18px}
 
-/* ---------- search ---------- */
-.search{
-  width:100%;
+/* ---------- search (same as the community page) ---------- */
+.search-wrap{
+  position:relative;
+  display:flex;align-items:center;gap:10px;
   background:#0f0f0f;
   border:1px solid rgba(255,106,0,.25);
-  color:#fff;
-  padding:14px 16px;
   border-radius:14px;
-  font-size:1rem;
+  padding:0 16px;
+}
+.search-wrap:focus-within{border-color:var(--orange);box-shadow:0 0 0 3px rgba(255,106,0,.15)}
+.search-ico{opacity:.6}
+.search{
+  flex:1;min-width:0;background:none;border:none;color:#fff;
+  padding:14px 0;font-size:1rem;outline:none;
 }
 .search::placeholder{color:rgba(255,255,255,.45)}
-.search:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(255,106,0,.15)}
+
+.search-results{
+  display:none;
+  position:absolute;left:0;right:0;top:calc(100% + 8px);
+  background:#101010;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:16px;
+  overflow:hidden;overflow-y:auto;
+  z-index:800;
+  box-shadow:0 12px 32px rgba(0,0,0,.6);
+  max-height:min(70vh,520px);
+}
+.sr-item{padding:12px 16px;cursor:pointer;border-bottom:1px solid var(--line)}
+.sr-item:last-child{border-bottom:none}
+.sr-item.active,.sr-item:hover{background:#1a1a1a}
+.sr-title{font-size:.98rem;line-height:1.3;overflow-wrap:anywhere}
+.sr-title mark{background:none;color:var(--orange);font-weight:700}
+.sr-meta{color:var(--muted);font-size:.78rem;margin-top:4px}
+.sr-empty{padding:14px 16px;color:var(--muted);font-size:.9rem}
+.sr-head{padding:10px 16px 6px;color:var(--muted);font-size:.78rem;font-weight:600}
+.sr-more{padding:12px 16px;color:var(--orange);cursor:pointer;font-weight:600;text-align:center;border-top:1px solid var(--line)}
+.sr-more:hover{background:#1a1a1a}
 
 /* ---------- topic chips ---------- */
 .topic-strip{
@@ -192,12 +218,17 @@ button{font-family:inherit}
   <h1 class="page-title" id="pageTitle">Explore</h1>
   <p class="subtitle">Conversations blended from the best podcasts.</p>
 
-  <input
-    id="feedSearch"
-    class="search"
-    type="search"
-    placeholder="Search blends, creators, or topics..."
-    autocomplete="off" />
+  <div class="search-wrap" id="searchWrap">
+    <span class="search-ico" aria-hidden="true">🔍</span>
+    <input
+      id="feedSearch"
+      class="search"
+      type="text"
+      placeholder="Search blends, creators, or topics..."
+      aria-label="Search blends, creators, or topics"
+      autocomplete="off" />
+    <div id="searchResults" class="search-results" role="listbox"></div>
+  </div>
 
   <!-- TOPIC CHIPS -->
   <div class="topic-strip" id="topicStrip">
@@ -240,7 +271,7 @@ button{font-family:inherit}
 <script src="scripts/blends.js"></script>
 
 <!-- LOGIC SECOND -->
-<script src="scripts/feed.js?v=20261114"></script>
+<script src="scripts/feed.js?v=20261115"></script>
 
 <script>
 /* signed-in avatar: Google photo, else the person's initial, else a plain silhouette */
