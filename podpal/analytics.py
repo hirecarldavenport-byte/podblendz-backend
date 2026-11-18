@@ -29,16 +29,19 @@ from podpal.db.models import (
     BlendCreator,
     BlendTopic,
     CreatorAccount,
+    CreatorSocial,
     ListenEvent,
 )
 from podpal.db.session import SessionLocal
 
 router = APIRouter()
 
-VALID_EVENTS = {"start", "progress", "complete", "episode_click"}
+VALID_EVENTS = {"start", "progress", "complete", "episode_click", "share"}
+SOCIAL_FIELDS = ("x", "instagram", "threads", "tiktok")
 VALID_SOURCES = {
     "push", "email", "web", "instagram", "x",
     "tiktok", "youtube", "social", "podcast",
+    "threads", "facebook", "linkedin", "copy", "share",
 }
 REACH_SECONDS = 10          # heard this much = reached
 MAX_EVENTS_PER_POST = 50
@@ -448,6 +451,7 @@ def _period_stats(events, my_names, first_seen, period_start):
         "completions": sum(1 for e in events if e.event == "complete"),
         "minutes_heard": round(sum(e.seconds or 0 for e in events) / 60),
         "episode_clicks": clicks,
+        "shares": sum(1 for e in events if e.event == "share"),
         "click_rate": round(clicks / len(reached) * 100, 1) if reached else 0,
     }
 
@@ -457,3 +461,126 @@ def _pretty(name):
     if name == name.lower():
         return name.replace("_", " ").title()
     return name
+
+
+# -------------------------------------------------
+# SOCIAL HANDLES (for @tags when listeners share)
+# -------------------------------------------------
+
+def _handle(value):
+    """'@LexFridman ' or 'https://x.com/lexfridman' -> 'lexfridman'"""
+    v = (value or "").strip()
+    if not v:
+        return None
+    v = v.rstrip("/").split("/")[-1].split("?")[0]
+    v = v.lstrip("@").strip()
+    v = "".join(ch for ch in v if ch.isalnum() or ch in "._")
+    return v[:40] or None
+
+
+def _social_out(row):
+    return {
+        "creator_name": row.creator_name,
+        "display_name": row.display_name,
+        **{f: getattr(row, f) for f in SOCIAL_FIELDS},
+    }
+
+
+def _save_socials(db, creator_name, payload):
+    row = db.query(CreatorSocial).filter(CreatorSocial.creator_name == creator_name).first()
+    if not row:
+        row = CreatorSocial(creator_name=creator_name)
+        db.add(row)
+    if "display_name" in payload:
+        row.display_name = _clean(payload.get("display_name"), 80)
+    for f in SOCIAL_FIELDS:
+        if f in payload:
+            setattr(row, f, _handle(payload.get(f)))
+    row.updated_at = datetime.utcnow()
+    return row
+
+
+@router.get("/creators/socials")
+def get_socials(names: str = ""):
+    """Public: handles for the creators in a blend. ?names=lex_fridman,huberman"""
+    wanted = [n.strip() for n in names.split(",") if n.strip()][:20]
+    if not wanted:
+        return {}
+    db = SessionLocal()
+    try:
+        rows = db.query(CreatorSocial).filter(CreatorSocial.creator_name.in_(wanted)).all()
+        return {r.creator_name: _social_out(r) for r in rows}
+    finally:
+        db.close()
+
+
+@router.get("/admin/socials")
+def admin_list_socials(x_admin_key: str = Header(default="")):
+    """Every creator name in blendz, with any handles saved so far."""
+    _admin(x_admin_key)
+    db = SessionLocal()
+    try:
+        _, creators, _ = _blend_catalog(db)
+        names = sorted({n for ns in creators.values() for n in ns})
+        saved = {r.creator_name: _social_out(r) for r in db.query(CreatorSocial).all()}
+        for n in names:
+            saved.setdefault(n, {"creator_name": n, "display_name": None,
+                                 **{f: None for f in SOCIAL_FIELDS}})
+        return sorted(saved.values(), key=lambda r: r["creator_name"].lower())
+    finally:
+        db.close()
+
+
+@router.put("/admin/socials")
+def admin_save_socials(payload: dict, x_admin_key: str = Header(default="")):
+    """{"creator_name": "lex_fridman", "display_name": "Lex Fridman", "x": "lexfridman", ...}"""
+    _admin(x_admin_key)
+    name = _clean(payload.get("creator_name"), 120)
+    if not name:
+        raise HTTPException(status_code=400, detail="creator_name is required")
+    db = SessionLocal()
+    try:
+        row = _save_socials(db, name, payload)
+        db.commit()
+        return _social_out(row)
+    finally:
+        db.close()
+
+
+@router.get("/creator/socials")
+def creator_get_socials(key: str):
+    """A creator reads their own handles with their dashboard key."""
+    db = SessionLocal()
+    try:
+        acct = db.query(CreatorAccount).filter(CreatorAccount.access_key == key).first()
+        if not acct:
+            raise HTTPException(status_code=404, detail="This dashboard link isn't valid.")
+        names = [n.strip() for n in acct.creator_names.split(",") if n.strip()]
+        rows = {r.creator_name: r for r in
+                db.query(CreatorSocial).filter(CreatorSocial.creator_name.in_(names)).all()}
+        return [
+            _social_out(rows[n]) if n in rows else
+            {"creator_name": n, "display_name": None, **{f: None for f in SOCIAL_FIELDS}}
+            for n in names
+        ]
+    finally:
+        db.close()
+
+
+@router.put("/creator/socials")
+def creator_save_socials(key: str, payload: dict):
+    """A creator updates their own handles with their dashboard key."""
+    db = SessionLocal()
+    try:
+        acct = db.query(CreatorAccount).filter(CreatorAccount.access_key == key).first()
+        if not acct:
+            raise HTTPException(status_code=404, detail="This dashboard link isn't valid.")
+        names = [n.strip() for n in acct.creator_names.split(",") if n.strip()]
+        name = payload.get("creator_name") or names[0]
+        if name not in names:
+            raise HTTPException(status_code=403, detail="Not your show")
+        row = _save_socials(db, name, payload)
+        db.commit()
+        return _social_out(row)
+    finally:
+        db.close()
