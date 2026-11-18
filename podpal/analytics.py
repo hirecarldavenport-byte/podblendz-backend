@@ -14,11 +14,13 @@ can be credited clip by clip.
 
 import json
 import os
+import time
 import secrets
 import uuid
 from collections import defaultdict
 from datetime import datetime, timedelta
 
+import requests
 from fastapi import APIRouter, Header, HTTPException, Request
 from sqlalchemy import func
 
@@ -41,6 +43,63 @@ VALID_SOURCES = {
 REACH_SECONDS = 10          # heard this much = reached
 MAX_EVENTS_PER_POST = 50
 MAX_SECONDS_PER_EVENT = 120  # players report every ~15s
+
+# Blends are published to the api.podblendz.com server, not this one,
+# so blend titles, boards and creators are read from its /blends feed.
+BLENDS_FEED_URL = os.environ.get(
+    "BLENDS_FEED_URL",
+    "https://api.podblendz.com/blends"
+)
+_feed_cache = {"at": 0, "blends": None}
+
+
+class _FeedBlend:
+    def __init__(self, d):
+        self.id = str(d.get("id"))
+        self.title = d.get("title") or ""
+        self.board = d.get("board") or ""
+        self.created_at = d.get("created_at") or ""
+
+
+def _blend_catalog(db):
+    """
+    Returns (blends_by_id, creators_by_blend, topics_by_blend).
+    Uses the live blends feed (cached 10 minutes) and adds anything
+    stored in this server's own tables.
+    """
+    if not _feed_cache["blends"] or time.time() - _feed_cache["at"] > 600:
+        try:
+            r = requests.get(BLENDS_FEED_URL, timeout=8)
+            r.raise_for_status()
+            data = r.json()
+            if isinstance(data, list):
+                _feed_cache["blends"] = data
+                _feed_cache["at"] = time.time()
+        except Exception as e:
+            print("⚠️ analytics: blends feed unavailable:", e)
+
+    blends = {}
+    creators = defaultdict(set)
+    topics = defaultdict(set)
+
+    for d in _feed_cache["blends"] or []:
+        b = _FeedBlend(d)
+        blends[b.id] = b
+        for c in d.get("creators") or []:
+            if c:
+                creators[b.id].add(c)
+
+    for b in db.query(Blend).all():
+        blends.setdefault(b.id, b)
+    for blend_id, name in db.query(BlendCreator.blend_id, BlendCreator.creator_name).all():
+        if name:
+            creators[blend_id].add(name)
+    for blend_id, t in db.query(BlendTopic.blend_id, BlendTopic.topic).all():
+        if t:
+            topics[blend_id].add(t)
+
+    return blends, creators, topics
+
 
 DASHBOARD_URL = os.environ.get(
     "CREATOR_DASHBOARD_URL",
@@ -172,10 +231,8 @@ def list_creators(x_admin_key: str = Header(default="")):
     db = SessionLocal()
     try:
         accts = db.query(CreatorAccount).order_by(CreatorAccount.created_at.desc()).all()
-        known = sorted({
-            c.creator_name for c in db.query(BlendCreator.creator_name).distinct()
-            if c.creator_name
-        })
+        _, creators, _ = _blend_catalog(db)
+        known = sorted({n for names in creators.values() for n in names})
         return {
             "creators": [_account_out(a) for a in accts],
             "creator_names_in_blends": known,
@@ -212,20 +269,14 @@ def creator_dashboard(key: str, days: int = 30):
         my_names = {n.strip().lower() for n in acct.creator_names.split(",") if n.strip()}
 
         # Every blend featuring this creator, and who else is in each
-        all_links = db.query(BlendCreator.blend_id, BlendCreator.creator_name).all()
-        creators_by_blend = defaultdict(set)
-        for blend_id, name in all_links:
-            if name:
-                creators_by_blend[blend_id].add(name)
+        all_blends, creators_by_blend, topics_by_blend = _blend_catalog(db)
 
         my_blends = {
             b for b, names in creators_by_blend.items()
             if any(n.lower() in my_names for n in names)
         }
 
-        blends = {
-            b.id: b for b in db.query(Blend).filter(Blend.id.in_(my_blends)).all()
-        } if my_blends else {}
+        blends = {b: all_blends[b] for b in my_blends if b in all_blends}
 
         now = datetime.utcnow()
         start = now - timedelta(days=days)
@@ -344,13 +395,6 @@ def creator_dashboard(key: str, days: int = 30):
             co_creators = co_creators[:8]
 
         # topics (fall back to the board when a blend has no topics)
-        topic_rows = db.query(BlendTopic.blend_id, BlendTopic.topic).filter(
-            BlendTopic.blend_id.in_(my_blends)
-        ).all() if my_blends else []
-        topics_by_blend = defaultdict(set)
-        for b, t in topic_rows:
-            if t:
-                topics_by_blend[b].add(t)
         topic_stats = {}
         for b, blend in blends.items():
             for t in topics_by_blend.get(b) or ({blend.board} if blend.board else set()):
