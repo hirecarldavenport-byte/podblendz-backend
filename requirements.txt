@@ -35,3 +35,4 @@ azure-cognitiveservices-speech
 requests
 google-auth
 requests
+psycopg2-binary==2.9.10
