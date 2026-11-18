@@ -480,3 +480,28 @@ class CreatorAccount(Base):
     access_key = Column(String, unique=True, index=True)
 
     created_at = Column(DateTime)
+
+
+# =====================================
+# CREATOR SOCIAL HANDLES
+# Used to @tag podcasters when listeners share a blend.
+# creator_name matches the names in blends (e.g. "lex_fridman").
+# Handles are stored without the @.
+# =====================================
+
+class CreatorSocial(Base):
+    __tablename__ = "creator_socials"
+
+    creator_name = Column(String, primary_key=True)
+
+    display_name = Column(String, nullable=True)
+
+    x = Column(String, nullable=True)
+
+    instagram = Column(String, nullable=True)
+
+    threads = Column(String, nullable=True)
+
+    tiktok = Column(String, nullable=True)
+
+    updated_at = Column(DateTime)
