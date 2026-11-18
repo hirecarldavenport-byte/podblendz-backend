@@ -18,9 +18,12 @@ DATABASE_URL = os.environ.get(
 
 engine = create_engine(
     DATABASE_URL,
-    connect_args={
-        "check_same_thread": False
-    }
+    # check_same_thread is a SQLite-only option
+    connect_args=(
+        {"check_same_thread": False}
+        if DATABASE_URL.startswith("sqlite") else {}
+    ),
+    pool_pre_ping=True
 )
 
 SessionLocal = sessionmaker(
