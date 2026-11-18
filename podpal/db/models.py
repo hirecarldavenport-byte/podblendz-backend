@@ -419,3 +419,64 @@ class UserTopics(Base):
         default=datetime.utcnow,
         onupdate=datetime.utcnow
     )
+
+
+# =====================================
+# ANALYTICS: LISTEN EVENTS
+# One row per player event. listener_id is an
+# anonymous random id kept in the listener's browser.
+# =====================================
+
+class ListenEvent(Base):
+    __tablename__ = "listen_events"
+
+    id = Column(String, primary_key=True)
+
+    created_at = Column(DateTime, index=True)
+
+    listener_id = Column(String, index=True)
+
+    blend_id = Column(String, index=True)
+
+    # start | progress | complete | episode_click
+    event = Column(String)
+
+    # seconds actually heard since the last event
+    seconds = Column(Integer, default=0)
+
+    # position in the blend when the event fired (seconds)
+    position = Column(Integer, default=0)
+
+    # creator credited for an episode_click (Phase 2)
+    creator_name = Column(String, nullable=True)
+
+    # push | email | web | instagram | x | ...
+    source = Column(String, default="web")
+
+    # home | community | play | ...
+    page = Column(String, nullable=True)
+
+
+# =====================================
+# ANALYTICS: CREATOR ACCOUNTS
+# A private dashboard link per show.
+# creator_names = comma-separated names exactly as
+# they appear in blend_creators (e.g. "lex_fridman").
+# =====================================
+
+class CreatorAccount(Base):
+    __tablename__ = "creator_accounts"
+
+    id = Column(String, primary_key=True)
+
+    show_name = Column(String)
+
+    creator_names = Column(String)
+
+    plan = Column(String, default="free")
+
+    email = Column(String, nullable=True)
+
+    access_key = Column(String, unique=True, index=True)
+
+    created_at = Column(DateTime)

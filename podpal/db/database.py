@@ -1,3 +1,4 @@
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -8,7 +9,12 @@ from podpal.db.models import Base
 # DATABASE
 # =====================================
 
-DATABASE_URL = "sqlite:///podblendz.db"
+# Set DATABASE_URL on Render to keep data across deploys,
+# e.g. sqlite:////var/data/podblendz.db with a disk at /var/data
+DATABASE_URL = os.environ.get(
+    "DATABASE_URL",
+    "sqlite:///podblendz.db"
+)
 
 engine = create_engine(
     DATABASE_URL,
