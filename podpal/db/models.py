@@ -10,7 +10,7 @@ import uuid
 
 from datetime import datetime
 
-from sqlalchemy import Text
+from sqlalchemy import Text, Boolean
 
 Base = declarative_base()
 
@@ -505,3 +505,58 @@ class CreatorSocial(Base):
     tiktok = Column(String, nullable=True)
 
     updated_at = Column(DateTime)
+
+
+# =====================================
+# ADS: short sponsor spots played before a blend
+# boards = comma-separated board names, or "*" for any board
+# =====================================
+
+class Ad(Base):
+    __tablename__ = "ads"
+
+    id = Column(String, primary_key=True)
+
+    sponsor = Column(String)
+
+    title = Column(String, nullable=True)
+
+    audio_url = Column(String)
+
+    click_url = Column(String, nullable=True)
+
+    boards = Column(String, default="*")
+
+    active = Column(Boolean, default=True)
+
+    weight = Column(Integer, default=1)
+
+    max_impressions = Column(Integer, nullable=True)
+
+    starts_at = Column(DateTime, nullable=True)
+
+    ends_at = Column(DateTime, nullable=True)
+
+    created_at = Column(DateTime)
+
+
+# One row per ad event: impression | complete | click | skip | blocked
+
+class AdEvent(Base):
+    __tablename__ = "ad_events"
+
+    id = Column(String, primary_key=True)
+
+    created_at = Column(DateTime, index=True)
+
+    ad_id = Column(String, index=True)
+
+    event = Column(String)
+
+    listener_id = Column(String, index=True)
+
+    blend_id = Column(String, nullable=True)
+
+    board = Column(String, nullable=True)
+
+    page = Column(String, nullable=True)
