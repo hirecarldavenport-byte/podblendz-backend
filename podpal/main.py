@@ -31,6 +31,8 @@ from podpal.community_voice_routes import (
 from podpal.likes import router as likes_router
 from podpal.user_topics import router as user_topics_router
 from podpal.analytics import router as analytics_router
+from podpal.ads import router as ads_router
+from podpal.share import router as share_router
 
 
 
@@ -173,6 +175,8 @@ app.include_router(likes_router)
 app.include_router(user_topics_router)
 app.include_router(admin_categorize_router)
 app.include_router(analytics_router)
+app.include_router(ads_router)
+app.include_router(share_router)
 
 # -------------------------------------------------
 # USER LOGIN
