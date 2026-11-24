@@ -28,7 +28,10 @@ router = APIRouter()
 SITE = os.environ.get("SITE_URL", "https://www.podblendz.com")
 BLEND_PAGE = os.environ.get("SHARE_TARGET", SITE + "/community-feed.html")
 BLEND_API = os.environ.get("BLEND_API_URL", "https://api.podblendz.com/blend/")
-FONTS = os.path.join(os.path.dirname(__file__), "assets", "fonts")
+_HERE = os.path.dirname(os.path.abspath(__file__))
+# fonts may sit in podpal/assets/fonts or in assets/fonts at the top of the repo
+FONTS = next((p for p in (os.path.join(_HERE, "assets", "fonts"), os.path.join(_HERE, "..", "assets", "fonts"))
+              if os.path.isdir(p)), os.path.join(_HERE, "assets", "fonts"))
 ORANGE = (255, 106, 0)
 
 _img_cache = {}   # blend id -> (time, png bytes)
@@ -98,6 +101,7 @@ def share_page(blend_id: str, request: Request):
     desc = (f"Hear {who} answer it in one short blend." if who else "One question, answered by several podcasts.") + " Listen free on PodBlendz."
     t, d, i, u, go = (html.escape(x, quote=True) for x in (info["title"], desc, image, me, target))
 
+    js_target = json.dumps(target).replace("</", "<\\/")
     page = f"""<!DOCTYPE html>
 <html lang="en"><head>
 <meta charset="utf-8">
@@ -120,7 +124,7 @@ def share_page(blend_id: str, request: Request):
 <style>body{{background:#050505;color:#fff;font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}}a{{color:#ff6a00}}</style>
 </head><body>
 <p>Opening your blend… <a href="{go}">Tap here if it doesn't open</a></p>
-<script>location.replace({json.dumps(target).replace("</", "<\\/")});</script>
+<script>location.replace({js_target});</script>
 </body></html>"""
     return HTMLResponse(page, headers={"Cache-Control": "public, max-age=600"})
 
