@@ -29,7 +29,8 @@ import urllib.request
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-FONTS = os.path.join(HERE, "..", "podpal", "assets", "fonts")
+FONTS = next((p for p in (os.path.join(HERE, "..", "podpal", "assets", "fonts"), os.path.join(HERE, "..", "assets", "fonts"))
+              if os.path.isdir(p)), os.path.join(HERE, "..", "assets", "fonts"))
 BLEND_API = "https://api.podblendz.com/blend/"
 AUDIO_URL = "https://podblendz-episode-audio.s3.us-east-1.amazonaws.com/blends/{id}/final.mp3"
 BACKEND = "https://podblendz-backend.onrender.com"
